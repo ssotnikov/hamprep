@@ -30,10 +30,4 @@ if (unexpectedLocalFiles.length > 0) {
 }
 writeFileSync(join(assetDirectory, 'ham_prepare_ru.html'), handbook);
 
-// Chromium 69 has no String.replaceAll. These searches all use literal characters.
-const script = scripts[0][1]
-  .replaceAll(".replaceAll('&', '&amp;')", ".replace(/&/g, '&amp;')")
-  .replaceAll(".replaceAll('<', '&lt;')", ".replace(/</g, '&lt;')")
-  .replaceAll(".replaceAll('>', '&gt;')", ".replace(/>/g, '&gt;')")
-  .replaceAll(".replaceAll('ё', 'е')", ".replace(/ё/g, 'е')");
-writeFileSync(scriptPath, script);
+writeFileSync(scriptPath, scripts[0][1]);

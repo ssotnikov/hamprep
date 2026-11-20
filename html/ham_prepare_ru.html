@@ -521,18 +521,12 @@
 
     /* Mobile inline TOC */
     .mobile-toc {
-      --program-tone: #e7eef9;
-      --program-highlight: #d1e1f8;
       display: none;
       margin-bottom: var(--space-lg);
       border: 1px solid var(--scheme-border);
       border-radius: 14px;
       background: var(--background);
       padding: clamp(10px, 2.8vw, 22px);
-    }
-    :root[data-palette="dark"] .mobile-toc {
-      --program-tone: #293b53;
-      --program-highlight: #405c7d;
     }
     .mobile-toc h2 { margin: 0 0 12px; font-size: var(--subhead-size); }
     .program-list { list-style: none; display: grid; gap: 5px; margin: 0; padding: 0; max-width: none; }
@@ -545,13 +539,13 @@
       min-height: 48px;
       padding: 7px 10px;
       border-radius: 9px;
-      background: var(--program-tone);
+      background: var(--ui-tone);
       color: var(--on-surface);
       text-decoration: none;
     }
     .mobile-toc a:visited { color: var(--on-surface); }
     .mobile-toc a:hover,
-    .mobile-toc a:focus-visible { background: var(--program-highlight); }
+    .mobile-toc a:focus-visible { background: var(--ui-focus); }
     .mobile-toc a:focus-visible { text-decoration: underline; text-underline-offset: 3px; }
     .program-index {
       min-width: 30px;
@@ -4150,12 +4144,12 @@
       persistState();
     }
 
-    function escapePdfText(value) {
-      return value.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
+    function escapeQuestionText(value) {
+      return value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     }
 
     function renderPdfPrompt(question) {
-      const stem = `<div class="question-stem">${escapePdfText(question.stem)}</div>`;
+      const stem = `<div class="question-stem">${escapeQuestionText(question.stem)}</div>`;
       if (!question.figure) return stem;
       const [width, height, src] = PDF_FIGURES[question.figure];
       return stem + `<img class="pdf-bank-figure" src="${src}" width="${width}" height="${height}" style="width:${Math.round(width / 1.5)}px" alt="Иллюстрация из PDF к вопросу № ${question.no}">`;
@@ -4166,7 +4160,7 @@
       const letter = PDF_LETTERS[question.correct];
       return `<div class="feedback-box feedback-box--${verdict}" role="status">
         <div class="feedback-verdict-${verdict}">${chosen === question.correct ? 'Верно' : chosen === undefined ? 'Ответ не выбран' : 'Неверно'}</div>
-        <div>${letter}) ${escapePdfText(question.options[question.correct])}</div>
+        <div>${letter}) ${escapeQuestionText(question.options[question.correct])}</div>
       </div>`;
     }
 
@@ -4178,20 +4172,23 @@
       return `с. ${question.page} перечня`;
     }
 
-    function renderPdfBank() {
+    function normalizeQuestionSearchText(value) {
+      return value.toLowerCase().replace(/ё/g, 'е');
+    }
+
+    function renderQuestionBank() {
       const search = document.getElementById('bank-search');
-      const query = search.value.trim().toLowerCase().replaceAll('ё', 'е');
+      const query = normalizeQuestionSearchText(search.value.trim());
       const number = query.match(/^№?\s*(\d+)$/);
       const topic = document.getElementById('bank-topic').value;
       const topicIndex = BANK_TOPICS.findIndex(([start]) => String(start) === topic);
       const mistakesOnly = document.getElementById('bank-mistakes').checked;
       const matches = PDF_BANK.filter(question => {
-        if (topicIndex >= 0 && (question.no < BANK_TOPICS[topicIndex][0] ||
-          question.no >= (BANK_TOPICS[topicIndex + 1]?.[0] ?? Infinity))) return false;
+        if (topicIndex >= 0 && bankTopicIndex(question.no) !== topicIndex) return false;
         const chosen = appState.bankAnswers[question.id];
         if (mistakesOnly && (chosen === undefined || chosen === question.correct)) return false;
         if (number) return question.no === Number(number[1]);
-        const text = question.stem.toLowerCase().replaceAll('ё', 'е');
+        const text = normalizeQuestionSearchText(question.stem);
         return text.includes(query);
       });
 
@@ -4218,7 +4215,7 @@
           }
           return `<button type="button" class="option-btn${state}" data-bank-id="${question.id}" data-option="${index}" aria-pressed="${chosen === index}">
             <span class="option-letter">${PDF_LETTERS[index]}</span>
-            <span>${escapePdfText(option)}</span>
+            <span>${escapeQuestionText(option)}</span>
           </button>`;
         }).join('');
         return `<article class="question-card">
@@ -4230,7 +4227,7 @@
       }).join('');
     }
 
-    function initPdfBank() {
+    function initQuestionBank() {
       const search = document.getElementById('bank-search');
       const topic = document.getElementById('bank-topic');
       const mistakes = document.getElementById('bank-mistakes');
@@ -4240,7 +4237,7 @@
       const applyFilters = () => {
         bankPage = 0;
         retryStatus.textContent = '';
-        renderPdfBank();
+        renderQuestionBank();
       };
       search.addEventListener('input', applyFilters);
       topic.addEventListener('change', applyFilters);
@@ -4251,7 +4248,7 @@
       for (const [id, direction] of [['bank-prev', -1], ['bank-next', 1]]) {
         document.getElementById(id).addEventListener('click', () => {
           bankPage += direction;
-          renderPdfBank();
+          renderQuestionBank();
           search.focus();
         });
       }
@@ -4272,7 +4269,7 @@
             bankRetryFeedback.add(bankId);
           }
         }
-        renderPdfBank();
+        renderQuestionBank();
         updateProgressSummaries();
         const nextFocus = results.querySelector(`[data-bank-id="${bankId}"][data-option="${option}"]`)
           || results.querySelector('button[data-bank-id]') || mistakes;
@@ -4344,7 +4341,7 @@
             document.getElementById('bank-search').value = '';
             document.getElementById('bank-topic').value = String(start);
             bankPage = 0;
-            renderPdfBank();
+            renderQuestionBank();
           });
           row.appendChild(link);
           section.querySelector('.section-head').after(row);
@@ -4371,7 +4368,7 @@
       bankRetryFeedback.clear();
       document.getElementById('bank-retry-status').textContent = '';
       renderBankKey();
-      renderPdfBank();
+      renderQuestionBank();
       updateProgressSummaries();
     }
 
@@ -4451,7 +4448,7 @@
       bankRetryFeedback.clear();
       document.getElementById('bank-retry-status').textContent = '';
       renderAllSectionQuizzes();
-      renderPdfBank();
+      renderQuestionBank();
       persistState();
     }
 
@@ -4978,7 +4975,7 @@
         }
         html += `<button type="button" class="${cls}" onclick="answerMockExamQuestion('${q.id}', ${optIdx})" ${examSession.finished ? 'disabled' : ''}>`;
         html += `<span class="option-letter">${letters[optIdx]}</span>`;
-        html += `<span>${q.no ? escapePdfText(optText) : optText}</span>`;
+        html += `<span>${q.no ? escapeQuestionText(optText) : optText}</span>`;
         html += `</button>`;
       });
 
@@ -5033,7 +5030,7 @@
       updateEmissionLab();
       updateRfLab();
       updateDbLab();
-      initPdfBank();
+      initQuestionBank();
       const savedCategory = String(saved?.category ?? '2');
       setCategory(Object.hasOwnProperty.call(CATEGORIES, savedCategory) ? savedCategory : '2');
       renderAllSectionQuizzes();
