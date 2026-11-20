@@ -521,28 +521,72 @@
 
     /* Mobile inline TOC */
     .mobile-toc {
+      --program-tone: #e7eef9;
+      --program-highlight: #d1e1f8;
       display: none;
-      background: var(--surface-container-low);
-      border-left: var(--inset-rule);
-      padding: var(--space-md);
       margin-bottom: var(--space-lg);
+      border: 1px solid var(--scheme-border);
+      border-radius: 14px;
+      background: var(--background);
+      padding: clamp(10px, 2.8vw, 22px);
     }
-    .mobile-toc-links {
+    :root[data-palette="dark"] .mobile-toc {
+      --program-tone: #293b53;
+      --program-highlight: #405c7d;
+    }
+    .mobile-toc h2 { margin: 0 0 12px; font-size: var(--subhead-size); }
+    .program-list { list-style: none; display: grid; gap: 5px; margin: 0; padding: 0; max-width: none; }
+    .program-list li { min-width: 0; margin: 0; }
+    .program-list a,
+    .mobile-toc-chip {
       display: flex;
-      flex-wrap: wrap;
-      gap: var(--space-sm);
-      margin-top: var(--space-sm);
+      align-items: center;
+      gap: 9px;
+      min-height: 48px;
+      padding: 7px 10px;
+      border-radius: 9px;
+      background: var(--program-tone);
+      color: var(--on-surface);
+      text-decoration: none;
+    }
+    .mobile-toc a:visited { color: var(--on-surface); }
+    .mobile-toc a:hover,
+    .mobile-toc a:focus-visible { background: var(--program-highlight); }
+    .mobile-toc a:focus-visible { text-decoration: underline; text-underline-offset: 3px; }
+    .program-index {
+      min-width: 30px;
+      padding: 3px 4px;
+      border-radius: 6px;
+      color: var(--on-primary);
+      background: var(--primary);
+      text-align: center;
+      font: 650 .8rem/1.3 var(--font-mono);
+    }
+    .program-name { flex: 1; font-size: .92rem; font-weight: 650; line-height: 1.26; overflow-wrap: anywhere; }
+    .program-arrow {
+      width: 7px;
+      height: 7px;
+      border: solid var(--on-surface-variant);
+      border-width: 2px 2px 0 0;
+      transform: rotate(45deg);
+      margin-inline: 3px;
+      flex: none;
+    }
+    .program-practice {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(130px, 100%), 1fr));
+      gap: 7px;
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid var(--scheme-border);
     }
     .mobile-toc-chip {
-      display: inline-block;
-      padding: var(--space-xs) var(--space-sm);
-      background: var(--background);
-      border: 1px solid var(--outline-variant);
-      font-size: 0.875rem;
-      text-decoration: none;
-      color: var(--on-surface);
+      justify-content: center;
+      padding-inline: 6px;
+      text-align: center;
+      font-weight: 650;
+      line-height: 1.2;
     }
-    .mobile-toc-chip:visited { color: var(--on-surface); }
 
     /* Topic sections */
     .study-section {
@@ -1596,17 +1640,19 @@
       <button type="button" class="home-reset" id="reset-progress-btn">Сбросить весь прогресс</button>
     </header>
 
-    <nav id="topics" class="mobile-toc" aria-label="Быстрый переход по темам">
-      <strong>Разделы программы:</strong>
-      <div class="mobile-toc-links">
-        <a class="mobile-toc-chip" href="#sec-1">01. МСЭ и CEPT</a>
-        <a class="mobile-toc-chip" href="#sec-2">02. Законы РФ</a>
-        <a class="mobile-toc-chip" href="#sec-3">03. Радиообмен</a>
-        <a class="mobile-toc-chip" href="#sec-4">04. Виды связи</a>
-        <a class="mobile-toc-chip" href="#sec-5">05. Радиосистемы</a>
-        <a class="mobile-toc-chip" href="#sec-6">06. Приборы и дБ</a>
-        <a class="mobile-toc-chip" href="#sec-7">07. Безопасность</a>
-        <a class="mobile-toc-chip" href="#sec-8">08. ЭМС и помехи</a>
+    <nav id="topics" class="mobile-toc" aria-labelledby="program-title">
+      <h2 id="program-title">Разделы программы</h2>
+      <ol class="program-list">
+        <li><a href="#sec-1"><span class="program-index" aria-hidden="true">01</span><span class="program-name">Международные нормы, МСЭ и CEPT</span><i class="program-arrow" aria-hidden="true"></i></a></li>
+        <li><a href="#sec-2"><span class="program-index" aria-hidden="true">02</span><span class="program-name">Законодательство РФ и позывные</span><i class="program-arrow" aria-hidden="true"></i></a></li>
+        <li><a href="#sec-3"><span class="program-index" aria-hidden="true">03</span><span class="program-name">Правила и процедуры радиообмена</span><i class="program-arrow" aria-hidden="true"></i></a></li>
+        <li><a href="#sec-4"><span class="program-index" aria-hidden="true">04</span><span class="program-name">Виды связи и классы излучений</span><i class="program-arrow" aria-hidden="true"></i></a></li>
+        <li><a href="#sec-5"><span class="program-index" aria-hidden="true">05</span><span class="program-name">Теория радиосистем и антенны</span><i class="program-arrow" aria-hidden="true"></i></a></li>
+        <li><a href="#sec-6"><span class="program-index" aria-hidden="true">06</span><span class="program-name">Параметры, единицы и приборы</span><i class="program-arrow" aria-hidden="true"></i></a></li>
+        <li><a href="#sec-7"><span class="program-index" aria-hidden="true">07</span><span class="program-name">Безопасность и первая помощь</span><i class="program-arrow" aria-hidden="true"></i></a></li>
+        <li><a href="#sec-8"><span class="program-index" aria-hidden="true">08</span><span class="program-name">ЭМС и устранение радиопомех</span><i class="program-arrow" aria-hidden="true"></i></a></li>
+      </ol>
+      <div class="program-practice">
         <a class="mobile-toc-chip" href="#study-practice">Блок вопросов (405)</a>
         <a class="mobile-toc-chip" href="#mock-exam">Экзамен (30)</a>
       </div>
