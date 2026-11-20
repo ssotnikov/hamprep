@@ -387,37 +387,6 @@
       font-variant-numeric: tabular-nums;
     }
 
-    /* Key figures strip */
-    .kpi-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(min(210px, 100%), 1fr));
-      gap: var(--space-md);
-      margin: var(--space-lg) 0;
-    }
-    .kpi-tile {
-      border-left: var(--inset-rule);
-      background: var(--surface-container-low);
-      padding: var(--space-md) var(--space-lg);
-    }
-    .kpi-label {
-      font-size: var(--label-size);
-      color: var(--on-surface-variant);
-      margin-bottom: var(--space-xs);
-    }
-    .kpi-value {
-      font-weight: 800;
-      font-size: var(--headline-size);
-      line-height: 1.1;
-      font-variant-numeric: tabular-nums;
-      color: var(--on-surface);
-      margin-bottom: var(--space-xs);
-    }
-    .kpi-desc {
-      font-size: 0.9375rem;
-      color: var(--on-surface);
-      margin: 0;
-    }
-
     /* Progress bar panel */
     .progress-panel {
       background: var(--surface-container-low);
@@ -1261,6 +1230,7 @@
       background: var(--sections-tile-background);
     }
     .section-tile + .section-tile { margin-left: 4px; }
+    .section-tile:visited { color: var(--tertiary); }
     .section-tile:hover,
     .section-tile[aria-current="location"] {
       border-color: var(--tertiary);
@@ -1412,6 +1382,40 @@
     #exam-action-dialog .button + .button { margin-top: var(--space-sm); }
     #exam-action-dialog .exam-nav-grid { margin-bottom: var(--space-md); }
     .exam-result-actions { margin-top: var(--space-md); }
+    .home-heading { font-size: clamp(1.45rem, 1.2rem + 1.25vw, 2.5rem); margin: 16px 0 12px; }
+    .home-category { border: 0; padding: 0; }
+    .home-category .index-header-tag { display: flex; align-items: center; gap: 8px; }
+    .home-category #qualification-category { margin: 0; }
+    .home-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-block: 12px; }
+    .home-actions .button:not(.button--secondary):visited { color: var(--on-primary); }
+    .home-exam-facts {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      max-width: 28rem;
+      margin: 0 0 var(--space-lg);
+      background: var(--surface-container-low);
+      border-left: var(--inset-rule);
+    }
+    .home-exam-facts div { padding: 8px; text-align: center; }
+    .home-exam-facts div + div { border-left: 1px solid var(--outline-variant); }
+    .home-exam-facts dt { font-size: var(--label-size); color: var(--on-surface-variant); }
+    .home-exam-facts dd { margin: 0; font-weight: 700; }
+    .home-reset {
+      min-height: 44px; padding: 0 2px; border: 0; background: transparent;
+      color: var(--error); text-decoration: underline; cursor: pointer; font-size: .875rem;
+    }
+    .home-reset:focus-visible { text-decoration-thickness: 3px; }
+    #reset-progress-dialog .button + .button { margin-top: 8px; }
+    @media (max-width: 480px) {
+      .home-actions { display: grid; }
+      .home-actions .button { justify-content: flex-start; }
+    }
+    .section-tile { width: 48px; height: 48px; }
+    .to-top { color: #182a3d; }
+    :root[data-palette="dark"] .to-top { color: #fff; }
+    #mock-exam.exam-in-progress #exam-workspace {
+      padding-bottom: calc(var(--pinned-bottom-height) + 2 * var(--bottom-control-gap));
+    }
   </style>
 </head>
 <body>
@@ -1449,8 +1453,8 @@
   </div>
   <div class="page-grid">
     <header>
-      <div class="index-header">
-        <span>Квалификационный экзамен радиооператора любительской службы</span>
+      <h1 class="home-heading">Подготовка к радиоэкзамену</h1>
+      <div class="index-header home-category">
         <label class="index-header-tag" for="qualification-category">Категория
           <select id="qualification-category">
             <option value="1">1-я · Высшая / HAREC</option>
@@ -1461,35 +1465,28 @@
         </label>
       </div>
 
-      <h1>Материалы для подготовки к экзамену на <span id="heading-category">2-ю</span> радиолюбительскую категорию</h1>
+      <nav class="home-actions" aria-label="Начало подготовки">
+        <a href="#sec-1" class="button">Учиться</a>
+        <a href="#study-practice" class="button button--secondary">Набор вопросов</a>
+        <a href="#mock-exam" id="progress-exam-link" class="button button--secondary">Пробный экзамен</a>
+      </nav>
+
+      <dl class="home-exam-facts" aria-label="Условия пробного экзамена">
+        <div><dt>Вопросов</dt><dd id="category-kpi-total">30</dd></div>
+        <div><dt>Для зачета</dt><dd id="category-kpi-pass">25 из 30</dd></div>
+        <div><dt>Время</dt><dd id="category-kpi-time">60 мин</dd></div>
+      </dl>
       <p class="lede">
         Подготовка к экзамену по «Экзаменационному справочнику радиолюбителя» А. Н. Замороки (UA0C, 2020)
-        и Приказу Минкомсвязи России № 184: все восемь тем экзаменационной программы, интерактивные тренажёры,
+        и Приказу Минкомсвязи России № 184: все восемь тем экзаменационной программы, интерактивные тренажеры,
         тематические задания с разбором и пробный билет для выбранной категории.
       </p>
-
-      <div class="kpi-grid">
-        <div class="kpi-tile">
-          <div class="kpi-label" id="category-kpi-label">Объём теста 2-й категории</div>
-          <div class="kpi-value" id="category-kpi-total">30 вопросов</div>
-          <p class="kpi-desc">По 4 варианта ответа с единственным верным</p>
-        </div>
-        <div class="kpi-tile">
-          <div class="kpi-label">Порог зачёта</div>
-          <div class="kpi-value" id="category-kpi-pass">от 25 верных</div>
-          <p class="kpi-desc" id="category-kpi-percent">Не менее 83,3 % правильных ответов в билете</p>
-        </div>
-        <div class="kpi-tile">
-          <div class="kpi-label">Регламент времени</div>
-          <div class="kpi-value" id="category-kpi-time">до 60 минут</div>
-          <p class="kpi-desc">Повторная сдача при неудаче допускается не ранее чем через 1 месяц</p>
-        </div>
-        <div class="kpi-tile">
-          <div class="kpi-label">Код Морзе (CW)</div>
-          <div class="kpi-value" id="category-kpi-cw">Не требуется</div>
-          <p class="kpi-desc" id="category-kpi-cw-note">Практический приём телеграфа обязателен для 1-й категории</p>
-        </div>
-      </div>
+      <details class="ref-details">
+        <summary>Условия квалификационного экзамена</summary>
+        <p>В каждом вопросе четыре варианта и один верный ответ. Повторная сдача при неудаче допускается не ранее чем через месяц.</p>
+        <p><strong>Практический прием Морзе: <span id="category-kpi-cw">не требуется</span>.</strong>
+          <span id="category-kpi-cw-note">Практический прием телеграфа обязателен для 1-й категории.</span></p>
+      </details>
 
       <div class="progress-panel" id="global-progress-panel">
         <div class="progress-header">
@@ -1503,12 +1500,8 @@
           <div class="progress-fill" id="global-progress-fill"></div>
         </div>
         <p id="study-progress-text" class="caption"></p>
-        <div class="action-row">
-          <a href="#study-practice" class="button">Набор вопросов (405)</a>
-          <a href="#mock-exam" id="progress-exam-link" class="button button--secondary">Пробный экзамен (30 вопросов)</a>
-          <button type="button" class="button button--secondary" id="reset-progress-btn" onclick="handleResetProgress(this)">Сбросить весь прогресс</button>
-        </div>
       </div>
+      <button type="button" class="home-reset" id="reset-progress-btn">Сбросить весь прогресс</button>
     </header>
 
     <nav id="topics" class="mobile-toc" aria-label="Быстрый переход по темам">
@@ -2501,6 +2494,14 @@
     </div>
   </section>
 
+  <dialog id="reset-progress-dialog" class="exam-timeout-dialog" aria-labelledby="reset-progress-title" aria-describedby="reset-progress-copy">
+    <h2 id="reset-progress-title">Сбросить весь прогресс?</h2>
+    <p id="reset-progress-copy">Удалятся ответы в учебных темах и наборе вопросов, результаты и текущие попытки экзамена для всех категорий.</p>
+    <form method="dialog">
+      <button class="button" value="cancel" autofocus>Отмена</button>
+      <button class="button button--secondary" value="reset">Сбросить прогресс</button>
+    </form>
+  </dialog>
   <dialog id="exam-action-dialog" class="exam-timeout-dialog" aria-labelledby="exam-action-title">
     <h2 id="exam-action-title"></h2>
     <p id="exam-action-copy" hidden></p>
@@ -3968,15 +3969,11 @@
       const requiresMorse = category === '1';
       const savedExam = examsByCategory[category];
       const bankLabel = `Набор вопросов (${bankCount})`;
-      const percent = Number((100 * pass / ticket).toFixed(1)).toLocaleString('ru-RU');
       for (const [id, label] of Object.entries({
-        'heading-category': `${category}-ю`,
-        'category-kpi-label': `Объём теста ${category}-й категории`,
-        'category-kpi-total': `${ticket} вопросов`,
-        'category-kpi-pass': `от ${pass} верных`,
-        'category-kpi-percent': `Не менее ${percent} % правильных ответов в билете`,
-        'category-kpi-time': `до ${minutes} минут`,
-        'category-kpi-cw': requiresMorse ? 'Требуется' : 'Не требуется',
+        'category-kpi-total': String(ticket),
+        'category-kpi-pass': `${pass} из ${ticket}`,
+        'category-kpi-time': `${minutes} мин`,
+        'category-kpi-cw': requiresMorse ? 'требуется' : 'не требуется',
         'category-kpi-cw-note': requiresMorse
           ? 'Примите 250 знаков на скорости 60 зн/мин. Допускается до трёх ошибок.'
           : 'Практический приём телеграфа обязателен для 1-й категории',
@@ -3994,7 +3991,7 @@
       document.getElementById('qualification-category').value = category;
       document.getElementById('exam-cw-note').hidden = !requiresMorse;
       document.querySelector('.mobile-toc-chip[href="#mock-exam"]').textContent = `Экзамен (${ticket})`;
-      document.querySelectorAll('header a[href="#study-practice"], .mobile-toc-chip[href="#study-practice"]').forEach(link => {
+      document.querySelectorAll('.mobile-toc-chip[href="#study-practice"]').forEach(link => {
         link.textContent = bankLabel;
       });
       document.querySelector('.toc-link[href="#study-practice"]').textContent = bankLabel + ' и практикум';
@@ -4116,15 +4113,7 @@
       tocExam.classList.toggle('is-done', Boolean(record?.source && record.passed));
     }
 
-    function handleResetProgress(btn) {
-      if (!btn) return;
-      if (btn.dataset.armed !== 'true') {
-        btn.dataset.armed = 'true';
-        btn.textContent = `Нажмите ещё раз для подтверждения сброса`;
-        return;
-      }
-      btn.dataset.armed = 'false';
-      btn.textContent = `Сбросить весь прогресс`;
+    function handleResetProgress() {
       appState = { quizAnswers: {}, bankAnswers: {}, examRecord: null };
       for (const key of Object.keys(examsByCategory)) delete examsByCategory[key];
       stopExamTimer();
@@ -4451,7 +4440,7 @@
       document.getElementById('finish-exam-btn').disabled = !inProgress;
       document.getElementById('start-exam-btn').textContent = examSession.finished ? 'Начать новый билет' : 'Начать экзамен';
       document.getElementById('progress-exam-link').textContent = inProgress
-        ? 'Продолжить экзамен' : `Пробный экзамен (${qualification.ticket} вопросов)`;
+        ? 'Продолжить экзамен' : 'Пробный экзамен';
     }
 
     function restoreExamAttempt(saved) {
@@ -4890,8 +4879,13 @@
         root.style.setProperty('--pinned-bottom-height', bottomPanel.offsetHeight + 'px');
       }
 
+      let atPageTop;
       function updateTopButton() {
         topButton.hidden = window.scrollY < 240;
+        const nextAtPageTop = window.scrollY <= 1;
+        if (nextAtPageTop === atPageTop) return;
+        atPageTop = nextAtPageTop;
+        markSelectedSection();
       }
 
       function revealCoveredAnchor() {
@@ -4904,7 +4898,7 @@
 
       function markSelectedSection() {
         for (const link of sectionLinks) {
-          if (link.hash === window.location.hash) link.setAttribute('aria-current', 'location');
+          if (!atPageTop && link.hash === window.location.hash) link.setAttribute('aria-current', 'location');
           else link.removeAttribute('aria-current');
         }
       }
@@ -4937,7 +4931,6 @@
       }));
       measureBars();
       updateTopButton();
-      markSelectedSection();
     }
 
     function initExamActions() {
@@ -5036,6 +5029,15 @@
           || event.clientY < bounds.top || event.clientY > bounds.bottom) dialog.close();
       });
     }
+
+    const resetDialog = document.getElementById('reset-progress-dialog');
+    document.getElementById('reset-progress-btn').addEventListener('click', () => {
+      resetDialog.returnValue = '';
+      resetDialog.showModal();
+    });
+    resetDialog.addEventListener('close', () => {
+      if (resetDialog.returnValue === 'reset') handleResetProgress();
+    });
 
     document.addEventListener('DOMContentLoaded', initAboutDialog);
     document.addEventListener('DOMContentLoaded', initExamActions);
