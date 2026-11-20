@@ -1360,7 +1360,12 @@
       .theme-choice span { width: 29px; }
       .appearance-actions .toolbar-icon { margin-left: 3px; }
     }
-    .section-tile svg.section-exam-icon { width: 26px; height: 26px; }
+    .section-tile svg.section-exam-icon {
+      --exam-icon-edge: #28445a;
+      width: 26px;
+      height: 26px;
+    }
+    :root[data-palette="dark"] .section-tile svg.section-exam-icon { --exam-icon-edge: #c9d7ea; }
     .exam-timeout-dialog {
       box-sizing: border-box;
       width: calc(100% - 32px);
@@ -2472,13 +2477,18 @@
         <path d="M11.6 8.2a2.1 2.1 0 0 1 4.2 0c0 1.6-2.1 1.7-2.1 3.1m0 3h.01" fill="none" stroke="#39270e" stroke-width="1.7"/>
       </svg>
     </a>
-    <a class="section-tile" href="#mock-exam" aria-label="Экзамен" title="Экзамен"><svg class="section-exam-icon" viewBox="0 0 32 32" aria-hidden="true">
-<path d="M8 5h14a3 3 0 0 1 3 3v18a3 3 0 0 1-3 3H8a3 3 0 0 1-3-3V8a3 3 0 0 1 3-3z" fill="#eefaf7" stroke="#278c81" stroke-width="2.6"/>
-<path d="M12 4.6a2.5 2.5 0 0 1 5 0h2a1.8 1.8 0 0 1 0 3.6h-9a1.8 1.8 0 0 1 0-3.6z" fill="#278c81" stroke="#278c81" stroke-width=".8"/>
-<path d="m9 13 1.4 1.5 2.7-3m-4.1 8 1.4 1.5 2.7-3m2  -4.4h5m-5 6.4h3m-8 5h7" fill="none" stroke="#1b665d" stroke-width="1.6"/>
-<path d="m17.6 23.6 1.3-5.1L27 10.4a1.9 1.9 0 0 1 2.7 2.7l-8.1 8.1z" fill="#78cafa" stroke="#255478" stroke-width="1.25"/>
-<path d="m19 18.6 2.6 2.6m4.1-9.5 2.6 2.6" fill="none" stroke="#255478" stroke-width="1.05"/>
-</svg></a>
+    <a class="section-tile" href="#mock-exam" aria-label="Экзамен" title="Экзамен">
+      <svg class="section-exam-icon" viewBox="0 0 32 32" aria-hidden="true">
+        <path d="M6 4h17a2 2 0 0 1 2 2v19l-4 4H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z" fill="#7cb4e4" stroke="var(--exam-icon-edge)" stroke-width="2"/>
+        <path d="M8 3h15a2 2 0 0 1 2 2v19l-4 4H8a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z" fill="#d5eeff" stroke="#17263b" stroke-width="1.6"/>
+        <path d="M10 8h10m-6 5h5m-5 5h4m-8 5h8m3 4v-4h4" stroke="#17263b" stroke-width="1.6"/>
+        <path d="m9.5 13 1 1 1.8-2.1m-2.8 6.2 1 1 1.8-2.1" stroke="#1c6a9c" stroke-width="1.65"/>
+        <path d="M24 10.1V7.9m-1.9 0h3.8" stroke="var(--exam-icon-edge)" stroke-width="2"/>
+        <circle cx="24" cy="16.5" r="6.3" fill="#ff815f" stroke="var(--exam-icon-edge)" stroke-width="2"/>
+        <circle cx="24" cy="16.5" r="5.35" stroke="#17263b" stroke-width="1.25"/>
+        <path d="M24 13.4v3.1l2.2 1.4" stroke="#17263b" stroke-width="1.7"/>
+      </svg>
+    </a>
   </nav>
 
   <section class="find-panel" id="find-panel" role="search" aria-labelledby="find-title" hidden>
