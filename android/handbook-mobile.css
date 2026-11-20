@@ -1,0 +1,73 @@
+html {
+  scroll-behavior: auto;
+}
+
+a.button:visited {
+  color: var(--on-primary);
+}
+
+a.button--secondary:visited {
+  color: var(--on-surface);
+}
+
+.app-nav {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  body {
+    padding-bottom: 3.25rem;
+  }
+
+  .app-nav {
+    position: fixed;
+    z-index: 10;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    min-height: 3.25rem;
+    border-top: 1px solid var(--outline-variant);
+    background: var(--background);
+  }
+
+  .app-nav a {
+    display: grid;
+    place-items: center;
+    padding: 0.5rem 0.25rem;
+    color: var(--primary);
+    font-size: 0.875rem;
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  .app-nav a + a {
+    border-left: 1px solid var(--outline-variant);
+  }
+
+  .app-nav a:active {
+    background: var(--primary-container);
+  }
+}
+
+@supports not (font-size: clamp(1rem, 2vw, 2rem)) {
+  :root {
+    --display-size: 2rem;
+    --headline-size: 1.5rem;
+    --subhead-size: 1.125rem;
+    --body-size: 1rem;
+    --label-size: 0.75rem;
+  }
+
+  .mobile-toc-chip {
+    margin: 0 0.5rem 0.5rem 0;
+  }
+
+  @media (max-width: 640px) {
+    .action-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+}
