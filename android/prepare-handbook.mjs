@@ -1,8 +1,10 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { verifyExamData } from './verify-exam-data.mjs';
 
 const [, , sourcePath, assetDirectory, scriptPath, version] = process.argv;
 const input = readFileSync(sourcePath, 'utf8');
+verifyExamData(input);
 const versionLabel = /(<span id="app-version">)[^<]+(<\/span>)/;
 if (!/^\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.+-]+)?$/.test(version) || !versionLabel.test(input)) {
   throw new Error('Expected a version label and a valid manifest version');
