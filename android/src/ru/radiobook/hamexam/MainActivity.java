@@ -87,11 +87,18 @@ public final class MainActivity extends AppActivity {
     }
 
     private void navigateBack() {
-        if (webView.canGoBack()) {
-            webView.goBack();
-        } else {
+        if (webView.getUrl() == null) {
             finish();
+            return;
         }
+        webView.evaluateJavascript("typeof closeAboutDialog === 'function' && closeAboutDialog()", closed -> {
+            if (isFinishing() || isDestroyed() || "true".equals(closed)) return;
+            if (webView.canGoBack()) {
+                webView.goBack();
+            } else {
+                finish();
+            }
+        });
     }
 
     @Override
