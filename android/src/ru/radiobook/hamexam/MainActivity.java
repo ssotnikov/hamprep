@@ -142,7 +142,7 @@ public final class MainActivity extends AppActivity {
             if (isLocal(url)) {
                 return !PAGE_PATH.equals(url.getPath());
             }
-            if ("https".equals(url.getScheme()) || "http".equals(url.getScheme())) {
+            if (request.hasGesture() && "https".equals(url.getScheme()) && url.getHost() != null) {
                 try {
                     startActivity(new Intent(Intent.ACTION_VIEW, url));
                 } catch (ActivityNotFoundException error) {

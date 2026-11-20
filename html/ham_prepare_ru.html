@@ -1067,13 +1067,116 @@
         scroll-behavior: auto !important;
       }
     }
+    .appearance-actions {
+      display: flex;
+      align-items: center;
+    }
+    .find-toggle {
+      display: grid;
+      place-items: center;
+      width: 38px;
+      height: 36px;
+      margin-right: 8px;
+      padding: 0;
+      color: var(--on-surface);
+      background: transparent;
+      border: 1px solid transparent;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    .find-toggle:hover, .find-toggle[aria-expanded="true"] {
+      background: var(--surface-container);
+    }
+    .find-toggle svg, .find-panel svg {
+      width: 20px;
+      height: 20px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 1.7;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    .find-panel {
+      --find-radius: 16px;
+      position: fixed;
+      z-index: 1000;
+      top: 8px;
+      right: 8px;
+      width: calc(100% - 48px);
+      max-width: 300px;
+      box-sizing: border-box;
+      padding: 8px;
+      color: #dce7ed;
+      background: #121e28;
+      border: 1px solid #293945;
+      border-radius: var(--find-radius);
+      box-shadow: 0 5px 20px #0005;
+      line-height: 1.35;
+    }
+    .find-panel[hidden] { display: none; }
+    .find-input-row {
+      display: flex;
+      align-items: center;
+      min-height: 44px;
+      padding: 0 4px 0 13px;
+      background: #223240;
+      border-radius: var(--find-radius);
+    }
+    .find-panel button {
+      display: grid;
+      place-items: center;
+      flex: 0 0 auto;
+      width: 27px;
+      height: 30px;
+      padding: 0;
+      border: 0;
+      border-radius: 50%;
+      color: #a5b8c7;
+      background: transparent;
+      cursor: pointer;
+    }
+    .find-panel button:hover { background: #ffffff20; }
+    .find-panel button:disabled { opacity: .45; cursor: default; }
+    .find-input-row > svg { flex: none; margin-right: 10px; color: #a5b8c7; }
+    .find-panel #find-close { width: 36px; height: 36px; margin-left: 10px; }
+    #find-query {
+      flex: 1 1 auto;
+      min-width: 0;
+      width: 100%;
+      border: 0;
+      padding: 6px 0;
+      background: transparent;
+      color: inherit;
+      font-size: 1rem;
+    }
+    #find-query::placeholder { color: #bacad6; }
+    .find-controls {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      padding: 4px 1px 0 4px;
+    }
+    .find-nav { display: flex; align-items: center; margin-left: auto; }
+    .find-nav > * + * { margin-left: 2px; }
+    #find-count { color: #bacad6; font-size: .75rem; white-space: nowrap; }
+    .find-exact { display: flex; align-items: center; font-size: .8rem; cursor: pointer; }
+    .find-exact input { accent-color: #ffcf19; width: 16px; height: 16px; margin: 0 6px 0 0; }
+    .find-hit { color: #171717; background: #fff096; padding: 0; }
+    .find-hit.is-active { background: #ffbb47; outline: 1px solid #bf6a00; }
+    .exam-online { margin-top: var(--space-md); }
+    .exam-online .caption { display: block; margin-top: 4px; }
   </style>
 </head>
 <body>
   <div class="page-grid">
     <header>
       <div class="appearance-row">
-        <span class="app-version">Версия <span id="app-version">0.1.0</span></span>
+        <span class="app-version">Версия <span id="app-version">0.2.0</span></span>
+        <div class="appearance-actions">
+          <button class="find-toggle" id="find-toggle" type="button" aria-label="Поиск по странице" aria-expanded="false" aria-controls="find-panel" title="Поиск по странице">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4.5 4.5"/></svg>
+          </button>
         <div class="theme-choice" role="group" aria-label="Оформление">
           <label title="Системная тема">
             <input type="radio" name="appearance" value="system" aria-label="Системная тема" checked>
@@ -1087,6 +1190,7 @@
             <input type="radio" name="appearance" value="dark" aria-label="Тёмная тема">
             <span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.9 13.4A9.1 9.1 0 1 1 10.6 3.1a7.2 7.2 0 0 0 10.3 10.3Z"/></svg></span>
           </label>
+        </div>
         </div>
       </div>
       <div class="index-header">
@@ -2040,6 +2144,10 @@
               <p>Сформируйте новый билет, ответьте на вопросы в любом порядке и нажмите «Завершить и проверить», чтобы получить результат.</p>
             </div>
           </div>
+          <div class="exam-online">
+            <a href="https://exam.srr.ru/">Пройти онлайн тестирование на сайте СРР</a>
+            <span class="caption">(для анонимного входа на сервер тестирования вы можете использовать логин «гость» и пароль «гость»)</span>
+          </div>
         </section>
 
         <section class="study-section" id="study-practice">
@@ -2086,6 +2194,28 @@
       </main>
     </div>
   </div>
+
+  <section class="find-panel" id="find-panel" role="search" aria-label="Поиск по странице" hidden>
+    <div class="find-input-row">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4.5 4.5"/></svg>
+      <input id="find-query" type="text" placeholder="Поиск по странице" aria-label="Текст для поиска" autocomplete="off">
+      <button type="button" id="find-close" aria-label="Закрыть поиск" title="Закрыть">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg>
+      </button>
+    </div>
+    <div class="find-controls">
+      <label class="find-exact"><input type="checkbox" id="find-exact" checked> Точное совпадение</label>
+      <div class="find-nav">
+        <span id="find-count" role="status" aria-live="polite"></span>
+        <button type="button" id="find-prev" aria-label="Предыдущее совпадение" title="Предыдущее совпадение" disabled>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 15 7-7 7 7"/></svg>
+        </button>
+        <button type="button" id="find-next" aria-label="Следующее совпадение" title="Следующее совпадение" disabled>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 9 7 7 7-7"/></svg>
+        </button>
+      </div>
+    </div>
+  </section>
 
   <script type="application/json" id="pdf-bank-data">[
 {"id":"pdf_1","no":1,"stem":"С какими радиостанциями может проводить радиосвязи любительская станция, если она НЕ участвует в проведении аварийно-спасательных работ?","options":["С любительскими радиостанциями и радиостанциями гражданского «Си - Би» диапазона (27 МГц)","С любительскими радиостанциями и радиостанциями стандартов LPD (433 МГц, 10мВт) и PMR (446 МГц, 0,5 Вт)","С любительскими радиостанциями, радиостанциями гражданского «Си - Би» диапазона (27 МГц), а также с радиостанциями стандартов LPD (433 МГц, 10мВт) и PMR (446 МГц, 0,5 Вт)","Только с любительскими радиостанциями"],"correct":3,"page":2},
@@ -4224,6 +4354,147 @@
       }
     }
 
+    function initPageSearch() {
+      const content = document.querySelector('.page-grid');
+      const toggle = document.getElementById('find-toggle');
+      const panel = document.getElementById('find-panel');
+      const query = document.getElementById('find-query');
+      const exact = document.getElementById('find-exact');
+      const count = document.getElementById('find-count');
+      const previous = document.getElementById('find-prev');
+      const next = document.getElementById('find-next');
+      const blockSelector = 'address, blockquote, button, caption, dd, div, dt, figcaption, h1, h2, h3, h4, h5, h6, label, li, p, pre, summary, td, th, tr';
+      const wordCharacter = /[\p{L}\p{M}\p{N}_]/u;
+      let matches = [];
+      let activeIndex = -1;
+      let pendingSearch;
+
+      function clearHighlights() {
+        const parents = new Set();
+        for (const match of matches) {
+          for (const mark of match) {
+            if (!content.contains(mark)) continue;
+            parents.add(mark.parentNode);
+            mark.replaceWith(document.createTextNode(mark.textContent));
+          }
+        }
+        for (const parent of parents) parent.normalize();
+        matches = [];
+        activeIndex = -1;
+      }
+
+      function readTextBlocks() {
+        const blocks = [];
+        const walker = document.createTreeWalker(content, NodeFilter.SHOW_TEXT);
+        let block;
+        for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+          const parent = node.parentElement;
+          if (parent.closest('.appearance-row, [hidden], script, select, style, svg, textarea')
+            || !parent.getClientRects().length || getComputedStyle(parent).visibility !== 'visible') continue;
+          const element = parent.closest(blockSelector) || parent;
+          if (!block || block.element !== element) {
+            block = { element, text: '', segments: [] };
+            blocks.push(block);
+          }
+          const start = block.text.length;
+          block.text += node.data;
+          block.segments.push({ node, start, end: block.text.length });
+        }
+        return blocks;
+      }
+
+      function markMatches(block, pattern) {
+        const ranges = [];
+        for (let hit = pattern.exec(block.text); hit; hit = pattern.exec(block.text)) {
+          const start = hit.index;
+          const end = start + hit[0].length;
+          if (exact.checked && (wordCharacter.test(block.text[start - 1] || '')
+            || wordCharacter.test(block.text[end] || ''))) continue;
+          ranges.push({ start, end });
+        }
+        // Work back to front so splitting a text node leaves earlier offsets intact.
+        return ranges.reverse().map(({ start, end }) => {
+          const marks = [];
+          for (const segment of block.segments) {
+            if (segment.start >= end || segment.end <= start) continue;
+            const range = document.createRange();
+            range.setStart(segment.node, Math.max(start - segment.start, 0));
+            range.setEnd(segment.node, Math.min(end, segment.end) - segment.start);
+            const mark = document.createElement('mark');
+            mark.className = 'find-hit';
+            range.surroundContents(mark);
+            marks.push(mark);
+          }
+          return marks;
+        }).reverse();
+      }
+
+      function showMatch(index, scroll) {
+        if (!matches.length) return;
+        if (activeIndex !== -1) {
+          for (const mark of matches[activeIndex]) mark.classList.remove('is-active');
+        }
+        activeIndex = (index + matches.length) % matches.length;
+        const active = matches[activeIndex];
+        for (const mark of active) mark.classList.add('is-active');
+        count.textContent = (activeIndex + 1) + ' из ' + matches.length;
+        if (scroll) active[0].scrollIntoView({ block: 'center', inline: 'nearest' });
+      }
+
+      function refreshMatches(index = 0, scroll = true) {
+        clearTimeout(pendingSearch);
+        observer.disconnect();
+        clearHighlights();
+        const term = query.value.trim();
+        if (term) {
+          const source = term.split(/\s+/).map(word => word.replace(/[.*+?^$(){}|[\]\\]/g, '\\$&')).join('\\s+');
+          const pattern = new RegExp(source, 'giu');
+          for (const block of readTextBlocks()) matches.push(...markMatches(block, pattern));
+        }
+        count.textContent = term ? '0 из 0' : '';
+        previous.disabled = next.disabled = matches.length === 0;
+        showMatch(Math.min(index, matches.length - 1), scroll);
+        observer.observe(content, { childList: true, subtree: true, attributes: true, attributeFilter: ['hidden', 'open'] });
+      }
+
+      const observer = new MutationObserver(records => {
+        if (!query.value.trim() || records.every(record => record.target.id === 'exam-timer-display')) return;
+        clearTimeout(pendingSearch);
+        pendingSearch = setTimeout(() => refreshMatches(Math.max(activeIndex, 0), false), 100);
+      });
+
+      function closeSearch() {
+        clearTimeout(pendingSearch);
+        observer.disconnect();
+        clearHighlights();
+        panel.hidden = true;
+        toggle.setAttribute('aria-expanded', 'false');
+        toggle.focus({ preventScroll: true });
+      }
+
+      toggle.addEventListener('click', () => {
+        panel.hidden = false;
+        toggle.setAttribute('aria-expanded', 'true');
+        query.focus({ preventScroll: true });
+        refreshMatches();
+      });
+      query.addEventListener('input', () => {
+        clearTimeout(pendingSearch);
+        pendingSearch = setTimeout(refreshMatches, 100);
+      });
+      exact.addEventListener('change', () => refreshMatches());
+      previous.addEventListener('click', () => showMatch(activeIndex - 1, true));
+      next.addEventListener('click', () => showMatch(activeIndex + 1, true));
+      document.getElementById('find-close').addEventListener('click', closeSearch);
+      panel.addEventListener('keydown', event => {
+        if (event.key === 'Escape') closeSearch();
+        if (event.target === query && event.key === 'Enter') {
+          showMatch(activeIndex + (event.shiftKey ? -1 : 1), true);
+        }
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', initPageSearch);
     document.addEventListener('DOMContentLoaded', initApp);
   </script>
 </body>
