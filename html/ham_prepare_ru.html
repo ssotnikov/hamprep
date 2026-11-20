@@ -968,7 +968,23 @@
       min-height: 44px;
     }
     .bank-retry-status:empty { display: none; }
-    .bank-pagination { align-items: center; margin-block: var(--space-md); }
+    .bank-pagination {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+      align-items: center;
+      gap: 8px;
+      margin-block: var(--space-md);
+    }
+    .bank-pagination .button {
+      width: 100%;
+      padding-inline: 8px;
+      gap: 6px;
+    }
+    #bank-page-label {
+      white-space: nowrap;
+      font-variant-numeric: tabular-nums;
+      text-align: center;
+    }
     .bank-pagination[hidden] { display: none; }
     .pdf-bank-figure {
       display: block;
@@ -1115,8 +1131,19 @@
       padding-top: var(--space-lg);
       border-top: 2px solid var(--on-surface);
       font-size: 0.9375rem;
-      color: var(--on-surface-variant);
+
+      --footer-text: #4e6274;
+      --footer-link: #275791;
+      --footer-visited: #503688;
+      color: var(--footer-text);
     }
+    :root[data-palette="dark"] .page-footer {
+      --footer-text: #a9b9c9;
+      --footer-link: #8db0dd;
+      --footer-visited: #d4c1f8;
+    }
+    .page-footer a { color: var(--footer-link); }
+    .page-footer a:visited { color: var(--footer-visited); }
 
     @media (max-width: 900px) {
       .handbook-shell {
@@ -1237,6 +1264,7 @@
       padding: 9px 1px 0 4px;
     }
     .find-nav { display: flex; flex: 0 0 auto; align-items: center; margin-left: 8px; }
+    #find-close,
     #find-panel .find-nav button {
       -webkit-tap-highlight-color: transparent;
       background: transparent;
@@ -1266,7 +1294,8 @@
       --find-muted: #4c6175;
       --find-hover: #223f5c14;
       --find-accent: #215788;
-      --to-top-bg: rgba(31, 48, 65, .30);
+      --to-top-bg: rgba(31, 48, 65, .50);
+      --to-top-border: #e0e8f0;
     }
     :root[data-palette="dark"] {
       --find-bg: #121e28;
@@ -1276,7 +1305,8 @@
       --find-muted: #a5b8c7;
       --find-hover: #ffffff20;
       --find-accent: #ffcf19;
-      --to-top-bg: rgba(63, 73, 84, .34);
+      --to-top-bg: rgba(63, 73, 84, .54);
+      --to-top-border: #8497ae;
       --sections-background: rgba(23, 26, 31, .78);
       --sections-tile-background: rgba(33, 37, 44, .76);
     }
@@ -1376,6 +1406,8 @@
       width: var(--to-top-diameter);
       height: var(--to-top-diameter);
       border-radius: 50%;
+      box-sizing: border-box;
+      border: 1px solid var(--to-top-border);
       background: var(--to-top-bg);
     }
     .to-top svg {
@@ -1782,7 +1814,7 @@
       <div class="appearance-row">
         <div class="version-group">
           <button class="about-button toolbar-icon" id="about-button" type="button" title="О приложении" aria-label="О приложении" aria-haspopup="dialog"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M10 9a10 10 0 0 0 0 14m12-14a10 10 0 0 1 0 14M6.5 6a14 14 0 0 0 0 20m19-20a14 14 0 0 1 0 20" fill="none" stroke="#4785c5" stroke-width="1.9" stroke-linecap="round"/><circle cx="16" cy="12" r="1.75" fill="#edac2d"/><path d="M16 16v7" stroke="#4785c5" stroke-width="2.8" stroke-linecap="round"/></svg></button>
-          <span class="app-version">Версия <span id="app-version">0.7.2</span></span>
+          <span class="app-version">Версия <span id="app-version">0.7.3</span></span>
         </div>
         <div class="appearance-actions">
           <button class="find-toggle" id="find-toggle" type="button" aria-label="Поиск по материалам" aria-expanded="false" aria-controls="find-panel" title="Поиск по материалам">
@@ -2790,10 +2822,10 @@
             <p class="caption bank-retry-status" id="bank-retry-status" role="status"></p>
           </div>
           <div id="bank-results"></div>
-          <div class="action-row bank-pagination" id="bank-pagination" role="group" aria-label="Страницы блока вопросов">
-            <button class="button button--secondary" type="button" id="bank-prev">Назад</button>
+          <div class="bank-pagination" id="bank-pagination" role="group" aria-label="Страницы блока вопросов">
+            <button class="button button--secondary" type="button" id="bank-prev"><span aria-hidden="true">←</span> Назад</button>
             <span id="bank-page-label"></span>
-            <button class="button button--secondary" type="button" id="bank-next">Далее</button>
+            <button class="button button--secondary" type="button" id="bank-next">Далее <span aria-hidden="true">→</span></button>
           </div>
           <details>
             <summary id="bank-key-summary">Ключ к вопросам выбранной категории</summary>
@@ -2822,13 +2854,6 @@
   </button>
   <nav class="sections-panel" aria-label="Разделы справочника">
     <a class="section-tile" href="#sec-1" aria-label="Обучение" title="Обучение"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h14a1.3 1.3 0 0 0 1.3-1.3V4.3A1.3 1.3 0 0 0 18 3H5a2 2 0 0 0-2 2v0a2 2 0 0 0 1 2Z" fill="#437ebc" stroke="none"/><path d="M6 13h13.5A1.5 1.5 0 0 0 21 11.5v-1A1.5 1.5 0 0 0 19.5 9H6a2 2 0 1 0 0 4Z" fill="#46a6a0" stroke="none"/><path d="M4 20h15a1.4 1.4 0 0 0 1.4-1.4v-2.2A1.4 1.4 0 0 0 19 15H4a2.5 2.5 0 1 0 0 5Z" fill="#e9ad43" stroke="none"/><path d="M6 5h7m-4 6h7M5 17.5h9" stroke="#fff" stroke-width="1.1"/></svg></a>
-    <a class="section-tile" href="#study-practice" aria-label="Блок вопросов" title="Блок вопросов">
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <rect x="3.4" y="5.8" width="13.6" height="15" rx="2.5" fill="#dda951" stroke="#805526" stroke-width="1"/>
-        <rect x="6.5" y="3" width="14.3" height="15.8" rx="2.5" fill="#f4c878" stroke="#805526" stroke-width="1"/>
-        <path d="M11.6 8.2a2.1 2.1 0 0 1 4.2 0c0 1.6-2.1 1.7-2.1 3.1m0 3h.01" fill="none" stroke="#39270e" stroke-width="1.7"/>
-      </svg>
-    </a>
     <a class="section-tile" href="#mock-exam" aria-label="Экзамен" title="Экзамен">
       <svg class="section-exam-icon" viewBox="0 0 32 32" aria-hidden="true">
         <path d="M6 4h17a2 2 0 0 1 2 2v19l-4 4H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z" fill="#7cb4e4" stroke="var(--exam-icon-edge)" stroke-width="2"/>
@@ -2839,6 +2864,13 @@
         <circle cx="24" cy="16.5" r="6.3" fill="#ff815f" stroke="var(--exam-icon-edge)" stroke-width="2"/>
         <circle cx="24" cy="16.5" r="5.35" stroke="#17263b" stroke-width="1.25"/>
         <path d="M24 13.4v3.1l2.2 1.4" stroke="#17263b" stroke-width="1.7"/>
+      </svg>
+    </a>
+    <a class="section-tile" href="#study-practice" aria-label="Блок вопросов" title="Блок вопросов">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <rect x="3.4" y="5.8" width="13.6" height="15" rx="2.5" fill="#dda951" stroke="#805526" stroke-width="1"/>
+        <rect x="6.5" y="3" width="14.3" height="15.8" rx="2.5" fill="#f4c878" stroke="#805526" stroke-width="1"/>
+        <path d="M11.6 8.2a2.1 2.1 0 0 1 4.2 0c0 1.6-2.1 1.7-2.1 3.1m0 3h.01" fill="none" stroke="#39270e" stroke-width="1.7"/>
       </svg>
     </a>
   </nav>
@@ -5239,13 +5271,13 @@
         pendingSearch = setTimeout(() => refreshMatches(Math.max(activeIndex, 0), false), 100);
       });
 
-      function closeSearch() {
+      function closeSearch(restoreFocus = true) {
         clearTimeout(pendingSearch);
         observer.disconnect();
         clearHighlights();
         panel.hidden = true;
         toggle.setAttribute('aria-expanded', 'false');
-        toggle.focus({ preventScroll: true });
+        if (restoreFocus) toggle.focus({ preventScroll: true });
       }
 
       toggle.addEventListener('click', () => {
@@ -5269,7 +5301,12 @@
       }
       previous.addEventListener('click', () => moveMatch(-1));
       next.addEventListener('click', () => moveMatch(1));
-      document.getElementById('find-close').addEventListener('click', closeSearch);
+      document.getElementById('find-close').addEventListener('click', () => closeSearch());
+      document.addEventListener('click', event => {
+        if (!panel.hidden && !panel.contains(event.target) && !toggle.contains(event.target)) {
+          closeSearch(false);
+        }
+      });
       panel.addEventListener('keydown', event => {
         if (event.key === 'Escape') closeSearch();
         if (event.target === query && event.key === 'Enter') {
