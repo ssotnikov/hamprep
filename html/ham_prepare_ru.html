@@ -1504,9 +1504,22 @@
     .home-exam-facts div + div { border-left: 1px solid var(--outline-variant); }
     .home-exam-facts dt { font-size: var(--label-size); color: var(--on-surface-variant); }
     .home-exam-facts dd { margin: 0; font-weight: 700; }
+    .home-reset,
+    #reset-progress-dialog .reset-progress-confirm {
+      color: var(--error);
+      background: var(--error-container);
+    }
     .home-reset {
-      min-height: 44px; padding: 0 2px; border: 0; background: transparent;
-      color: var(--error); text-decoration: underline; cursor: pointer; font-size: .875rem;
+      min-height: 44px;
+      padding: 8px 12px;
+      border: 0;
+      border-radius: 11px;
+      text-decoration: underline;
+      cursor: pointer;
+      font-size: .875rem;
+    }
+    @media (hover: hover) {
+      .home-reset:hover, #reset-progress-dialog .reset-progress-confirm:hover { filter: brightness(.94); }
     }
     .home-reset:focus-visible { text-decoration-thickness: 3px; }
     #reset-progress-dialog .button + .button { margin-top: 8px; }
@@ -2668,7 +2681,7 @@
     <p id="reset-progress-copy">Удалятся ответы в учебных темах и блоке вопросов, результаты и текущие попытки экзамена для всех категорий.</p>
     <form method="dialog">
       <button class="button" value="cancel" autofocus>Отмена</button>
-      <button class="button button--secondary" value="reset">Сбросить прогресс</button>
+      <button class="button reset-progress-confirm" value="reset">Сбросить прогресс</button>
     </form>
   </dialog>
   <dialog id="exam-action-dialog" class="exam-timeout-dialog" aria-labelledby="exam-action-title">
