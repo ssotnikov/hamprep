@@ -1172,7 +1172,10 @@
     :root {
       --toolbar-gutter: var(--space-lg);
       --pinned-top-height: 80px;
-      --pinned-bottom-height: 52px;
+      --pinned-bottom-height: 48px;
+      --bottom-control-gap: 12px;
+      --sections-background: rgba(255, 255, 255, .78);
+      --sections-tile-background: rgba(238, 243, 248, .76);
       --find-bg: #f7fafc;
       --find-border: #c6d2de;
       --find-field: #e7eef5;
@@ -1191,14 +1194,16 @@
       --find-hover: #ffffff20;
       --find-accent: #ffcf19;
       --to-top-bg: rgba(63, 73, 84, .74);
+      --sections-background: rgba(23, 26, 31, .78);
+      --sections-tile-background: rgba(33, 37, 44, .76);
     }
     html {
       scroll-padding-top: calc(var(--pinned-top-height) + 6px);
-      scroll-padding-bottom: var(--pinned-bottom-height);
+      scroll-padding-bottom: calc(var(--pinned-bottom-height) + 2 * var(--bottom-control-gap));
     }
     body {
       padding-top: var(--pinned-top-height);
-      padding-bottom: var(--pinned-bottom-height);
+      padding-bottom: calc(var(--pinned-bottom-height) + 2 * var(--bottom-control-gap));
     }
     .pinned-topbar {
       position: fixed;
@@ -1220,38 +1225,55 @@
     }
     .page-grid { padding-top: 0; }
     .toc-aside { top: calc(var(--pinned-top-height) + var(--space-md)); }
-    .app-nav {
+    .sections-panel {
       position: fixed;
       z-index: 10;
-      right: 0;
-      bottom: 0;
-      left: 0;
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      min-height: 3.25rem;
-      border-top: 1px solid var(--outline-variant);
-      background: var(--background);
+      left: var(--bottom-control-gap);
+      bottom: var(--bottom-control-gap);
+      display: flex;
+      align-items: center;
+      padding: 4px;
+      border: 1px solid var(--scheme-border);
+      border-radius: 13px;
+      background: var(--sections-background);
+      box-shadow: 0 3px 12px #0002;
     }
-    .app-nav a {
+    .section-tile {
       display: grid;
       place-items: center;
-      padding: .5rem .25rem;
-      color: var(--primary);
-      font-size: .875rem;
-      font-weight: 700;
       text-decoration: none;
+      width: 38px;
+      height: 38px;
+      padding: 0;
+      border: 1px solid var(--scheme-border);
+      border-radius: 10px;
+      color: var(--tertiary);
+      background: var(--sections-tile-background);
     }
-    .app-nav a + a { border-left: 1px solid var(--outline-variant); }
-    .app-nav a:active { background: var(--primary-container); }
+    .section-tile + .section-tile { margin-left: 4px; }
+    .section-tile:hover,
+    .section-tile[aria-current="location"] {
+      border-color: var(--tertiary);
+      background: var(--scheme-selected);
+    }
+    .section-tile svg {
+      width: 21px;
+      height: 21px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 1.65;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
     .to-top {
       position: fixed;
       z-index: 11;
       right: 16px;
-      bottom: calc(var(--pinned-bottom-height) + 12px);
+      bottom: var(--bottom-control-gap);
       display: grid;
       place-items: center;
-      width: 44px;
-      height: 44px;
+      width: var(--pinned-bottom-height);
+      height: var(--pinned-bottom-height);
       padding: 0;
       border: 0;
       border-radius: 50%;
@@ -1371,7 +1393,7 @@
               <circle cx="16" cy="13.1" r="1.15" fill="#f7be48"/>
             </svg>
           </a>
-          <span class="app-version">Версия <span id="app-version">0.4.0</span></span>
+          <span class="app-version">Версия <span id="app-version">0.5.0</span></span>
         </div>
         <div class="appearance-actions">
           <button class="find-toggle" id="find-toggle" type="button" aria-label="Поиск по материалам" aria-expanded="false" aria-controls="find-panel" title="Поиск по материалам">
@@ -2402,10 +2424,9 @@
   <button class="to-top" id="to-top" type="button" title="Наверх" aria-label="Наверх" hidden>
     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 12 8-8 8 8M4 20l8-8 8 8"/></svg>
   </button>
-  <nav class="app-nav" aria-label="Навигация по справочнику">
-    <a href="#topics">Темы</a>
-    <a href="#study-practice">Вопросы</a>
-    <a href="#mock-exam">Экзамен</a>
+  <nav class="sections-panel" aria-label="Разделы справочника">
+    <a class="section-tile" href="#sec-1" aria-label="Обучение" title="Обучение"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h14a1.3 1.3 0 0 0 1.3-1.3V4.3A1.3 1.3 0 0 0 18 3H5a2 2 0 0 0-2 2v0a2 2 0 0 0 1 2Z" fill="#437ebc" stroke="none"/><path d="M6 13h13.5A1.5 1.5 0 0 0 21 11.5v-1A1.5 1.5 0 0 0 19.5 9H6a2 2 0 1 0 0 4Z" fill="#46a6a0" stroke="none"/><path d="M4 20h15a1.4 1.4 0 0 0 1.4-1.4v-2.2A1.4 1.4 0 0 0 19 15H4a2.5 2.5 0 1 0 0 5Z" fill="#e9ad43" stroke="none"/><path d="M6 5h7m-4 6h7M5 17.5h9" stroke="#fff" stroke-width="1.1"/></svg></a>
+    <a class="section-tile" href="#mock-exam" aria-label="Экзамен" title="Экзамен"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="13" r="8.2" fill="#25867a" stroke="#7ccbc1" stroke-width="1.15"/><path d="M10 2h4m-2 0v2m6.5 1.5L20 4" stroke="#e9ad43" stroke-width="1.9"/><path d="m8.3 13.6 2.5 2.3 4.9-5" stroke="#fff" stroke-width="1.9"/></svg></a>
   </nav>
 
   <section class="find-panel" id="find-panel" role="search" aria-labelledby="find-title" hidden>
@@ -4747,14 +4768,13 @@
     function initHandbookNavigation() {
       const root = document.documentElement;
       const topBar = document.querySelector('.pinned-topbar');
-      const bottomBar = document.querySelector('.app-nav');
-      const topics = document.getElementById('topics');
+      const bottomPanel = document.querySelector('.sections-panel');
+      const sectionLinks = bottomPanel.querySelectorAll('a');
       const topButton = document.getElementById('to-top');
 
       function measureBars() {
         root.style.setProperty('--pinned-top-height', topBar.offsetHeight + 'px');
-        root.style.setProperty('--pinned-bottom-height', bottomBar.offsetHeight + 'px');
-        bottomBar.firstElementChild.href = topics.getClientRects().length ? '#topics' : '#sec-1';
+        root.style.setProperty('--pinned-bottom-height', bottomPanel.offsetHeight + 'px');
       }
 
       function updateTopButton() {
@@ -4769,12 +4789,22 @@
         if (top > -1 && top < inset) window.scrollBy(0, top - inset);
       }
 
+      function markSelectedSection() {
+        for (const link of sectionLinks) {
+          if (link.hash === window.location.hash) link.setAttribute('aria-current', 'location');
+          else link.removeAttribute('aria-current');
+        }
+      }
+
       window.addEventListener('resize', measureBars);
       window.addEventListener('scroll', updateTopButton, { passive: true });
       // Older WebView versions can ignore scroll-padding for fragment navigation.
-      window.addEventListener('hashchange', () => requestAnimationFrame(revealCoveredAnchor));
+      window.addEventListener('hashchange', () => {
+        markSelectedSection();
+        requestAnimationFrame(revealCoveredAnchor);
+      });
       window.addEventListener('load', revealCoveredAnchor);
-      bottomBar.addEventListener('click', event => {
+      bottomPanel.addEventListener('click', event => {
         const link = event.target.closest('a');
         if (link && link.hash === window.location.hash) requestAnimationFrame(revealCoveredAnchor);
       });
@@ -4784,6 +4814,7 @@
       }));
       measureBars();
       updateTopButton();
+      markSelectedSection();
     }
 
     function closeAboutDialog() {
