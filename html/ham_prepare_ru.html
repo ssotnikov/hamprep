@@ -228,6 +228,7 @@
 
     .appearance-row {
       --appearance-radius: 13px;
+      --toolbar-button-width: 46px;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -1177,7 +1178,7 @@
     .find-toggle {
       display: grid;
       place-items: center;
-      width: 38px;
+      flex: 0 0 var(--toolbar-button-width);
       align-self: stretch;
       margin-right: 8px;
       padding: 0;
@@ -1205,8 +1206,8 @@
       z-index: 1000;
       top: calc(var(--pinned-top-height) + 8px);
       right: 8px;
-      width: calc(100% - 48px);
-      max-width: 300px;
+      width: calc(100% - 16px);
+      max-width: 360px;
       box-sizing: border-box;
       padding: 8px;
       color: var(--find-text);
@@ -1221,7 +1222,7 @@
       display: flex;
       align-items: center;
       min-height: 48px;
-      padding: 0 4px 0 13px;
+      padding: 0 2px 0 13px;
       background: var(--find-field);
       border-radius: var(--find-radius);
     }
@@ -1250,28 +1251,35 @@
     .find-panel-header strong { font-size: .9rem; }
     #find-query {
       flex: 1 1 auto;
+      -webkit-appearance: none;
+      appearance: none;
+      min-height: calc(2 * var(--find-radius) + 8px);
       min-width: 0;
       width: 100%;
       border: 0;
       padding: 6px 8px;
       border-radius: var(--find-radius);
-      background: transparent;
+      background: var(--background);
       color: inherit;
       font-size: 1rem;
     }
     #find-query:focus { outline: none; box-shadow: none; }
     .find-controls {
-      padding: 9px 1px 0 4px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 9px 4px 0;
     }
-    .find-nav { display: flex; flex: 0 0 auto; align-items: center; margin-left: 8px; }
+    .find-nav { display: flex; flex: 0 0 auto; align-items: center; }
     #find-close,
     #find-panel .find-nav button {
       -webkit-tap-highlight-color: transparent;
       background: transparent;
       filter: none;
     }
-    #find-prev svg { transform: translateX(6px); }
-    #find-next svg { transform: translateX(-6px); }
+    #find-prev svg { transform: translateX(10px); }
+    #find-next svg { transform: translateX(-2px); }
     #find-count { color: var(--find-muted); font-size: .75rem; white-space: nowrap; }
     .find-exact { display: flex; align-items: center; font-size: .8rem; cursor: pointer; }
     .find-exact input { accent-color: var(--find-accent); width: 16px; height: 16px; margin: 0 6px 0 0; }
@@ -1294,7 +1302,7 @@
       --find-muted: #4c6175;
       --find-hover: #223f5c14;
       --find-accent: #215788;
-      --to-top-bg: rgba(31, 48, 65, .50);
+      --to-top-bg: rgba(31, 48, 65, .70);
       --to-top-border: #e0e8f0;
     }
     :root[data-palette="dark"] {
@@ -1305,7 +1313,7 @@
       --find-muted: #a5b8c7;
       --find-hover: #ffffff20;
       --find-accent: #ffcf19;
-      --to-top-bg: rgba(63, 73, 84, .54);
+      --to-top-bg: rgba(63, 73, 84, .74);
       --to-top-border: #8497ae;
       --sections-background: rgba(23, 26, 31, .78);
       --sections-tile-background: rgba(33, 37, 44, .76);
@@ -1431,10 +1439,10 @@
       align-self: stretch;
       align-items: center;
     }
-    .version-group .app-version { margin: 0 6px 0 8px; }
+    .version-group .app-version { margin: 0 6px 0 7px; }
     .toolbar-icon {
       display: grid;
-      flex: 0 0 46px;
+      flex: 0 0 var(--toolbar-button-width);
       align-self: stretch;
       place-items: center;
       border: 1px solid var(--scheme-border);
@@ -1548,10 +1556,10 @@
     .about-course .stepik-icon { flex: none; width: 23px; height: 23px; margin-right: 7px; }
     .about-sources { padding-top: 10px; border-top: 1px solid var(--scheme-border); }
     @media (max-width: 430px) {
-      .version-group .app-version { margin-right: 3px; margin-left: 5px; }
+      .version-group .app-version { margin-right: 3px; }
       .version-group .app-version #app-version { display: block; }
     }
-    @media (max-width: 350px) {
+    @media (max-width: 370px) {
       :root { --toolbar-gutter: 12px; }
       .find-toggle { margin-right: 3px; }
       .theme-choice span { width: 29px; }
@@ -1631,7 +1639,6 @@
       padding-bottom: calc(var(--pinned-bottom-height) + 2 * var(--bottom-control-gap));
     }
     .find-toggle { background: var(--scheme-selected); color: var(--scheme-selected-ink); }
-    #find-query:focus-visible { background: var(--background); }
     .find-panel button:focus-visible { background: var(--scheme-selected); }
     .find-exact:has(:focus-visible), .exam-bar-actions button:focus-visible, .exam-num-btn:focus-visible {
       text-decoration: underline; text-underline-offset: 4px;
@@ -1814,7 +1821,7 @@
       <div class="appearance-row">
         <div class="version-group">
           <button class="about-button toolbar-icon" id="about-button" type="button" title="О приложении" aria-label="О приложении" aria-haspopup="dialog"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M10 9a10 10 0 0 0 0 14m12-14a10 10 0 0 1 0 14M6.5 6a14 14 0 0 0 0 20m19-20a14 14 0 0 1 0 20" fill="none" stroke="#4785c5" stroke-width="1.9" stroke-linecap="round"/><circle cx="16" cy="12" r="1.75" fill="#edac2d"/><path d="M16 16v7" stroke="#4785c5" stroke-width="2.8" stroke-linecap="round"/></svg></button>
-          <span class="app-version">Версия <span id="app-version">0.7.3</span></span>
+          <span class="app-version">Версия <span id="app-version">0.7.4</span></span>
         </div>
         <div class="appearance-actions">
           <button class="find-toggle" id="find-toggle" type="button" aria-label="Поиск по материалам" aria-expanded="false" aria-controls="find-panel" title="Поиск по материалам">
@@ -2812,7 +2819,7 @@
           <div class="field-group bank-toolbar">
             <label class="field-label" for="bank-search">Поиск в блоке вопросов</label>
             <p class="caption bank-search-hint" id="bank-search-hint">По номеру или формулировке вопроса на всех страницах выбранной категории.</p>
-            <input class="input" type="search" id="bank-search" aria-describedby="bank-search-hint" placeholder="Например, 407 или КСВ">
+            <input class="input" type="search" id="bank-search" maxlength="32" aria-describedby="bank-search-hint" placeholder="Например, 407 или КСВ">
             <label class="field-label" for="bank-topic">Тема</label>
             <select class="select" id="bank-topic">
               <option value="">Все темы</option>
@@ -2884,9 +2891,8 @@
     </div>
     <div class="find-input-row">
       <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4.5 4.5"/></svg>
-      <input id="find-query" type="text" aria-label="Текст для поиска" autocomplete="off" enterkeyhint="next">
+      <input id="find-query" maxlength="32" type="text" aria-label="Текст для поиска" autocomplete="off" enterkeyhint="next">
       <div class="find-nav">
-        <span id="find-count" role="status" aria-live="polite"></span>
         <button type="button" id="find-prev" aria-label="Предыдущее совпадение" title="Предыдущее совпадение" disabled>
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 15 7-7 7 7"/></svg>
         </button>
@@ -2898,6 +2904,7 @@
     <p class="find-empty" id="find-empty" role="status" hidden>Совпадений нет</p>
     <div class="find-controls">
       <label class="find-exact"><input type="checkbox" id="find-exact" checked> Точное совпадение</label>
+      <span id="find-count" role="status" aria-live="polite"></span>
     </div>
   </section>
 
