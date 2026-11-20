@@ -91,7 +91,7 @@ public final class MainActivity extends AppActivity {
             finish();
             return;
         }
-        webView.evaluateJavascript("typeof closeAboutDialog === 'function' && closeAboutDialog()", closed -> {
+        webView.evaluateJavascript("typeof closeHandbookDialog === 'function' && closeHandbookDialog()", closed -> {
             if (isFinishing() || isDestroyed() || "true".equals(closed)) return;
             if (webView.canGoBack()) {
                 webView.goBack();
