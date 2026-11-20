@@ -151,7 +151,10 @@ public final class MainActivity extends AppActivity {
             }
             if (request.hasGesture() && "https".equals(url.getScheme()) && url.getHost() != null) {
                 try {
-                    startActivity(new Intent(Intent.ACTION_VIEW, url));
+                    Intent external = new Intent(Intent.ACTION_VIEW, url)
+                            .addCategory(Intent.CATEGORY_BROWSABLE)
+                            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    startActivity(external);
                 } catch (ActivityNotFoundException error) {
                     Toast.makeText(MainActivity.this, "На устройстве нет браузера",
                             Toast.LENGTH_SHORT).show();

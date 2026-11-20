@@ -1230,7 +1230,9 @@
     }
     .section-tile + .section-tile { margin-left: 4px; }
     .section-tile:visited { color: var(--tertiary); }
-    .section-tile:hover,
+    @media (hover: hover) and (pointer: fine) {
+      .section-tile:hover { border-color: var(--tertiary); }
+    }
     .section-tile[aria-current="location"] {
       border-color: var(--tertiary);
       background: var(--scheme-selected);
@@ -1246,6 +1248,7 @@
     }
     .to-top {
       --to-top-diameter: calc(var(--pinned-bottom-height) * .7);
+      -webkit-tap-highlight-color: transparent;
       position: fixed;
       z-index: 11;
       right: 11px;
@@ -1513,7 +1516,7 @@
       <div class="appearance-row">
         <div class="version-group">
           <button class="about-button toolbar-icon" id="about-button" type="button" title="О приложении" aria-label="О приложении" aria-haspopup="dialog"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M10 9a10 10 0 0 0 0 14m12-14a10 10 0 0 1 0 14M6.5 6a14 14 0 0 0 0 20m19-20a14 14 0 0 1 0 20" fill="none" stroke="#4785c5" stroke-width="1.9" stroke-linecap="round"/><circle cx="16" cy="12" r="1.75" fill="#edac2d"/><path d="M16 16v7" stroke="#4785c5" stroke-width="2.8" stroke-linecap="round"/></svg></button>
-          <span class="app-version">Версия <span id="app-version">0.6.0</span></span>
+          <span class="app-version">Версия <span id="app-version">0.6.1</span></span>
         </div>
         <div class="appearance-actions">
           <button class="find-toggle" id="find-toggle" type="button" aria-label="Поиск по материалам" aria-expanded="false" aria-controls="find-panel" title="Поиск по материалам">
@@ -1533,7 +1536,7 @@
             <span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.9 13.4A9.1 9.1 0 1 1 10.6 3.1a7.2 7.2 0 0 0 10.3 10.3Z"/></svg></span>
           </label>
         </div>
-          <a class="toolbar-icon" href="https://stepik.org/course/261540" aria-label="Открыть курс на Stepik" title="Курс на Stepik">
+          <a class="toolbar-icon" href="https://stepik.org/course/261540" target="_blank" rel="noopener" aria-label="Открыть курс на Stepik" title="Курс на Stepik">
             <img class="stepik-icon" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEgAAABICAYAAABV7bNHAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA7FJREFUeNrsnI2xojAQx+M1oCVQgh2cdmAJ2IEl0IElYAdcB3gVaAdqBdiBlz9DZngePrLJJiw8dmZnnPcEkp+bZD8SFmoY2TT6W2vSaJfcG/2r9ar1j5qwAEiutdL6ctSqucdmamBKDyiftBw7qCQQmC5QydjgpJ5DyWXopWOBk0cE8665ZDArrcWAcIwWTVvEwbkIgGP0IgmSNDiiIEmFIwKSdDgskBYecOB/rFk8yc1GJUlSax1f3O+1ns9nrh8TYcpW63M0lrNer195nr+qqnp9EvwP39EARzPcvOGsVqu601QpiqK+VjIkbziwmu8spk9wLe4hEdLgcIyUZSluuImBc7lcOIYZK6SpwmGBNHU43pCKHwCnHeDGS1lQ4dxut1eapjUI7SzWn3F9JDjkVEkaE84nCPhbRDhGe5NuiU8mkAvOgFq9p2/fYzHnRLiGo7SPonSH7YKj61Vtt1v1fNLCI8RrJnZrC+I23JN6vw45N3FbZ/VBrOUcDod6rrIJSRhit04jKSXCQWdtwDDHbiWL9YSGk2WZl4vgGbutvZb10HBcIn5mSF+WfdLKhY6OAU7bz3IYbpWBs6PSxfgeCxwjuK/rZJ1RLsKkOTY4RuClEwFl5NXLthMx4FBjPQcrqlezG+Uim0aFhoMh3rYGW1cAbScCAhve4YVGhITzyQrwTBtIDiua/ZcRZfcJvhMbDqV9Dl62YnXcbK2HG46xoj5BHyh9/sWd3bcJFnVnlf61re95Op3Ufr8frL7OOsR2u110yxEzxGwm6e+81pBwQk7SQZb59i/lUk2lwsEzQy3zQRxFY002DY8Bx8dRDBZqhI6ZKHAc55/MKRdECValwEGbfTKLpHQH3HyOmlcsOFTv/j3dESVhNiQcjoRZlJRrlxyPR4lwOhP3Tkl7DDdsSXFJVfQ5lQPCKVnLPsaLtQGFpR/xEGVOiAzni/WwFQ67CnvL5bIuJD4ejzpGM8U90hYTfT0KkihM2saCKEhSn2NTOPQuPXPrAJbzX+mZffOCC4RPmxciw7HavMCy/YVqIe3tL1B8plRTmeCQTwrlkoZPYDiF64SV/wA43ps58xlOJEhThcMGacpwWCAhHzPVowhskFxjt/dqquQTPyzDDdZkk3gb+jjUwhNSykEbsRtiLbMBFPEUYqmxHqhjO6oQSedzq1LhSIc0n50fC5w2pPnVFFJSJVwpi6EkVfPrcfrT02p+wZKdH6jmV3RZgxrdS94WA8KCUl4TeG40qvwTYABmJO9yoz4fVwAAAABJRU5ErkJggg==" width="30" height="30" alt="">
           </a>
         </div>
@@ -2636,7 +2639,7 @@
       <p><strong>Авторы</strong><br>Сергей Сотников (<a href="https://t.me/ssotnikov">@ssotnikov</a>), Вадим R2BMX (<a href="https://t.me/r2bmx">@r2bmx</a>)</p>
       <section class="about-course" aria-labelledby="about-course-title">
         <h3 id="about-course-title">Учебный курс</h3>
-        <a href="https://stepik.org/course/261540"><img class="stepik-icon" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEgAAABICAYAAABV7bNHAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA7FJREFUeNrsnI2xojAQx+M1oCVQgh2cdmAJ2IEl0IElYAdcB3gVaAdqBdiBlz9DZngePrLJJiw8dmZnnPcEkp+bZD8SFmoY2TT6W2vSaJfcG/2r9ar1j5qwAEiutdL6ctSqucdmamBKDyiftBw7qCQQmC5QydjgpJ5DyWXopWOBk0cE8665ZDArrcWAcIwWTVvEwbkIgGP0IgmSNDiiIEmFIwKSdDgskBYecOB/rFk8yc1GJUlSax1f3O+1ns9nrh8TYcpW63M0lrNer195nr+qqnp9EvwP39EARzPcvOGsVqu601QpiqK+VjIkbziwmu8spk9wLe4hEdLgcIyUZSluuImBc7lcOIYZK6SpwmGBNHU43pCKHwCnHeDGS1lQ4dxut1eapjUI7SzWn3F9JDjkVEkaE84nCPhbRDhGe5NuiU8mkAvOgFq9p2/fYzHnRLiGo7SPonSH7YKj61Vtt1v1fNLCI8RrJnZrC+I23JN6vw45N3FbZ/VBrOUcDod6rrIJSRhit04jKSXCQWdtwDDHbiWL9YSGk2WZl4vgGbutvZb10HBcIn5mSF+WfdLKhY6OAU7bz3IYbpWBs6PSxfgeCxwjuK/rZJ1RLsKkOTY4RuClEwFl5NXLthMx4FBjPQcrqlezG+Uim0aFhoMh3rYGW1cAbScCAhve4YVGhITzyQrwTBtIDiua/ZcRZfcJvhMbDqV9Dl62YnXcbK2HG46xoj5BHyh9/sWd3bcJFnVnlf61re95Op3Ufr8frL7OOsR2u110yxEzxGwm6e+81pBwQk7SQZb59i/lUk2lwsEzQy3zQRxFY002DY8Bx8dRDBZqhI6ZKHAc55/MKRdECValwEGbfTKLpHQH3HyOmlcsOFTv/j3dESVhNiQcjoRZlJRrlxyPR4lwOhP3Tkl7DDdsSXFJVfQ5lQPCKVnLPsaLtQGFpR/xEGVOiAzni/WwFQ67CnvL5bIuJD4ejzpGM8U90hYTfT0KkihM2saCKEhSn2NTOPQuPXPrAJbzX+mZffOCC4RPmxciw7HavMCy/YVqIe3tL1B8plRTmeCQTwrlkoZPYDiF64SV/wA43ps58xlOJEhThcMGacpwWCAhHzPVowhskFxjt/dqquQTPyzDDdZkk3gb+jjUwhNSykEbsRtiLbMBFPEUYqmxHqhjO6oQSedzq1LhSIc0n50fC5w2pPnVFFJSJVwpi6EkVfPrcfrT02p+wZKdH6jmV3RZgxrdS94WA8KCUl4TeG40qvwTYABmJO9yoz4fVwAAAABJRU5ErkJggg==" width="23" height="23" alt=""><span>Сдаём на радиолюбительскую категорию</span></a>
+        <a href="https://stepik.org/course/261540" target="_blank" rel="noopener"><img class="stepik-icon" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEgAAABICAYAAABV7bNHAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA7FJREFUeNrsnI2xojAQx+M1oCVQgh2cdmAJ2IEl0IElYAdcB3gVaAdqBdiBlz9DZngePrLJJiw8dmZnnPcEkp+bZD8SFmoY2TT6W2vSaJfcG/2r9ar1j5qwAEiutdL6ctSqucdmamBKDyiftBw7qCQQmC5QydjgpJ5DyWXopWOBk0cE8665ZDArrcWAcIwWTVvEwbkIgGP0IgmSNDiiIEmFIwKSdDgskBYecOB/rFk8yc1GJUlSax1f3O+1ns9nrh8TYcpW63M0lrNer195nr+qqnp9EvwP39EARzPcvOGsVqu601QpiqK+VjIkbziwmu8spk9wLe4hEdLgcIyUZSluuImBc7lcOIYZK6SpwmGBNHU43pCKHwCnHeDGS1lQ4dxut1eapjUI7SzWn3F9JDjkVEkaE84nCPhbRDhGe5NuiU8mkAvOgFq9p2/fYzHnRLiGo7SPonSH7YKj61Vtt1v1fNLCI8RrJnZrC+I23JN6vw45N3FbZ/VBrOUcDod6rrIJSRhit04jKSXCQWdtwDDHbiWL9YSGk2WZl4vgGbutvZb10HBcIn5mSF+WfdLKhY6OAU7bz3IYbpWBs6PSxfgeCxwjuK/rZJ1RLsKkOTY4RuClEwFl5NXLthMx4FBjPQcrqlezG+Uim0aFhoMh3rYGW1cAbScCAhve4YVGhITzyQrwTBtIDiua/ZcRZfcJvhMbDqV9Dl62YnXcbK2HG46xoj5BHyh9/sWd3bcJFnVnlf61re95Op3Ufr8frL7OOsR2u110yxEzxGwm6e+81pBwQk7SQZb59i/lUk2lwsEzQy3zQRxFY002DY8Bx8dRDBZqhI6ZKHAc55/MKRdECValwEGbfTKLpHQH3HyOmlcsOFTv/j3dESVhNiQcjoRZlJRrlxyPR4lwOhP3Tkl7DDdsSXFJVfQ5lQPCKVnLPsaLtQGFpR/xEGVOiAzni/WwFQ67CnvL5bIuJD4ejzpGM8U90hYTfT0KkihM2saCKEhSn2NTOPQuPXPrAJbzX+mZffOCC4RPmxciw7HavMCy/YVqIe3tL1B8plRTmeCQTwrlkoZPYDiF64SV/wA43ps58xlOJEhThcMGacpwWCAhHzPVowhskFxjt/dqquQTPyzDDdZkk3gb+jjUwhNSykEbsRtiLbMBFPEUYqmxHqhjO6oQSedzq1LhSIc0n50fC5w2pPnVFFJSJVwpi6EkVfPrcfrT02p+wZKdH6jmV3RZgxrdS94WA8KCUl4TeG40qvwTYABmJO9yoz4fVwAAAABJRU5ErkJggg==" width="23" height="23" alt=""><span>Сдаём на радиолюбительскую категорию</span></a>
       </section>
       <section class="about-sources" aria-labelledby="about-sources-title">
         <h3 id="about-sources-title">Нормативные документы</h3>
@@ -4997,7 +5000,17 @@
       const root = document.documentElement;
       const topBar = document.querySelector('.pinned-topbar');
       const bottomPanel = document.querySelector('.sections-panel');
-      const sectionLinks = bottomPanel.querySelectorAll('a');
+      const sections = [
+        ['#sec-1', '#mock-exam'],
+        ['#mock-exam', '#study-practice'],
+        ['#study-practice', '.page-footer']
+      ].map(([start, end]) => ({
+        start: document.querySelector(start),
+        end: document.querySelector(end),
+        link: bottomPanel.querySelector(`a[href="${start}"]`)
+      }));
+      let currentSection;
+      let framePending = false;
       const topButton = document.getElementById('to-top');
 
       function measureBars() {
@@ -5005,13 +5018,22 @@
         root.style.setProperty('--pinned-bottom-height', bottomPanel.offsetHeight + 'px');
       }
 
-      let atPageTop;
-      function updateTopButton() {
+      function updateNavigation() {
+        framePending = false;
         topButton.hidden = window.scrollY < 240;
-        const nextAtPageTop = window.scrollY <= 1;
-        if (nextAtPageTop === atPageTop) return;
-        atPageTop = nextAtPageTop;
-        markSelectedSection();
+        const visibleTop = topBar.getBoundingClientRect().bottom + 10;
+        const current = sections.find(({ start, end }) =>
+          start.getBoundingClientRect().top <= visibleTop && end.getBoundingClientRect().top > visibleTop);
+        if (current === currentSection) return;
+        currentSection?.link.removeAttribute('aria-current');
+        current?.link.setAttribute('aria-current', 'location');
+        currentSection = current;
+      }
+
+      function scheduleNavigationUpdate() {
+        if (framePending) return;
+        framePending = true;
+        requestAnimationFrame(updateNavigation);
       }
 
       function revealCoveredAnchor() {
@@ -5022,21 +5044,20 @@
         if (top > -1 && top < inset) window.scrollBy(0, top - inset);
       }
 
-      function markSelectedSection() {
-        for (const link of sectionLinks) {
-          if (!atPageTop && link.hash === window.location.hash) link.setAttribute('aria-current', 'location');
-          else link.removeAttribute('aria-current');
-        }
-      }
-
-      window.addEventListener('resize', measureBars);
-      window.addEventListener('scroll', updateTopButton, { passive: true });
-      // Older WebView versions can ignore scroll-padding for fragment navigation.
-      window.addEventListener('hashchange', () => {
-        markSelectedSection();
-        requestAnimationFrame(revealCoveredAnchor);
+      window.addEventListener('resize', () => {
+        measureBars();
+        scheduleNavigationUpdate();
       });
-      window.addEventListener('load', revealCoveredAnchor);
+      window.addEventListener('scroll', scheduleNavigationUpdate, { passive: true });
+      // Older WebView versions can ignore scroll-padding for fragment navigation.
+      function updateAfterAnchor() {
+        requestAnimationFrame(() => {
+          revealCoveredAnchor();
+          scheduleNavigationUpdate();
+        });
+      }
+      window.addEventListener('hashchange', updateAfterAnchor);
+      window.addEventListener('load', updateAfterAnchor);
       document.addEventListener('click', event => {
         const link = event.target.closest('a[href="#mock-exam"]');
         if (!link || event.defaultPrevented || event.button !== 0
@@ -5044,19 +5065,20 @@
           || !examSession.active || examSession.finished) return;
         event.preventDefault();
         if (location.hash !== '#mock-exam') history.pushState(null, '', '#mock-exam');
-        markSelectedSection();
         revealExamQuestion();
+        scheduleNavigationUpdate();
       });
       bottomPanel.addEventListener('click', event => {
         const link = event.target.closest('a');
-        if (link && link.hash === window.location.hash) requestAnimationFrame(revealCoveredAnchor);
+        if (link && link.hash === window.location.hash) updateAfterAnchor();
       });
-      topButton.addEventListener('click', () => window.scrollTo({
-        top: 0,
-        behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'
-      }));
+      topButton.addEventListener('click', () => {
+        const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+        const nearTop = window.scrollY <= window.innerHeight;
+        window.scrollTo({ top: 0, behavior: nearTop && !reduceMotion ? 'smooth' : 'instant' });
+      });
       measureBars();
-      updateTopButton();
+      updateNavigation();
     }
 
     function initExamActions() {

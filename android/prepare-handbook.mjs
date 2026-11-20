@@ -18,6 +18,8 @@ if (scripts.length !== 1) {
 const mobileStyle = readFileSync(new URL('./handbook-mobile.css', import.meta.url), 'utf8');
 const handbook = input
   .replace(versionLabel, (_label, tagStart, tagEnd) => tagStart + version + tagEnd)
+  // Keep WebView links in the main frame so HandbookClient can dispatch them externally.
+  .replace(/(<a\b[^>]*?) target="_blank"/gi, '$1')
   .replace(/^\s*<link[^>]+href="https:\/\/fonts\.(?:googleapis|gstatic)\.com[^"]*"[^>]*>/gm, '')
   .replace('</head>', `<style>\n${mobileStyle}</style>\n</head>`)
   .replace(scriptPattern, '<script src="handbook.js"></script>');
