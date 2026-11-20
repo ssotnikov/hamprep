@@ -687,6 +687,24 @@
       white-space: nowrap;
     }
 
+    .db-reference { margin: var(--space-md) 0 var(--space-lg); }
+    .db-reference h3 { margin: 0 0 10px; }
+    .db-reference table { table-layout: fixed; font-size: .875rem; }
+    .db-reference col:first-child { width: 19%; }
+    .db-reference col:nth-child(2) { width: 31%; }
+    .db-reference th, .db-reference td { padding: 10px 5px; overflow-wrap: anywhere; }
+    .db-reference th[scope="row"] { border-bottom: 1px solid var(--outline-variant); }
+    .db-reference thead th { background: var(--surface-container-low); }
+    .db-reference thead th:not(:first-child) { text-align: right; }
+    .db-reference-notes {
+      margin-top: 12px;
+      border: 1px solid var(--scheme-border);
+      border-radius: 10px;
+      background: var(--surface-container-low);
+    }
+    .db-reference-notes summary { padding: 12px; min-height: 44px; cursor: pointer; font-weight: 600; }
+    .db-reference-notes ul { margin: 0; padding: 0 12px 12px 30px; font-size: .875rem; }
+
     /* Interactive lab panels */
     .lab-panel {
       background: var(--surface-container-low);
@@ -2308,43 +2326,49 @@
             по мощности <span class="mono">L = 10 · lg(P<sub>2</sub> / P<sub>1</sub>)</span>, а по напряжению или току <span class="mono">L = 20 · lg(U<sub>2</sub> / U<sub>1</sub>)</span>.
           </p>
 
-          <div class="table-wrap">
-            <table>
+          <div class="db-reference">
+            <h3 id="db-reference-title">Отношения в децибелах</h3>
+            <table aria-labelledby="db-reference-title">
+              <colgroup><col><col><col></colgroup>
               <thead>
                 <tr>
-                  <th>Изменение, дБ</th>
-                  <th class="num">Отношение по мощности</th>
-                  <th class="num">Отношение по напряжению / току</th>
-                  <th>Опорные шкалы</th>
+                  <th scope="col">дБ</th>
+                  <th scope="col">Мощность</th>
+                  <th scope="col">Напряжение / ток</th>
                 </tr>
               </thead>
               <tbody>
                 <tr>
-                  <td class="mono">+3 дБ</td>
+                  <th scope="row" class="mono">+3</th>
                   <td class="num">× 2</td>
                   <td class="num">× 1,41</td>
-                  <td><strong>0 дБм</strong> = 1 мВт; <strong>+30 дБм</strong> = 1 Вт; <strong>+50 дБм</strong> = 100 Вт; <strong>+60 дБм</strong> = 1000 Вт</td>
                 </tr>
                 <tr>
-                  <td class="mono">+6 дБ</td>
+                  <th scope="row" class="mono">+6</th>
                   <td class="num">× 4</td>
                   <td class="num">× 2</td>
-                  <td><strong>1 балл шкалы S-метра = 6 дБ</strong> (прибавка мощности в 4 раза = +1 балл S)</td>
                 </tr>
                 <tr>
-                  <td class="mono">+10 дБ</td>
+                  <th scope="row" class="mono">+10</th>
                   <td class="num">× 10</td>
                   <td class="num">× 3,16</td>
-                  <td><strong>S9 на КВ</strong> = 50 мкВ на входе 50 Ом (на УКВ S9 = 5 мкВ)</td>
                 </tr>
                 <tr>
-                  <td class="mono">+20 дБ</td>
+                  <th scope="row" class="mono">+20</th>
                   <td class="num">× 100</td>
                   <td class="num">× 10</td>
-                  <td>Усиление антенн: <span class="mono">G(дБи) = G(дБд) + 2,15 дБ</span></td>
                 </tr>
               </tbody>
             </table>
+            <details class="db-reference-notes" data-find-expand>
+              <summary>Опорные шкалы и единицы</summary>
+              <ul>
+                <li><strong>0 дБм</strong> = 1 мВт; <strong>+30 дБм</strong> = 1 Вт; <strong>+50 дБм</strong> = 100 Вт; <strong>+60 дБм</strong> = 1000 Вт</li>
+                <li><strong>1 балл шкалы S-метра = 6 дБ</strong> (прибавка мощности в 4 раза = +1 балл S)</li>
+                <li><strong>S9 на КВ</strong> = 50 мкВ на входе 50 Ом (на УКВ S9 = 5 мкВ)</li>
+                <li>Усиление антенн: <span class="mono">G(дБи) = G(дБд) + 2,15 дБ</span></li>
+              </ul>
+            </details>
           </div>
 
           <h3>Основные приборы радиолюбителя и правила их подключения</h3>
@@ -4918,7 +4942,8 @@
         for (let node = walker.nextNode(); node; node = walker.nextNode()) {
           const parent = node.parentElement;
           if (parent.closest('.appearance-row, [hidden], script, select, style, svg, textarea')
-            || !parent.getClientRects().length || getComputedStyle(parent).visibility !== 'visible') continue;
+            || (!parent.closest('details[data-find-expand]') && !parent.getClientRects().length)
+            || getComputedStyle(parent).visibility !== 'visible') continue;
           const element = parent.closest(blockSelector) || parent;
           if (!block || block.element !== element) {
             block = { element, text: '', segments: [] };
@@ -4967,6 +4992,8 @@
         for (const mark of active) mark.classList.add('is-active');
         count.textContent = (activeIndex + 1) + ' из ' + matches.length;
         if (scroll) {
+          const details = active[0].closest('details[data-find-expand]');
+          if (details && !active[0].closest('summary')) details.open = true;
           const viewport = window.visualViewport;
           const top = Math.max(viewport?.offsetTop ?? 0, panel.getBoundingClientRect().bottom) + 8;
           const bottom = (viewport?.offsetTop ?? 0) + (viewport?.height ?? window.innerHeight) - 8;
