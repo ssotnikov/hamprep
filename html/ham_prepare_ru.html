@@ -121,10 +121,6 @@
       --button-ledge-secondary: #858686;
       --button-ground: 0 2px 0 var(--button-ledge-primary);
       --button-ground-secondary: 0 2px 0 var(--button-ledge-secondary);
-      --focus-yellow: #ffdd00;
-      --focus-ring: 3px solid var(--focus-yellow);
-      --focus-bar: inset 0 0 0 2px var(--on-surface);
-      --focus-underline: 0 -2px var(--focus-yellow), 0 4px var(--on-surface);
       --scheme-track: #f2f3f5;
       --scheme-border: #d7dce3;
       --scheme-selected: #dde8f6;
@@ -219,15 +215,8 @@
     }
     .page-grid * { min-width: 0; }
 
-    /* Focus treatment (Handbook yellow focus) */
-    button:focus-visible,
-    input:focus-visible,
-    select:focus-visible,
-    textarea:focus-visible {
-      outline: var(--focus-ring);
-      outline-offset: 0;
-      box-shadow: var(--focus-bar);
-    }
+    :focus { outline: none; }
+    button:focus-visible { filter: brightness(.94); }
     a {
       color: var(--tertiary);
       text-decoration: underline;
@@ -237,13 +226,7 @@
     }
     a:hover { text-decoration-thickness: 3px; }
     a:visited { color: var(--secondary); }
-    a:focus-visible {
-      outline: none;
-      background: var(--focus-yellow);
-      color: var(--on-surface);
-      text-decoration: none;
-      box-shadow: var(--focus-underline);
-    }
+    a:focus-visible { text-decoration-thickness: 3px; }
 
     .appearance-row {
       --appearance-radius: 13px;
@@ -292,8 +275,7 @@
       border-color: var(--outline-variant);
       color: var(--scheme-selected-ink);
     }
-    .theme-choice input:focus + span { outline: 2px solid var(--tertiary); }
-    .theme-choice input:focus:not(:focus-visible) + span { outline: none; }
+    .theme-choice input:focus-visible + span { background: var(--scheme-selected); }
     .theme-choice svg {
       width: 20px;
       height: 20px;
@@ -1183,7 +1165,7 @@
       --find-muted: #4c6175;
       --find-hover: #223f5c14;
       --find-accent: #215788;
-      --to-top-bg: rgba(31, 48, 65, .70);
+      --to-top-bg: rgba(31, 48, 65, .50);
     }
     :root[data-palette="dark"] {
       --find-bg: #121e28;
@@ -1193,7 +1175,7 @@
       --find-muted: #a5b8c7;
       --find-hover: #ffffff20;
       --find-accent: #ffcf19;
-      --to-top-bg: rgba(63, 73, 84, .74);
+      --to-top-bg: rgba(63, 73, 84, .54);
       --sections-background: rgba(23, 26, 31, .78);
       --sections-tile-background: rgba(33, 37, 44, .76);
     }
@@ -1311,8 +1293,8 @@
       background: var(--scheme-track);
     }
     .toolbar-icon:hover { background: var(--scheme-selected); }
-    .toolbar-icon:focus-visible { outline: 2px solid var(--tertiary); outline-offset: 2px; }
-    .toolbar-icon svg { display: block; width: 30px; height: 30px; }
+    .toolbar-icon:focus-visible, .section-tile:focus-visible { background: var(--scheme-selected); }
+    .toolbar-icon svg, .toolbar-icon img { display: block; width: 30px; height: 30px; }
 
     .about-button { margin-right: 5px; color: inherit; cursor: pointer; }
     body.about-open { overflow: hidden; }
@@ -1360,11 +1342,15 @@
       align-items: center;
       margin-bottom: 14px;
     }
-    .about-identity img { display: block; width: 62px; height: 62px; margin-right: 12px; }
+    .about-identity img { display: block; width: 62px; height: 62px; margin-right: 12px; border-radius: 8px; }
     .about-name { display: block; font-size: 1.08rem; }
     .about-meta { color: var(--on-surface-variant); font-size: .85rem; }
     .about-dialog-content p { margin: 0 0 10px; font-size: .875rem; line-height: 1.48; }
     .about-dialog-content p:last-child { margin-bottom: 0; }
+    .about-course { margin-bottom: 12px; padding-top: 10px; border-top: 1px solid var(--scheme-border); font-size: .875rem; }
+    .about-course h3 { margin: 0 0 3px; font: inherit; font-weight: 700; }
+    .about-course a { display: inline-flex; align-items: center; }
+    .about-course .stepik-icon { flex: none; width: 23px; height: 23px; margin-right: 7px; }
     .about-sources { padding-top: 10px; border-top: 1px solid var(--scheme-border); }
     @media (max-width: 430px) {
       .version-group .app-version { margin-right: 3px; margin-left: 5px; }
@@ -1385,15 +1371,9 @@
         <div class="version-group">
           <button class="about-button toolbar-icon" id="about-button" type="button" title="О приложении" aria-label="О приложении" aria-haspopup="dialog"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M10 9a10 10 0 0 0 0 14m12-14a10 10 0 0 1 0 14M6.5 6a14 14 0 0 0 0 20m19-20a14 14 0 0 1 0 20" fill="none" stroke="#4785c5" stroke-width="1.9" stroke-linecap="round"/><circle cx="16" cy="12" r="1.75" fill="#edac2d"/><path d="M16 16v7" stroke="#4785c5" stroke-width="2.8" stroke-linecap="round"/></svg></button>
           <a class="toolbar-icon" href="https://stepik.org/course/261540" aria-label="Открыть курс на Stepik" title="Курс на Stepik">
-            <svg viewBox="0 0 32 32" aria-hidden="true">
-              <path d="M8 15.4v6.1c0 2.2 3.6 4.1 8 4.1s8-1.9 8-4.1v-6.1" fill="#23667d" stroke="#83c9d6" stroke-width="1.1"/>
-              <path d="M2.9 13.1 16 6.6l13.1 6.5L16 19.6 2.9 13.1Z" fill="#4785c5" stroke="#9ac6f2" stroke-width="1.3" stroke-linejoin="round"/>
-              <path d="m16 13.1 9.5 4.7v4.6" fill="none" stroke="#f7be48" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round"/>
-              <path d="m25.5 21.9 1.8 3.1a2.7 2.7 0 0 1-3.6 0l1.8-3.1Z" fill="#eea82c"/>
-              <circle cx="16" cy="13.1" r="1.15" fill="#f7be48"/>
-            </svg>
+            <img class="stepik-icon" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEgAAABICAYAAABV7bNHAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA7FJREFUeNrsnI2xojAQx+M1oCVQgh2cdmAJ2IEl0IElYAdcB3gVaAdqBdiBlz9DZngePrLJJiw8dmZnnPcEkp+bZD8SFmoY2TT6W2vSaJfcG/2r9ar1j5qwAEiutdL6ctSqucdmamBKDyiftBw7qCQQmC5QydjgpJ5DyWXopWOBk0cE8665ZDArrcWAcIwWTVvEwbkIgGP0IgmSNDiiIEmFIwKSdDgskBYecOB/rFk8yc1GJUlSax1f3O+1ns9nrh8TYcpW63M0lrNer195nr+qqnp9EvwP39EARzPcvOGsVqu601QpiqK+VjIkbziwmu8spk9wLe4hEdLgcIyUZSluuImBc7lcOIYZK6SpwmGBNHU43pCKHwCnHeDGS1lQ4dxut1eapjUI7SzWn3F9JDjkVEkaE84nCPhbRDhGe5NuiU8mkAvOgFq9p2/fYzHnRLiGo7SPonSH7YKj61Vtt1v1fNLCI8RrJnZrC+I23JN6vw45N3FbZ/VBrOUcDod6rrIJSRhit04jKSXCQWdtwDDHbiWL9YSGk2WZl4vgGbutvZb10HBcIn5mSF+WfdLKhY6OAU7bz3IYbpWBs6PSxfgeCxwjuK/rZJ1RLsKkOTY4RuClEwFl5NXLthMx4FBjPQcrqlezG+Uim0aFhoMh3rYGW1cAbScCAhve4YVGhITzyQrwTBtIDiua/ZcRZfcJvhMbDqV9Dl62YnXcbK2HG46xoj5BHyh9/sWd3bcJFnVnlf61re95Op3Ufr8frL7OOsR2u110yxEzxGwm6e+81pBwQk7SQZb59i/lUk2lwsEzQy3zQRxFY002DY8Bx8dRDBZqhI6ZKHAc55/MKRdECValwEGbfTKLpHQH3HyOmlcsOFTv/j3dESVhNiQcjoRZlJRrlxyPR4lwOhP3Tkl7DDdsSXFJVfQ5lQPCKVnLPsaLtQGFpR/xEGVOiAzni/WwFQ67CnvL5bIuJD4ejzpGM8U90hYTfT0KkihM2saCKEhSn2NTOPQuPXPrAJbzX+mZffOCC4RPmxciw7HavMCy/YVqIe3tL1B8plRTmeCQTwrlkoZPYDiF64SV/wA43ps58xlOJEhThcMGacpwWCAhHzPVowhskFxjt/dqquQTPyzDDdZkk3gb+jjUwhNSykEbsRtiLbMBFPEUYqmxHqhjO6oQSedzq1LhSIc0n50fC5w2pPnVFFJSJVwpi6EkVfPrcfrT02p+wZKdH6jmV3RZgxrdS94WA8KCUl4TeG40qvwTYABmJO9yoz4fVwAAAABJRU5ErkJggg==" width="30" height="30" alt="">
           </a>
-          <span class="app-version">Версия <span id="app-version">0.5.0</span></span>
+          <span class="app-version">Версия <span id="app-version">0.5.1</span></span>
         </div>
         <div class="appearance-actions">
           <button class="find-toggle" id="find-toggle" type="button" aria-label="Поиск по материалам" aria-expanded="false" aria-controls="find-panel" title="Поиск по материалам">
@@ -2473,6 +2453,10 @@
         </div>
       </div>
       <p><strong>Авторы</strong><br>Сергей Сотников (<a href="https://t.me/ssotnikov">@ssotnikov</a>), Вадим R2BMX (<a href="https://t.me/r2bmx">@r2bmx</a>)</p>
+      <section class="about-course" aria-labelledby="about-course-title">
+        <h3 id="about-course-title">Учебный курс</h3>
+        <a href="https://stepik.org/course/261540"><img class="stepik-icon" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEgAAABICAYAAABV7bNHAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA7FJREFUeNrsnI2xojAQx+M1oCVQgh2cdmAJ2IEl0IElYAdcB3gVaAdqBdiBlz9DZngePrLJJiw8dmZnnPcEkp+bZD8SFmoY2TT6W2vSaJfcG/2r9ar1j5qwAEiutdL6ctSqucdmamBKDyiftBw7qCQQmC5QydjgpJ5DyWXopWOBk0cE8665ZDArrcWAcIwWTVvEwbkIgGP0IgmSNDiiIEmFIwKSdDgskBYecOB/rFk8yc1GJUlSax1f3O+1ns9nrh8TYcpW63M0lrNer195nr+qqnp9EvwP39EARzPcvOGsVqu601QpiqK+VjIkbziwmu8spk9wLe4hEdLgcIyUZSluuImBc7lcOIYZK6SpwmGBNHU43pCKHwCnHeDGS1lQ4dxut1eapjUI7SzWn3F9JDjkVEkaE84nCPhbRDhGe5NuiU8mkAvOgFq9p2/fYzHnRLiGo7SPonSH7YKj61Vtt1v1fNLCI8RrJnZrC+I23JN6vw45N3FbZ/VBrOUcDod6rrIJSRhit04jKSXCQWdtwDDHbiWL9YSGk2WZl4vgGbutvZb10HBcIn5mSF+WfdLKhY6OAU7bz3IYbpWBs6PSxfgeCxwjuK/rZJ1RLsKkOTY4RuClEwFl5NXLthMx4FBjPQcrqlezG+Uim0aFhoMh3rYGW1cAbScCAhve4YVGhITzyQrwTBtIDiua/ZcRZfcJvhMbDqV9Dl62YnXcbK2HG46xoj5BHyh9/sWd3bcJFnVnlf61re95Op3Ufr8frL7OOsR2u110yxEzxGwm6e+81pBwQk7SQZb59i/lUk2lwsEzQy3zQRxFY002DY8Bx8dRDBZqhI6ZKHAc55/MKRdECValwEGbfTKLpHQH3HyOmlcsOFTv/j3dESVhNiQcjoRZlJRrlxyPR4lwOhP3Tkl7DDdsSXFJVfQ5lQPCKVnLPsaLtQGFpR/xEGVOiAzni/WwFQ67CnvL5bIuJD4ejzpGM8U90hYTfT0KkihM2saCKEhSn2NTOPQuPXPrAJbzX+mZffOCC4RPmxciw7HavMCy/YVqIe3tL1B8plRTmeCQTwrlkoZPYDiF64SV/wA43ps58xlOJEhThcMGacpwWCAhHzPVowhskFxjt/dqquQTPyzDDdZkk3gb+jjUwhNSykEbsRtiLbMBFPEUYqmxHqhjO6oQSedzq1LhSIc0n50fC5w2pPnVFFJSJVwpi6EkVfPrcfrT02p+wZKdH6jmV3RZgxrdS94WA8KCUl4TeG40qvwTYABmJO9yoz4fVwAAAABJRU5ErkJggg==" width="23" height="23" alt=""><span>Сдаём на радиолюбительскую категорию</span></a>
+      </section>
       <p class="about-sources"><strong>Нормативная сверка на 19 ноября 2026 года.</strong> <a href="https://base.garant.ru/186117/94f5bf092e8d98af576ee351987de4f0/">Ст. 22 закона № 126-ФЗ «О связи»</a>, <a href="https://www.consultant.ru/document/cons_doc_LAW_398978/ffd04ed565c43935c477313aa9ed8815a1d660ce/">правила регистрации по постановлению № 1800</a>, <a href="https://base.garant.ru/70156402/">приказ № 4 о позывных</a>, <a href="https://base.garant.ru/57412959/">приказ № 184 о работе любительской службы</a>, <a href="https://www.garant.ru/products/ipo/prime/doc/71829332/">решение ГКРЧ № 10-07-01 в редакции № 18-45-02</a>, <a href="https://base.garant.ru/409112510/">приказ Минздрава № 220н</a>.</p>
       <p>Положение об экзамене и перечень вопросов опубликованы <a href="https://srr.ru/radiooperatoram/kvalifikatsionnyj-ekzamen-2-2/">на сайте СРР</a>.</p>
     </div>
