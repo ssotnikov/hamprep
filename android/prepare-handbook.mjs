@@ -1,8 +1,12 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-const [, , sourcePath, assetDirectory, scriptPath] = process.argv;
+const [, , sourcePath, assetDirectory, scriptPath, version] = process.argv;
 const input = readFileSync(sourcePath, 'utf8');
+const versionLabel = /(<span id="app-version">)[^<]+(<\/span>)/;
+if (!/^\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.+-]+)?$/.test(version) || !versionLabel.test(input)) {
+  throw new Error('Expected a version label and a valid manifest version');
+}
 const scriptPattern = /<script>\s*([\s\S]*?)<\/script>/g;
 const scripts = [...input.matchAll(scriptPattern)];
 if (scripts.length !== 1) {
@@ -16,6 +20,7 @@ const navigation = `<nav class="app-nav" aria-label="Навигация по с�
   <a href="#mock-exam">Экзамен</a>
 </nav>`;
 const handbook = input
+  .replace(versionLabel, (_label, tagStart, tagEnd) => tagStart + version + tagEnd)
   .replace(/^\s*<link[^>]+href="https:\/\/fonts\.(?:googleapis|gstatic)\.com[^"]*"[^>]*>/gm, '')
   .replace('<nav class="mobile-toc"', '<nav id="topics" class="mobile-toc"')
   .replace('</head>', `<style>\n${mobileStyle}</style>\n</head>`)

@@ -3,12 +3,59 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light dark">
   <meta name="artifact-type" content="narrative">
   <meta name="design-style" content="handbook">
   <title>Материалы для подготовки к радиолюбительскому экзамену</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Noto+Sans:ital,wght@0,400;0,600;0,700;0,800;1,400&family=Public+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <script id="appearance-bootstrap">
+    (() => {
+      const storageKey = 'ham-prepare-ru:theme';
+      const modes = ['system', 'light', 'dark'];
+      const media = window.matchMedia('(prefers-color-scheme: dark)');
+      let choice = 'system';
+      let androidTheme;
+
+      try {
+        const saved = localStorage.getItem(storageKey);
+        if (modes.includes(saved)) choice = saved;
+      } catch (error) {
+        // System mode remains available when storage is disabled.
+      }
+
+      const applyTheme = () => {
+        const systemTheme = androidTheme || (media.matches ? 'dark' : 'light');
+        document.documentElement.dataset.palette = choice === 'system' ? systemTheme : choice;
+      };
+      applyTheme();
+      if (media.addEventListener) media.addEventListener('change', applyTheme);
+      else media.addListener(applyTheme);
+
+      window.addEventListener('radioexam-system-theme', event => {
+        if (event.detail !== 'light' && event.detail !== 'dark') return;
+        androidTheme = event.detail;
+        applyTheme();
+      });
+
+      document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('input[name="appearance"]').forEach(option => {
+          option.checked = option.value === choice;
+          option.addEventListener('change', () => {
+            if (!option.checked || !modes.includes(option.value)) return;
+            choice = option.value;
+            applyTheme();
+            try {
+              localStorage.setItem(storageKey, choice);
+            } catch (error) {
+              // The selected palette still applies for this session.
+            }
+          });
+        });
+      });
+    })();
+  </script>
   <style>
     :root {
       color-scheme: light;
@@ -78,6 +125,10 @@
       --focus-ring: 3px solid var(--focus-yellow);
       --focus-bar: inset 0 0 0 2px var(--on-surface);
       --focus-underline: 0 -2px var(--focus-yellow), 0 4px var(--on-surface);
+      --scheme-track: #f2f3f5;
+      --scheme-border: #d7dce3;
+      --scheme-selected: #dde8f6;
+      --scheme-selected-ink: #162e51;
 
       /* Type scale (Narrative) */
       --display-size: clamp(2rem, 1.35rem + 2.5vw, 3.25rem);
@@ -101,6 +152,44 @@
       --dur-micro: 120ms;
       --dur-short: 220ms;
       --dur-long: 420ms;
+    }
+
+    :root[data-palette="dark"] {
+      color-scheme: dark;
+      --background: #171a1f;
+      --surface-container-low: #22262d;
+      --surface-container: #2a3038;
+      --surface-container-high: #343d49;
+      --on-surface: #f0f2f5;
+      --on-surface-variant: #b7c0cd;
+      --outline: #6c7889;
+      --outline-variant: #535e6d;
+      --primary: #a9c8f4;
+      --on-primary: #162e51;
+      --primary-container: #293a51;
+      --on-primary-container: #d3e6ff;
+      --secondary: #d2baff;
+      --tertiary: #83afe7;
+      --error: #ff9d92;
+      --on-error: #321011;
+      --positive: #8cdbab;
+      --positive-container: #203a2e;
+      --on-positive-container: #bef1d2;
+      --error-container: #3d2529;
+      --warning: #f7b76d;
+      --warning-container: #402f20;
+      --focus: #a9c8f4;
+      --data-1: #83afe7;
+      --data-2: #f7b76d;
+      --data-3: #8cdbab;
+      --data-4: #d2baff;
+      --data-context: #788696;
+      --button-ledge-primary: #617da3;
+      --button-ledge-secondary: #101216;
+      --scheme-track: #21252c;
+      --scheme-border: #444d59;
+      --scheme-selected: #38465a;
+      --scheme-selected-ink: #f0f5ff;
     }
 
     /* Base reset */
@@ -155,6 +244,74 @@
       text-decoration: none;
       box-shadow: var(--focus-underline);
     }
+
+    .appearance-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 19px;
+    }
+    .app-version {
+      margin-right: 12px;
+      color: var(--on-surface-variant);
+      font: 400 13px/1.15 ui-monospace, monospace;
+      letter-spacing: -0.035em;
+      white-space: nowrap;
+    }
+    .theme-choice {
+      display: inline-grid;
+      grid-auto-flow: column;
+      gap: 1px;
+      padding: 3px;
+      border: 1px solid var(--scheme-border);
+      border-radius: 13px;
+      background: var(--scheme-track);
+    }
+    .theme-choice label { position: relative; cursor: pointer; }
+    .theme-choice input {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      opacity: 0;
+      cursor: pointer;
+    }
+    .theme-choice span {
+      display: grid;
+      place-items: center;
+      width: 40px;
+      height: 38px;
+      border: 1px solid transparent;
+      border-radius: 9px;
+      color: var(--on-surface-variant);
+    }
+    .theme-choice input:checked + span {
+      background: var(--scheme-selected);
+      border-color: var(--outline-variant);
+      color: var(--scheme-selected-ink);
+    }
+    .theme-choice input:focus + span { outline: 2px solid var(--tertiary); }
+    .theme-choice input:focus:not(:focus-visible) + span { outline: none; }
+    .theme-choice svg {
+      width: 20px;
+      height: 20px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 1.75;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .receiver-schematic [fill="#f3f2f1"] { fill: var(--surface-container-low); }
+    .receiver-schematic [fill="#d2e2f1"] { fill: var(--primary-container); }
+    .receiver-schematic [fill="#0b0c0c"] { fill: var(--on-surface); }
+    .receiver-schematic [fill="#505a5f"] { fill: var(--on-surface-variant); }
+    .receiver-schematic [fill="#0c2d4a"] { fill: var(--on-primary-container); }
+    .receiver-schematic [fill="#162e51"] { fill: var(--primary); }
+    .receiver-schematic [stroke="#0b0c0c"] { stroke: var(--on-surface); }
+    .receiver-schematic [stroke="#162e51"] { stroke: var(--primary); }
 
     /* Top index bar */
     .index-header {
@@ -916,6 +1073,23 @@
 <body>
   <div class="page-grid">
     <header>
+      <div class="appearance-row">
+        <span class="app-version">Версия <span id="app-version">0.1.0</span></span>
+        <div class="theme-choice" role="group" aria-label="Оформление">
+          <label title="Системная тема">
+            <input type="radio" name="appearance" value="system" aria-label="Системная тема" checked>
+            <span><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8m-4-4v4"/></svg></span>
+          </label>
+          <label title="Светлая тема">
+            <input type="radio" name="appearance" value="light" aria-label="Светлая тема">
+            <span><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.4 1.4m11.2 11.2L19 19M19 5l-1.4 1.4M6.4 17.6 5 19"/></svg></span>
+          </label>
+          <label title="Тёмная тема">
+            <input type="radio" name="appearance" value="dark" aria-label="Тёмная тема">
+            <span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.9 13.4A9.1 9.1 0 1 1 10.6 3.1a7.2 7.2 0 0 0 10.3 10.3Z"/></svg></span>
+          </label>
+        </div>
+      </div>
       <div class="index-header">
         <span>Квалификационный экзамен радиооператора любительской службы</span>
         <label class="index-header-tag" for="qualification-category">Категория
@@ -931,8 +1105,8 @@
       <h1>Материалы для подготовки к экзамену на <span id="heading-category">2-ю</span> радиолюбительскую категорию</h1>
       <p class="lede">
         Подготовка к экзамену по «Экзаменационному справочнику радиолюбителя» А. Н. Замороки (UA0C, 2020)
-        и Приказу Минкомсвязи России № 184: все восемь тем экзаменационной программы, интерактивные тренажёры
-        позывных и классов излучений, тематические задания с разбором и пробный билет для выбранной категории.
+        и Приказу Минкомсвязи России № 184: все восемь тем экзаменационной программы, интерактивные тренажёры,
+        тематические задания с разбором и пробный билет для выбранной категории.
       </p>
 
       <div class="kpi-grid">
@@ -1530,7 +1704,7 @@
 
           <h3>Супергетеродинный приёмник и передатчик</h3>
           <div class="schematic-box">
-            <svg viewBox="0 0 760 150" role="img" aria-label="Структурная схема супергетеродинного приёмника">
+            <svg class="receiver-schematic" viewBox="0 0 760 150" role="img" aria-label="Структурная схема супергетеродинного приёмника">
               <rect x="10" y="35" width="90" height="54" fill="#f3f2f1" stroke="#0b0c0c" stroke-width="2"></rect>
               <text x="55" y="58" text-anchor="middle" font-family="Noto Sans, sans-serif" font-size="12" font-weight="700" fill="#0b0c0c">ДПФ / УВЧ</text>
               <text x="55" y="75" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11" fill="#505a5f">f_сигн</text>

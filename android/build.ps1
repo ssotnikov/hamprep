@@ -10,9 +10,9 @@ param(
 $ErrorActionPreference = 'Stop'
 
 $manifestText = [IO.File]::ReadAllText((Join-Path $PSScriptRoot 'AndroidManifest.xml'))
+$manifestXml = [xml] $manifestText
+$version = $manifestXml.DocumentElement.GetAttribute('versionName', 'http://schemas.android.com/apk/res/android')
 if (-not $Output) {
-    $manifestXml = [xml] $manifestText
-    $version = $manifestXml.DocumentElement.GetAttribute('versionName', 'http://schemas.android.com/apk/res/android')
     if (-not $version -or $version.IndexOfAny([IO.Path]::GetInvalidFileNameChars()) -ge 0 -or
         $version.TrimEnd(' ', '.') -ne $version) {
         throw 'Android versionName must be a valid release directory name'
@@ -54,7 +54,7 @@ try {
     $dex = [IO.Directory]::CreateDirectory((Join-Path $work 'dex')).FullName
     $inputScript = Join-Path $work 'input.js'
     Invoke-BuildTool node.exe @((Join-Path $PSScriptRoot 'prepare-handbook.mjs'),
-        (Join-Path $PSScriptRoot '..\html\ham_prepare_ru.html'), $assets, $inputScript)
+        (Join-Path $PSScriptRoot '..\html\ham_prepare_ru.html'), $assets, $inputScript, $version)
     Invoke-BuildTool npm.cmd @('exec', '--yes', '--package=esbuild@0.25.12', '--', 'esbuild',
         $inputScript, '--target=chrome69', "--outfile=$assets\handbook.js", '--log-level=warning')
 
