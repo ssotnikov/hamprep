@@ -249,7 +249,6 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-bottom: 19px;
     }
     .app-version {
       margin-right: 12px;
@@ -315,7 +314,6 @@
 
     /* Top index bar */
     .index-header {
-      border-top: var(--top-index-rule);
       border-bottom: 1px solid var(--on-surface);
       padding: var(--space-sm) 0;
       display: flex;
@@ -1100,15 +1098,15 @@
       --find-radius: 16px;
       position: fixed;
       z-index: 1000;
-      top: 8px;
+      top: calc(var(--pinned-top-height) + 8px);
       right: 8px;
       width: calc(100% - 48px);
       max-width: 300px;
       box-sizing: border-box;
       padding: 8px;
-      color: #dce7ed;
-      background: #121e28;
-      border: 1px solid #293945;
+      color: var(--find-text);
+      background: var(--find-bg);
+      border: 1px solid var(--find-border);
       border-radius: var(--find-radius);
       box-shadow: 0 5px 20px #0005;
       line-height: 1.35;
@@ -1119,7 +1117,7 @@
       align-items: center;
       min-height: 44px;
       padding: 0 4px 0 13px;
-      background: #223240;
+      background: var(--find-field);
       border-radius: var(--find-radius);
     }
     .find-panel button {
@@ -1131,14 +1129,21 @@
       padding: 0;
       border: 0;
       border-radius: 50%;
-      color: #a5b8c7;
+      color: var(--find-muted);
       background: transparent;
       cursor: pointer;
     }
-    .find-panel button:hover { background: #ffffff20; }
+    .find-panel button:hover { background: var(--find-hover); }
     .find-panel button:disabled { opacity: .45; cursor: default; }
-    .find-input-row > svg { flex: none; margin-right: 10px; color: #a5b8c7; }
-    .find-panel #find-close { width: 36px; height: 36px; margin-left: 10px; }
+    .find-input-row > svg { flex: none; margin-right: 10px; color: var(--find-muted); }
+    .find-panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 1px 4px 5px;
+    }
+    .find-panel-header strong { font-size: .9rem; }
+    .find-panel #find-close { width: 30px; height: 30px; }
     #find-query {
       flex: 1 1 auto;
       min-width: 0;
@@ -1149,32 +1154,132 @@
       color: inherit;
       font-size: 1rem;
     }
-    #find-query::placeholder { color: #bacad6; }
+    #find-query:focus { outline: none; box-shadow: none; }
     .find-controls {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      justify-content: space-between;
-      padding: 4px 1px 0 4px;
+      padding: 9px 1px 0 4px;
     }
-    .find-nav { display: flex; align-items: center; margin-left: auto; }
+    .find-nav { display: flex; flex: 0 0 auto; align-items: center; }
     .find-nav > * + * { margin-left: 2px; }
-    #find-count { color: #bacad6; font-size: .75rem; white-space: nowrap; }
+    #find-count { color: var(--find-muted); font-size: .75rem; white-space: nowrap; }
     .find-exact { display: flex; align-items: center; font-size: .8rem; cursor: pointer; }
-    .find-exact input { accent-color: #ffcf19; width: 16px; height: 16px; margin: 0 6px 0 0; }
+    .find-exact input { accent-color: var(--find-accent); width: 16px; height: 16px; margin: 0 6px 0 0; }
     .find-hit { color: #171717; background: #fff096; padding: 0; }
     .find-hit.is-active { background: #ffbb47; outline: 1px solid #bf6a00; }
     .exam-online { margin-top: var(--space-md); }
     .exam-online .caption { display: block; margin-top: 4px; }
+
+    :root {
+      --toolbar-gutter: var(--space-lg);
+      --pinned-top-height: 80px;
+      --pinned-bottom-height: 52px;
+      --find-bg: #f7fafc;
+      --find-border: #c6d2de;
+      --find-field: #e7eef5;
+      --find-text: #243649;
+      --find-muted: #4c6175;
+      --find-hover: #223f5c14;
+      --find-accent: #215788;
+      --to-top-bg: rgba(31, 48, 65, .70);
+    }
+    :root[data-palette="dark"] {
+      --find-bg: #121e28;
+      --find-border: #293945;
+      --find-field: #223240;
+      --find-text: #dce7ed;
+      --find-muted: #a5b8c7;
+      --find-hover: #ffffff20;
+      --find-accent: #ffcf19;
+      --to-top-bg: rgba(63, 73, 84, .74);
+    }
+    html {
+      scroll-padding-top: calc(var(--pinned-top-height) + 6px);
+      scroll-padding-bottom: var(--pinned-bottom-height);
+    }
+    body {
+      padding-top: var(--pinned-top-height);
+      padding-bottom: var(--pinned-bottom-height);
+    }
+    .pinned-topbar {
+      position: fixed;
+      top: 0;
+      right: 0;
+      left: 0;
+      z-index: 20;
+      background: var(--background);
+    }
+    .pinned-topbar-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: var(--toolbar-gutter) var(--toolbar-gutter) 0;
+    }
+    .pinned-topbar .appearance-row {
+      margin: 0;
+      padding-bottom: 19px;
+      border-bottom: var(--top-index-rule);
+    }
+    .page-grid { padding-top: 0; }
+    .toc-aside { top: calc(var(--pinned-top-height) + var(--space-md)); }
+    .app-nav {
+      position: fixed;
+      z-index: 10;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      min-height: 3.25rem;
+      border-top: 1px solid var(--outline-variant);
+      background: var(--background);
+    }
+    .app-nav a {
+      display: grid;
+      place-items: center;
+      padding: .5rem .25rem;
+      color: var(--primary);
+      font-size: .875rem;
+      font-weight: 700;
+      text-decoration: none;
+    }
+    .app-nav a + a { border-left: 1px solid var(--outline-variant); }
+    .app-nav a:active { background: var(--primary-container); }
+    .to-top {
+      position: fixed;
+      z-index: 11;
+      right: 16px;
+      bottom: calc(var(--pinned-bottom-height) + 12px);
+      display: grid;
+      place-items: center;
+      width: 44px;
+      height: 44px;
+      padding: 0;
+      border: 0;
+      border-radius: 50%;
+      background: var(--to-top-bg);
+      color: white;
+      cursor: pointer;
+    }
+    .to-top[hidden] { display: none; }
+    .to-top svg {
+      width: 23px;
+      height: 23px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2.2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    @media (max-width: 640px) {
+      :root { --toolbar-gutter: var(--space-md); }
+    }
   </style>
 </head>
 <body>
-  <div class="page-grid">
-    <header>
+  <div class="pinned-topbar">
+    <div class="pinned-topbar-inner">
       <div class="appearance-row">
-        <span class="app-version">Версия <span id="app-version">0.2.0</span></span>
+        <span class="app-version">Версия <span id="app-version">0.3.0</span></span>
         <div class="appearance-actions">
-          <button class="find-toggle" id="find-toggle" type="button" aria-label="Поиск по странице" aria-expanded="false" aria-controls="find-panel" title="Поиск по странице">
+          <button class="find-toggle" id="find-toggle" type="button" aria-label="Поиск по материалам" aria-expanded="false" aria-controls="find-panel" title="Поиск по материалам">
             <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4.5 4.5"/></svg>
           </button>
         <div class="theme-choice" role="group" aria-label="Оформление">
@@ -1193,6 +1298,10 @@
         </div>
         </div>
       </div>
+    </div>
+  </div>
+  <div class="page-grid">
+    <header>
       <div class="index-header">
         <span>Квалификационный экзамен радиооператора любительской службы</span>
         <label class="index-header-tag" for="qualification-category">Категория
@@ -1255,7 +1364,7 @@
       </div>
     </header>
 
-    <nav class="mobile-toc" aria-label="Быстрый переход по темам">
+    <nav id="topics" class="mobile-toc" aria-label="Быстрый переход по темам">
       <strong>Разделы программы:</strong>
       <div class="mobile-toc-links">
         <a class="mobile-toc-chip" href="#sec-1">01. МСЭ и CEPT</a>
@@ -2146,7 +2255,7 @@
           </div>
           <div class="exam-online">
             <a href="https://exam.srr.ru/">Пройти онлайн тестирование на сайте СРР</a>
-            <span class="caption">(для анонимного входа на сервер тестирования вы можете использовать логин «гость» и пароль «гость»)</span>
+            <span class="caption">Для анонимного входа на сервер тестирования вы можете использовать логин «гость» и пароль «гость»</span>
           </div>
         </section>
 
@@ -2195,16 +2304,25 @@
     </div>
   </div>
 
-  <section class="find-panel" id="find-panel" role="search" aria-label="Поиск по странице" hidden>
-    <div class="find-input-row">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4.5 4.5"/></svg>
-      <input id="find-query" type="text" placeholder="Поиск по странице" aria-label="Текст для поиска" autocomplete="off">
+  <button class="to-top" id="to-top" type="button" title="Наверх" aria-label="Наверх" hidden>
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 12 8-8 8 8M4 20l8-8 8 8"/></svg>
+  </button>
+  <nav class="app-nav" aria-label="Навигация по справочнику">
+    <a href="#topics">Темы</a>
+    <a href="#study-practice">Вопросы</a>
+    <a href="#mock-exam">Экзамен</a>
+  </nav>
+
+  <section class="find-panel" id="find-panel" role="search" aria-labelledby="find-title" hidden>
+    <div class="find-panel-header">
+      <strong id="find-title">Поиск по материалам</strong>
       <button type="button" id="find-close" aria-label="Закрыть поиск" title="Закрыть">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg>
       </button>
     </div>
-    <div class="find-controls">
-      <label class="find-exact"><input type="checkbox" id="find-exact" checked> Точное совпадение</label>
+    <div class="find-input-row">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4.5 4.5"/></svg>
+      <input id="find-query" type="text" aria-label="Текст для поиска" autocomplete="off">
       <div class="find-nav">
         <span id="find-count" role="status" aria-live="polite"></span>
         <button type="button" id="find-prev" aria-label="Предыдущее совпадение" title="Предыдущее совпадение" disabled>
@@ -2214,6 +2332,9 @@
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 9 7 7 7-7"/></svg>
         </button>
       </div>
+    </div>
+    <div class="find-controls">
+      <label class="find-exact"><input type="checkbox" id="find-exact" checked> Точное совпадение</label>
     </div>
   </section>
 
@@ -4368,6 +4489,7 @@
       let matches = [];
       let activeIndex = -1;
       let pendingSearch;
+      let searchedTerm = '';
 
       function clearHighlights() {
         const parents = new Set();
@@ -4446,6 +4568,7 @@
         observer.disconnect();
         clearHighlights();
         const term = query.value.trim();
+        searchedTerm = term;
         if (term) {
           const source = term.split(/\s+/).map(word => word.replace(/[.*+?^$(){}|[\]\\]/g, '\\$&')).join('\\s+');
           const pattern = new RegExp(source, 'giu');
@@ -4473,6 +4596,10 @@
       }
 
       toggle.addEventListener('click', () => {
+        if (!panel.hidden) {
+          closeSearch();
+          return;
+        }
         panel.hidden = false;
         toggle.setAttribute('aria-expanded', 'true');
         query.focus({ preventScroll: true });
@@ -4480,20 +4607,67 @@
       });
       query.addEventListener('input', () => {
         clearTimeout(pendingSearch);
-        pendingSearch = setTimeout(refreshMatches, 100);
+        if (query.value.trim() !== searchedTerm) pendingSearch = setTimeout(refreshMatches, 100);
       });
       exact.addEventListener('change', () => refreshMatches());
-      previous.addEventListener('click', () => showMatch(activeIndex - 1, true));
-      next.addEventListener('click', () => showMatch(activeIndex + 1, true));
+      function moveMatch(direction) {
+        if (query.value.trim() !== searchedTerm) refreshMatches(0, false);
+        showMatch(activeIndex + direction, true);
+      }
+      previous.addEventListener('click', () => moveMatch(-1));
+      next.addEventListener('click', () => moveMatch(1));
       document.getElementById('find-close').addEventListener('click', closeSearch);
       panel.addEventListener('keydown', event => {
         if (event.key === 'Escape') closeSearch();
         if (event.target === query && event.key === 'Enter') {
-          showMatch(activeIndex + (event.shiftKey ? -1 : 1), true);
+          moveMatch(event.shiftKey ? -1 : 1);
         }
       });
     }
 
+    function initHandbookNavigation() {
+      const root = document.documentElement;
+      const topBar = document.querySelector('.pinned-topbar');
+      const bottomBar = document.querySelector('.app-nav');
+      const topics = document.getElementById('topics');
+      const topButton = document.getElementById('to-top');
+
+      function measureBars() {
+        root.style.setProperty('--pinned-top-height', topBar.offsetHeight + 'px');
+        root.style.setProperty('--pinned-bottom-height', bottomBar.offsetHeight + 'px');
+        bottomBar.firstElementChild.href = topics.getClientRects().length ? '#topics' : '#sec-1';
+      }
+
+      function updateTopButton() {
+        topButton.hidden = window.scrollY < 240;
+      }
+
+      function revealCoveredAnchor() {
+        const target = document.getElementById(window.location.hash.slice(1));
+        if (!target || !target.getClientRects().length) return;
+        const top = target.getBoundingClientRect().top;
+        const inset = topBar.offsetHeight + 6;
+        if (top > -1 && top < inset) window.scrollBy(0, top - inset);
+      }
+
+      window.addEventListener('resize', measureBars);
+      window.addEventListener('scroll', updateTopButton, { passive: true });
+      // Older WebView versions can ignore scroll-padding for fragment navigation.
+      window.addEventListener('hashchange', () => requestAnimationFrame(revealCoveredAnchor));
+      window.addEventListener('load', revealCoveredAnchor);
+      bottomBar.addEventListener('click', event => {
+        const link = event.target.closest('a');
+        if (link && link.hash === window.location.hash) requestAnimationFrame(revealCoveredAnchor);
+      });
+      topButton.addEventListener('click', () => window.scrollTo({
+        top: 0,
+        behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'
+      }));
+      measureBars();
+      updateTopButton();
+    }
+
+    document.addEventListener('DOMContentLoaded', initHandbookNavigation);
     document.addEventListener('DOMContentLoaded', initPageSearch);
     document.addEventListener('DOMContentLoaded', initApp);
   </script>

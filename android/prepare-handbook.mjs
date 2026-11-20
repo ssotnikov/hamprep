@@ -16,17 +16,10 @@ if (scripts.length !== 1) {
 }
 
 const mobileStyle = readFileSync(new URL('./handbook-mobile.css', import.meta.url), 'utf8');
-const navigation = `<nav class="app-nav" aria-label="Навигация по справочнику">
-  <a href="#topics">Темы</a>
-  <a href="#study-practice">Вопросы</a>
-  <a href="#mock-exam">Экзамен</a>
-</nav>`;
 const handbook = input
   .replace(versionLabel, (_label, tagStart, tagEnd) => tagStart + version + tagEnd)
   .replace(/^\s*<link[^>]+href="https:\/\/fonts\.(?:googleapis|gstatic)\.com[^"]*"[^>]*>/gm, '')
-  .replace('<nav class="mobile-toc"', '<nav id="topics" class="mobile-toc"')
   .replace('</head>', `<style>\n${mobileStyle}</style>\n</head>`)
-  .replace('</body>', `${navigation}\n</body>`)
   .replace(scriptPattern, '<script src="handbook.js"></script>');
 
 const unexpectedLocalFiles = [...handbook.matchAll(/\bhref="([^"#?:]+\.[^"?#]+)(?:#[^"]*)?"/gi)];
