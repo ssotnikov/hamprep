@@ -1447,6 +1447,8 @@
     .about-dialog-content p:last-child { margin-bottom: 0; }
     .about-course { margin-bottom: 12px; padding-top: 10px; border-top: 1px solid var(--scheme-border); font-size: .875rem; }
     .about-course h3 { margin: 0 0 3px; font: inherit; font-weight: 700; }
+    .about-course-list { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
+    .about-course-list li { margin: 0; }
     .about-course a { display: inline-flex; align-items: center; }
     .about-course .stepik-icon { flex: none; width: 23px; height: 23px; margin-right: 7px; }
     .about-sources { padding-top: 10px; border-top: 1px solid var(--scheme-border); }
@@ -1583,6 +1585,136 @@
       text-decoration-thickness: 2px;
       text-underline-offset: 4px;
     }
+    :root {
+      --ui-tone: #e7eef9;
+      --ui-focus: #d1e1f8;
+      --ui-edge: #64768c;
+    }
+    :root[data-palette="dark"] {
+      --ui-tone: #293b53;
+      --ui-focus: #405c7d;
+      --ui-edge: #8193ac;
+    }
+    .button, .option-btn, .exam-bar-actions button {
+      min-height: 48px;
+      border-radius: 11px;
+      box-shadow: none;
+    }
+    .button.button--secondary,
+    .exam-bar-actions button:not(#finish-exam-btn),
+    .option-btn:not(.is-selected):not(.is-correct):not(.is-wrong) {
+      background: var(--ui-tone);
+      color: var(--on-surface);
+      border-color: transparent;
+    }
+    .button.button--secondary:hover,
+    .exam-bar-actions button:not(#finish-exam-btn):hover,
+    .option-btn:not(.is-selected):not(.is-correct):not(.is-wrong):hover:not(:disabled) {
+      background: var(--ui-focus);
+    }
+    .exam-bar-actions #finish-exam-btn { background: var(--primary); color: var(--on-primary); }
+    .button:focus-visible, .exam-bar-actions button:focus-visible, .option-btn:focus-visible {
+      text-decoration: underline;
+      text-decoration-thickness: 2px;
+      text-underline-offset: 3px;
+    }
+    .button:active { transform: none; filter: brightness(.91); }
+    .button:disabled { opacity: .68; }
+    .exam-num-btn {
+      border-radius: 8px;
+      min-width: 48px;
+      min-height: 48px;
+    }
+    .exam-num-btn:not(.is-current):not(.is-answered):not(.is-correct):not(.is-wrong) {
+      background: var(--ui-tone);
+      border-color: transparent;
+    }
+    .toolbar-icon, .find-toggle { background: var(--ui-tone); }
+    .toolbar-icon:hover, .find-toggle:hover, .find-toggle[aria-expanded="true"] { background: var(--ui-focus); }
+    .find-panel button { background: var(--ui-tone); }
+    .find-panel button:hover, .find-panel button:focus-visible { background: var(--ui-focus); }
+
+    .home-actions { display: grid; }
+    .home-actions .button { justify-content: flex-start; }
+    .home-category { display: block; }
+    .home-category .index-header-tag[hidden], label[hidden], select[hidden] { display: none; }
+    .ui-dropdown { width: 100%; min-width: 0; }
+    .ui-dropdown > summary {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: nowrap;
+      gap: 10px;
+      min-height: 52px;
+      padding: 8px 12px;
+      border: 1px solid var(--ui-edge);
+      border-radius: 11px;
+      color: var(--on-surface);
+      background: var(--background);
+      cursor: pointer;
+      overflow-wrap: anywhere;
+    }
+    .ui-dropdown > summary::-webkit-details-marker { display: none; }
+    .ui-dropdown-title { display: block; font-size: var(--label-size); color: var(--on-surface-variant); font-weight: 650; }
+    .ui-dropdown-value { display: block; font-weight: 700; font-size: 1rem; line-height: 1.28; }
+    .ui-dropdown-arrow {
+      flex: none;
+      width: 9px;
+      height: 9px;
+      margin-right: 5px;
+      border: solid var(--on-surface-variant);
+      border-width: 0 2px 2px 0;
+      transform: rotate(45deg) translateY(-2px);
+    }
+    .ui-dropdown[open] .ui-dropdown-arrow { transform: rotate(225deg); }
+    .ui-dropdown > summary[aria-disabled="true"] { cursor: default; opacity: .63; }
+    .ui-dropdown-list {
+      margin-top: 6px;
+      max-height: min(280px, 48vh);
+      overflow: auto;
+      border: 1px solid var(--ui-edge);
+      border-radius: 11px;
+      background: var(--background);
+    }
+    .ui-dropdown-option {
+      width: 100%;
+      min-height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 8px 12px;
+      border: 0;
+      color: var(--on-surface);
+      background: transparent;
+      font-size: 1rem;
+      text-align: left;
+      cursor: pointer;
+    }
+    .ui-dropdown-option + .ui-dropdown-option { border-top: 1px solid var(--scheme-border); }
+    .ui-dropdown-option[aria-pressed="true"] { background: var(--ui-tone); }
+    .ui-dropdown-option small { display: block; color: var(--on-surface-variant); font-size: var(--label-size); }
+    .ui-dropdown-option b { visibility: hidden; }
+    .ui-dropdown-option[aria-pressed="true"] b { visibility: visible; color: var(--primary); }
+    .ui-dropdown > summary:focus-visible, .ui-dropdown-option:focus-visible {
+      background: var(--ui-focus);
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+    .ui-dropdown-option:disabled { opacity: .63; cursor: default; }
+    .about-dialog-close { color: white; background: #e81123; }
+    .about-dialog-close:focus-visible { background: #e81123; }
+    .about-dialog-close:focus-visible svg { width: 22px; height: 22px; }
+    @media (hover: hover) { .about-dialog-close:hover { background: #ce101f; } }
+    .about-dialog-close:active { background: #a80c18; }
+    .chip-btn {
+      min-height: 48px;
+      border: 1px solid transparent;
+      border-radius: 11px;
+    }
+    .chip-btn:not(.is-active) { background: var(--ui-tone); }
+    .chip-btn:not(.is-active):hover { background: var(--ui-focus); }
+    .chip-btn:focus-visible { text-decoration: underline; }
   </style>
 </head>
 <body>
@@ -1591,7 +1723,7 @@
       <div class="appearance-row">
         <div class="version-group">
           <button class="about-button toolbar-icon" id="about-button" type="button" title="О приложении" aria-label="О приложении" aria-haspopup="dialog"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M10 9a10 10 0 0 0 0 14m12-14a10 10 0 0 1 0 14M6.5 6a14 14 0 0 0 0 20m19-20a14 14 0 0 1 0 20" fill="none" stroke="#4785c5" stroke-width="1.9" stroke-linecap="round"/><circle cx="16" cy="12" r="1.75" fill="#edac2d"/><path d="M16 16v7" stroke="#4785c5" stroke-width="2.8" stroke-linecap="round"/></svg></button>
-          <span class="app-version">Версия <span id="app-version">0.6.1</span></span>
+          <span class="app-version">Версия <span id="app-version">0.7.0</span></span>
         </div>
         <div class="appearance-actions">
           <button class="find-toggle" id="find-toggle" type="button" aria-label="Поиск по материалам" aria-expanded="false" aria-controls="find-panel" title="Поиск по материалам">
@@ -2586,7 +2718,7 @@
           <p class="caption">Источник — <a href="https://r9c.srr.ru/wp-content/uploads/2026/02/exam-voprosy2023.pdf">Перечень экзаменационных вопросов по приказу от 01.10.2015 № 224</a>.</p>
           <div class="field-group bank-toolbar">
             <label class="field-label" for="bank-search">Поиск в блоке вопросов</label>
-            <p class="caption bank-search-hint" id="bank-search-hint">По номеру или тексту на всех страницах выбранной категории.</p>
+            <p class="caption bank-search-hint" id="bank-search-hint">По номеру или формулировке вопроса на всех страницах выбранной категории.</p>
             <input class="input" type="search" id="bank-search" aria-describedby="bank-search-hint" placeholder="Например, 407 или КСВ">
             <label class="field-label" for="bank-topic">Тема</label>
             <select class="select" id="bank-topic">
@@ -2719,10 +2851,13 @@
           <div class="about-meta">(C) 2026 Сергей Сотников, MIT License</div>
         </div>
       </div>
-      <p><strong>Авторы</strong><br>Сергей Сотников (<a href="https://t.me/ssotnikov">@ssotnikov</a>), Вадим R2BMX (<a href="https://t.me/r2bmx">@r2bmx</a>)</p>
+      <p><strong>Авторы</strong><br>Сергей Сотников (<a href="https://t.me/ssotnikov">@ssotnikov</a>) — Эксперт по Кибербезопасности СберТех<br>Вадим Федоров R2BMX (<a href="https://t.me/r2bmx">@r2bmx</a>) — Старший преподаватель кафедры КБ-1, РТУ МИРЭА</p>
       <section class="about-course" aria-labelledby="about-course-title">
-        <h3 id="about-course-title">Учебный курс</h3>
-        <a href="https://stepik.org/course/261540" target="_blank" rel="noopener"><img class="stepik-icon" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEgAAABICAYAAABV7bNHAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA7FJREFUeNrsnI2xojAQx+M1oCVQgh2cdmAJ2IEl0IElYAdcB3gVaAdqBdiBlz9DZngePrLJJiw8dmZnnPcEkp+bZD8SFmoY2TT6W2vSaJfcG/2r9ar1j5qwAEiutdL6ctSqucdmamBKDyiftBw7qCQQmC5QydjgpJ5DyWXopWOBk0cE8665ZDArrcWAcIwWTVvEwbkIgGP0IgmSNDiiIEmFIwKSdDgskBYecOB/rFk8yc1GJUlSax1f3O+1ns9nrh8TYcpW63M0lrNer195nr+qqnp9EvwP39EARzPcvOGsVqu601QpiqK+VjIkbziwmu8spk9wLe4hEdLgcIyUZSluuImBc7lcOIYZK6SpwmGBNHU43pCKHwCnHeDGS1lQ4dxut1eapjUI7SzWn3F9JDjkVEkaE84nCPhbRDhGe5NuiU8mkAvOgFq9p2/fYzHnRLiGo7SPonSH7YKj61Vtt1v1fNLCI8RrJnZrC+I23JN6vw45N3FbZ/VBrOUcDod6rrIJSRhit04jKSXCQWdtwDDHbiWL9YSGk2WZl4vgGbutvZb10HBcIn5mSF+WfdLKhY6OAU7bz3IYbpWBs6PSxfgeCxwjuK/rZJ1RLsKkOTY4RuClEwFl5NXLthMx4FBjPQcrqlezG+Uim0aFhoMh3rYGW1cAbScCAhve4YVGhITzyQrwTBtIDiua/ZcRZfcJvhMbDqV9Dl62YnXcbK2HG46xoj5BHyh9/sWd3bcJFnVnlf61re95Op3Ufr8frL7OOsR2u110yxEzxGwm6e+81pBwQk7SQZb59i/lUk2lwsEzQy3zQRxFY002DY8Bx8dRDBZqhI6ZKHAc55/MKRdECValwEGbfTKLpHQH3HyOmlcsOFTv/j3dESVhNiQcjoRZlJRrlxyPR4lwOhP3Tkl7DDdsSXFJVfQ5lQPCKVnLPsaLtQGFpR/xEGVOiAzni/WwFQ67CnvL5bIuJD4ejzpGM8U90hYTfT0KkihM2saCKEhSn2NTOPQuPXPrAJbzX+mZffOCC4RPmxciw7HavMCy/YVqIe3tL1B8plRTmeCQTwrlkoZPYDiF64SV/wA43ps58xlOJEhThcMGacpwWCAhHzPVowhskFxjt/dqquQTPyzDDdZkk3gb+jjUwhNSykEbsRtiLbMBFPEUYqmxHqhjO6oQSedzq1LhSIc0n50fC5w2pPnVFFJSJVwpi6EkVfPrcfrT02p+wZKdH6jmV3RZgxrdS94WA8KCUl4TeG40qvwTYABmJO9yoz4fVwAAAABJRU5ErkJggg==" width="23" height="23" alt=""><span>Сдаём на радиолюбительскую категорию</span></a>
+        <h3 id="about-course-title">Учебные курсы</h3>
+        <ul class="about-course-list" role="list">
+          <li><a href="https://stepik.org/course/261540" target="_blank" rel="noopener"><img class="stepik-icon" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEgAAABICAYAAABV7bNHAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA7FJREFUeNrsnI2xojAQx+M1oCVQgh2cdmAJ2IEl0IElYAdcB3gVaAdqBdiBlz9DZngePrLJJiw8dmZnnPcEkp+bZD8SFmoY2TT6W2vSaJfcG/2r9ar1j5qwAEiutdL6ctSqucdmamBKDyiftBw7qCQQmC5QydjgpJ5DyWXopWOBk0cE8665ZDArrcWAcIwWTVvEwbkIgGP0IgmSNDiiIEmFIwKSdDgskBYecOB/rFk8yc1GJUlSax1f3O+1ns9nrh8TYcpW63M0lrNer195nr+qqnp9EvwP39EARzPcvOGsVqu601QpiqK+VjIkbziwmu8spk9wLe4hEdLgcIyUZSluuImBc7lcOIYZK6SpwmGBNHU43pCKHwCnHeDGS1lQ4dxut1eapjUI7SzWn3F9JDjkVEkaE84nCPhbRDhGe5NuiU8mkAvOgFq9p2/fYzHnRLiGo7SPonSH7YKj61Vtt1v1fNLCI8RrJnZrC+I23JN6vw45N3FbZ/VBrOUcDod6rrIJSRhit04jKSXCQWdtwDDHbiWL9YSGk2WZl4vgGbutvZb10HBcIn5mSF+WfdLKhY6OAU7bz3IYbpWBs6PSxfgeCxwjuK/rZJ1RLsKkOTY4RuClEwFl5NXLthMx4FBjPQcrqlezG+Uim0aFhoMh3rYGW1cAbScCAhve4YVGhITzyQrwTBtIDiua/ZcRZfcJvhMbDqV9Dl62YnXcbK2HG46xoj5BHyh9/sWd3bcJFnVnlf61re95Op3Ufr8frL7OOsR2u110yxEzxGwm6e+81pBwQk7SQZb59i/lUk2lwsEzQy3zQRxFY002DY8Bx8dRDBZqhI6ZKHAc55/MKRdECValwEGbfTKLpHQH3HyOmlcsOFTv/j3dESVhNiQcjoRZlJRrlxyPR4lwOhP3Tkl7DDdsSXFJVfQ5lQPCKVnLPsaLtQGFpR/xEGVOiAzni/WwFQ67CnvL5bIuJD4ejzpGM8U90hYTfT0KkihM2saCKEhSn2NTOPQuPXPrAJbzX+mZffOCC4RPmxciw7HavMCy/YVqIe3tL1B8plRTmeCQTwrlkoZPYDiF64SV/wA43ps58xlOJEhThcMGacpwWCAhHzPVowhskFxjt/dqquQTPyzDDdZkk3gb+jjUwhNSykEbsRtiLbMBFPEUYqmxHqhjO6oQSedzq1LhSIc0n50fC5w2pPnVFFJSJVwpi6EkVfPrcfrT02p+wZKdH6jmV3RZgxrdS94WA8KCUl4TeG40qvwTYABmJO9yoz4fVwAAAABJRU5ErkJggg==" width="23" height="23" alt=""><span>Сдаём на радиолюбительскую категорию</span></a></li>
+          <li><a href="https://stepik.org/course/269756" title="Сдаём на 2 и 1 радиолюбительскую категорию (продвинутый уровень)" target="_blank" rel="noopener"><img class="stepik-icon" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEgAAABICAYAAABV7bNHAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA7FJREFUeNrsnI2xojAQx+M1oCVQgh2cdmAJ2IEl0IElYAdcB3gVaAdqBdiBlz9DZngePrLJJiw8dmZnnPcEkp+bZD8SFmoY2TT6W2vSaJfcG/2r9ar1j5qwAEiutdL6ctSqucdmamBKDyiftBw7qCQQmC5QydjgpJ5DyWXopWOBk0cE8665ZDArrcWAcIwWTVvEwbkIgGP0IgmSNDiiIEmFIwKSdDgskBYecOB/rFk8yc1GJUlSax1f3O+1ns9nrh8TYcpW63M0lrNer195nr+qqnp9EvwP39EARzPcvOGsVqu601QpiqK+VjIkbziwmu8spk9wLe4hEdLgcIyUZSluuImBc7lcOIYZK6SpwmGBNHU43pCKHwCnHeDGS1lQ4dxut1eapjUI7SzWn3F9JDjkVEkaE84nCPhbRDhGe5NuiU8mkAvOgFq9p2/fYzHnRLiGo7SPonSH7YKj61Vtt1v1fNLCI8RrJnZrC+I23JN6vw45N3FbZ/VBrOUcDod6rrIJSRhit04jKSXCQWdtwDDHbiWL9YSGk2WZl4vgGbutvZb10HBcIn5mSF+WfdLKhY6OAU7bz3IYbpWBs6PSxfgeCxwjuK/rZJ1RLsKkOTY4RuClEwFl5NXLthMx4FBjPQcrqlezG+Uim0aFhoMh3rYGW1cAbScCAhve4YVGhITzyQrwTBtIDiua/ZcRZfcJvhMbDqV9Dl62YnXcbK2HG46xoj5BHyh9/sWd3bcJFnVnlf61re95Op3Ufr8frL7OOsR2u110yxEzxGwm6e+81pBwQk7SQZb59i/lUk2lwsEzQy3zQRxFY002DY8Bx8dRDBZqhI6ZKHAc55/MKRdECValwEGbfTKLpHQH3HyOmlcsOFTv/j3dESVhNiQcjoRZlJRrlxyPR4lwOhP3Tkl7DDdsSXFJVfQ5lQPCKVnLPsaLtQGFpR/xEGVOiAzni/WwFQ67CnvL5bIuJD4ejzpGM8U90hYTfT0KkihM2saCKEhSn2NTOPQuPXPrAJbzX+mZffOCC4RPmxciw7HavMCy/YVqIe3tL1B8plRTmeCQTwrlkoZPYDiF64SV/wA43ps58xlOJEhThcMGacpwWCAhHzPVowhskFxjt/dqquQTPyzDDdZkk3gb+jjUwhNSykEbsRtiLbMBFPEUYqmxHqhjO6oQSedzq1LhSIc0n50fC5w2pPnVFFJSJVwpi6EkVfPrcfrT02p+wZKdH6jmV3RZgxrdS94WA8KCUl4TeG40qvwTYABmJO9yoz4fVwAAAABJRU5ErkJggg==" width="23" height="23" alt=""><span>Сдаём на 2 и 1 радиолюбительскую категорию (продвинутый уровень)</span></a></li>
+        </ul>
       </section>
       <section class="about-sources" aria-labelledby="about-sources-title">
         <h3 id="about-sources-title">Нормативные документы</h3>
@@ -4056,7 +4191,7 @@
         const chosen = appState.bankAnswers[question.id];
         if (mistakesOnly && (chosen === undefined || chosen === question.correct)) return false;
         if (number) return question.no === Number(number[1]);
-        const text = [question.stem, ...question.options].join(' ').toLowerCase().replaceAll('ё', 'е');
+        const text = question.stem.toLowerCase().replaceAll('ё', 'е');
         return text.includes(query);
       });
 
@@ -5275,7 +5410,110 @@
     document.addEventListener('DOMContentLoaded', initExamTimeoutDialog);
     document.addEventListener('DOMContentLoaded', initHandbookNavigation);
     document.addEventListener('DOMContentLoaded', initPageSearch);
-    document.addEventListener('DOMContentLoaded', initApp);
+    function initStyledSelects() {
+      const make = (tag, className) => {
+        const element = document.createElement(tag);
+        element.className = className;
+        return element;
+      };
+      const dropdowns = [];
+      for (const select of document.querySelectorAll('select')) {
+        const label = select.labels[0];
+        if (!label) continue;
+        const name = Array.from(label.childNodes)
+          .filter(node => node.nodeType === Node.TEXT_NODE).map(node => node.textContent).join('').trim();
+        const dropdown = make('details', 'ui-dropdown');
+        dropdown.dataset.select = select.id;
+        const summary = make('summary', '');
+        const text = make('span', '');
+        const title = make('span', 'ui-dropdown-title');
+        const value = make('span', 'ui-dropdown-value');
+        const arrow = make('span', 'ui-dropdown-arrow');
+        const list = make('div', 'ui-dropdown-list');
+        title.textContent = name;
+        arrow.setAttribute('aria-hidden', 'true');
+        list.setAttribute('role', 'group');
+        list.setAttribute('aria-label', name);
+        text.append(title, value);
+        summary.append(text, arrow);
+        dropdown.append(summary, list);
+        if (label.contains(select)) label.after(dropdown);
+        else select.after(dropdown);
+        label.hidden = true;
+        select.hidden = true;
+        let signature = '';
+
+        function sync() {
+          const options = Array.from(select.options);
+          const nextSignature = JSON.stringify(options.map(opt => [opt.value, opt.text, opt.hidden, opt.disabled]));
+          if (signature !== nextSignature) {
+            signature = nextSignature;
+            list.textContent = '';
+            for (const opt of options) {
+              if (opt.hidden) continue;
+              const button = make('button', 'ui-dropdown-option');
+              const caption = make('span', '');
+              const mark = make('b', '');
+              button.type = 'button';
+              button.dataset.value = opt.value;
+              button.disabled = opt.disabled;
+              caption.textContent = opt.text;
+              if (select.id === 'qualification-category') {
+                const info = make('small', '');
+                const details = CATEGORIES[opt.value];
+                info.textContent = details.ticket + ' вопросов · зачет от ' + details.pass + ' · ' + details.minutes + ' мин';
+                caption.append(info);
+              }
+              mark.textContent = '✓';
+              mark.setAttribute('aria-hidden', 'true');
+              button.append(caption, mark);
+              button.addEventListener('click', () => {
+                if (select.disabled) return;
+                select.value = opt.value;
+                select.dispatchEvent(new Event('change', { bubbles: true }));
+                dropdown.open = false;
+                summary.focus({ preventScroll: true });
+              });
+              list.append(button);
+            }
+          }
+          value.textContent = select.selectedIndex < 0 ? 'Выберите вариант' : options[select.selectedIndex].text;
+          summary.setAttribute('aria-disabled', String(select.disabled));
+          summary.tabIndex = select.disabled ? -1 : 0;
+          if (select.disabled) dropdown.open = false;
+          for (const button of list.children) {
+            button.setAttribute('aria-pressed', String(button.dataset.value === select.value));
+          }
+        }
+        summary.addEventListener('click', event => {
+          if (select.disabled) event.preventDefault();
+        });
+        dropdown.addEventListener('keydown', event => {
+          if (event.key === 'Escape' && dropdown.open) {
+            event.stopPropagation();
+            dropdown.open = false;
+            summary.focus({ preventScroll: true });
+          }
+        });
+        dropdown.addEventListener('toggle', () => { if (dropdown.open) sync(); });
+        new MutationObserver(sync).observe(select, { attributes: true, childList: true, characterData: true, subtree: true });
+        dropdowns.push({ dropdown, sync });
+        sync();
+      }
+      const syncAll = () => dropdowns.forEach(item => item.sync());
+      document.addEventListener('change', syncAll);
+      document.addEventListener('click', event => {
+        for (const item of dropdowns) {
+          if (!item.dropdown.contains(event.target)) item.dropdown.open = false;
+        }
+        syncAll();
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      await initApp();
+      initStyledSelects();
+    });
   </script>
 </body>
 </html>
