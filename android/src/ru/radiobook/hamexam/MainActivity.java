@@ -3,6 +3,7 @@ package ru.radiobook.hamexam;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
+import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -63,6 +64,23 @@ public final class MainActivity extends AppActivity {
     }
 
     @Override
+    public void onConfigurationChanged(Configuration configuration) {
+        super.onConfigurationChanged(configuration);
+        updateSystemPalette(webView.getUrl(), configuration);
+    }
+
+    private void updateSystemPalette(String url, Configuration configuration) {
+        if (url == null) return;
+        Uri page = Uri.parse(url);
+        if (!isLocal(page) || !PAGE_PATH.equals(page.getEncodedPath())) return;
+
+        int nightMode = configuration.uiMode & Configuration.UI_MODE_NIGHT_MASK;
+        String palette = nightMode == Configuration.UI_MODE_NIGHT_YES ? "dark" : "light";
+        webView.evaluateJavascript("window.dispatchEvent(new CustomEvent('radioexam-system-theme',"
+                + "{detail:'" + palette + "'}));", null);
+    }
+
+    @Override
     @SuppressWarnings("deprecation")
     public void onBackPressed() {
         navigateBack();
@@ -84,10 +102,15 @@ public final class MainActivity extends AppActivity {
     }
 
     private static boolean isLocal(Uri url) {
-        return "https".equals(url.getScheme()) && HOST.equals(url.getHost());
+        return "https".equals(url.getScheme()) && HOST.equals(url.getEncodedAuthority());
     }
 
     private final class HandbookClient extends WebViewClient {
+        @Override
+        public void onPageFinished(WebView view, String url) {
+            updateSystemPalette(url, getResources().getConfiguration());
+        }
+
         @Override
         public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
             Uri url = request.getUrl();
