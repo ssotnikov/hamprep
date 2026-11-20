@@ -1245,25 +1245,37 @@
       stroke-linejoin: round;
     }
     .to-top {
+      --to-top-diameter: calc(var(--pinned-bottom-height) * .7);
       position: fixed;
       z-index: 11;
-      right: 16px;
+      right: 11px;
       bottom: var(--bottom-control-gap);
       display: grid;
+      grid-template: var(--to-top-diameter) / var(--to-top-diameter);
+      place-content: end;
       place-items: center;
       width: var(--pinned-bottom-height);
       height: var(--pinned-bottom-height);
       padding: 0;
       border: 0;
-      border-radius: 50%;
-      background: var(--to-top-bg);
+      background: transparent;
       color: white;
       cursor: pointer;
     }
     .to-top[hidden] { display: none; }
+    .to-top::before {
+      content: "";
+      grid-area: 1 / 1;
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background: var(--to-top-bg);
+    }
     .to-top svg {
-      width: 23px;
-      height: 23px;
+      grid-area: 1 / 1;
+      z-index: 1;
+      width: 16.1px;
+      height: 16.1px;
       fill: none;
       stroke: currentColor;
       stroke-width: 2.2;
