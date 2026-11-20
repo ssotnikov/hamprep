@@ -964,7 +964,7 @@
             <strong>Набор вопросов</strong>
             <span id="global-progress-text" class="mono">Отвечено 0 из 405</span>
           </div>
-          <span class="status-tag" id="last-exam-result">Последний билет — нет результата</span>
+          <span class="status-tag" id="last-exam-result">Последняя попытка — нет результата</span>
         </div>
         <div class="progress-track" aria-hidden="true">
           <div class="progress-fill" id="global-progress-fill"></div>
@@ -3468,8 +3468,8 @@
       const score = record ? `${record.score}/${record.total}`: '—';
       const source = record?.source === 'pdf' ? 'набор вопросов' : 'учебные разделы';
       lastResult.textContent = record
-        ? `Последний билет ${score} · ${record.source ? source : 'до обновления ключа'}`
-        : 'Последний билет — нет результата';
+        ? `Последняя попытка ${score} · ${record.source ? source : 'до обновления ключа'}`
+        : 'Последняя попытка — нет результата';
       lastResult.classList.toggle('status-tag--pass', Boolean(record?.source && record.passed));
       tocExam.textContent = score;
       tocExam.classList.toggle('is-done', Boolean(record?.source && record.passed));
