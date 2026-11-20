@@ -927,20 +927,50 @@
 
     /* Mock Exam Simulator */
     .exam-controls {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      justify-content: space-between;
-      gap: var(--space-md);
       background: var(--surface-container-low);
       border-left: var(--inset-rule);
       padding: var(--space-md) var(--space-lg);
-      margin-bottom: var(--space-lg);
+      margin: var(--space-md) 0 var(--space-lg);
     }
+    @media (max-width: 640px) {
+      .exam-controls .button { width: 100%; }
+    }
+    body.exam-in-progress .page-grid { overflow: visible; }
+    #mock-exam.exam-in-progress #exam-workspace { padding: 10px 0 75px; }
+    .exam-bar {
+      position: sticky;
+      top: var(--pinned-top-height);
+      z-index: 9;
+      padding: 9px 10px;
+      border: 1px solid var(--scheme-border);
+      border-radius: 10px;
+      background: var(--background);
+      box-shadow: 0 2px 8px #0002;
+    }
+    .exam-bar-progress, .exam-bar-actions {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 4px;
+    }
+    .exam-bar-progress { margin-bottom: 4px; }
+    .exam-bar-actions button {
+      min-width: 44px;
+      min-height: 44px;
+      padding: 0 8px;
+      border: 0;
+      border-radius: 7px;
+      color: var(--on-surface);
+      background: var(--scheme-track);
+      font-weight: 600;
+      cursor: pointer;
+    }
+    #exam-new-btn { font-size: 1.15rem; }
+    #exam-answered { display: block; margin: 4px 0 0; }
     .exam-timer {
       font-family: var(--font-mono);
       font-weight: 700;
-      font-size: var(--subhead-size);
+      font-size: 1rem;
       font-variant-numeric: tabular-nums;
     }
     .exam-nav-grid {
@@ -963,6 +993,8 @@
     .exam-num-btn.is-current {
       border: 2px solid var(--primary);
       background: var(--primary-container);
+      text-decoration: underline;
+      text-underline-offset: 4px;
     }
     .exam-num-btn.is-answered {
       background: var(--primary);
@@ -1380,6 +1412,10 @@
     .exam-timeout-dialog h2 { margin: 0 0 10px; font-size: 1.35rem; }
     .exam-timeout-dialog p { margin: 0 0 18px; }
     .exam-timeout-dialog .button { width: 100%; }
+    #exam-action-dialog [hidden] { display: none; }
+    #exam-action-dialog .button + .button { margin-top: var(--space-sm); }
+    #exam-action-dialog .exam-nav-grid { margin-bottom: var(--space-md); }
+    .exam-result-actions { margin-top: var(--space-md); }
   </style>
 </head>
 <body>
@@ -1473,7 +1509,7 @@
         <p id="study-progress-text" class="caption"></p>
         <div class="action-row">
           <a href="#study-practice" class="button">Набор вопросов (405)</a>
-          <a href="#mock-exam" class="button button--secondary">Пробный экзамен (30 вопросов)</a>
+          <a href="#mock-exam" id="progress-exam-link" class="button button--secondary">Пробный экзамен (30 вопросов)</a>
           <button type="button" class="button button--secondary" id="reset-progress-btn" onclick="handleResetProgress(this)">Сбросить весь прогресс</button>
         </div>
       </div>
@@ -2351,21 +2387,27 @@
             </select>
           </div>
 
-          <div class="exam-controls">
-            <div>
-              <div class="caption" style="margin-bottom: var(--space-xs);">Оставшееся время экзамена</div>
-              <div class="exam-timer" id="exam-timer-display">60:00</div>
+          <div class="exam-controls" id="exam-start-controls">
+            <button type="button" class="button" id="start-exam-btn" onclick="startMockExam()">Начать экзамен</button>
+          </div>
+
+          <div class="exam-bar" id="exam-bar" hidden>
+            <div class="exam-bar-progress">
+              <strong id="exam-question-number"></strong>
+              <span class="exam-timer" id="exam-timer-display" aria-label="Оставшееся время экзамена">60:00</span>
             </div>
-            <div class="action-row">
-              <button type="button" class="button" id="start-exam-btn" onclick="startMockExam()">Сформировать новый билет (30 вопросов)</button>
-              <button type="button" class="button button--secondary" id="finish-exam-btn" onclick="finishMockExam()" disabled>Завершить и проверить</button>
+            <div class="exam-bar-actions">
+              <button type="button" id="exam-list-btn">Все вопросы</button>
+              <button type="button" id="finish-exam-btn" disabled>Завершить</button>
+              <button type="button" id="exam-new-btn" aria-label="Начать новый билет" title="Начать новый билет">⋯</button>
             </div>
+            <span class="caption" id="exam-answered"></span>
           </div>
 
           <div id="exam-workspace">
             <div class="inset">
               <div class="inset-title">Порядок прохождения пробного билета</div>
-              <p>Сформируйте новый билет, ответьте на вопросы в любом порядке и нажмите «Завершить и проверить», чтобы получить результат.</p>
+              <p>Нажмите «Начать экзамен», ответьте на вопросы в любом порядке и нажмите «Завершить», чтобы получить результат.</p>
             </div>
           </div>
           <div class="exam-online">
@@ -2458,6 +2500,15 @@
     </div>
   </section>
 
+  <dialog id="exam-action-dialog" class="exam-timeout-dialog" aria-labelledby="exam-action-title">
+    <h2 id="exam-action-title"></h2>
+    <p id="exam-action-copy" hidden></p>
+    <div id="exam-action-grid" hidden></div>
+    <form method="dialog">
+      <button type="submit" class="button" id="exam-action-confirm" value="confirm" hidden></button>
+      <button type="submit" class="button button--secondary" value="cancel">Вернуться к билету</button>
+    </form>
+  </dialog>
   <dialog id="exam-timeout-dialog" class="exam-timeout-dialog" aria-labelledby="exam-timeout-title" aria-describedby="exam-timeout-text">
     <h2 id="exam-timeout-title">Время вышло</h2>
     <p id="exam-timeout-text">Пробный экзамен завершен. Ответы, данные до истечения времени, учтены.</p>
@@ -3916,7 +3967,6 @@
       const requiresMorse = category === '1';
       const savedExam = examsByCategory[category];
       const bankLabel = `Набор вопросов (${bankCount})`;
-      const examLabel = `Пробный экзамен (${ticket} вопросов)`;
       const percent = Number((100 * pass / ticket).toFixed(1)).toLocaleString('ru-RU');
       for (const [id, label] of Object.entries({
         'heading-category': `${category}-ю`,
@@ -3933,7 +3983,6 @@
         'exam-category': `${category}-й категории`,
         'exam-pass-score': `${pass} из ${ticket}`,
         'exam-duration': `${minutes} минут`,
-        'start-exam-btn': `Сформировать новый билет (${ticket} вопросов)`,
         'toc-exam-label': `Пробный билет (${ticket} вопросов)`,
         'bank-heading': `Набор вопросов для ${category}-й категории`,
         'bank-category-summary': `${bankCount} вопросов по перечню СРР.`,
@@ -3943,7 +3992,6 @@
       }
       document.getElementById('qualification-category').value = category;
       document.getElementById('exam-cw-note').hidden = !requiresMorse;
-      document.querySelector('header .button[href="#mock-exam"]').textContent = examLabel;
       document.querySelector('.mobile-toc-chip[href="#mock-exam"]').textContent = `Экзамен (${ticket})`;
       document.querySelectorAll('header a[href="#study-practice"], .mobile-toc-chip[href="#study-practice"]').forEach(link => {
         link.textContent = bankLabel;
@@ -4389,11 +4437,20 @@
     function renderExamStatus() {
       const status = document.getElementById('exam-status-tag');
       const record = examSession.finished ? appState.examRecord : null;
+      const inProgress = examSession.active && !examSession.finished;
       status.textContent = record
         ? `${record.passed ? 'Сдан' : 'Не сдан'} (${record.score}/${record.total})`
         : examSession.active ? 'Идёт тестирование' : 'Готов к запуску';
       status.classList.toggle('status-tag--pass', Boolean(record?.passed));
-      document.getElementById('finish-exam-btn').disabled = !examSession.active || examSession.finished;
+      document.body.classList.toggle('exam-in-progress', inProgress);
+      document.getElementById('mock-exam').classList.toggle('exam-in-progress', inProgress);
+      document.getElementById('exam-bar').hidden = !inProgress;
+      document.getElementById('exam-start-controls').hidden = inProgress;
+      document.getElementById('exam-source').disabled = inProgress;
+      document.getElementById('finish-exam-btn').disabled = !inProgress;
+      document.getElementById('start-exam-btn').textContent = examSession.finished ? 'Начать новый билет' : 'Начать экзамен';
+      document.getElementById('progress-exam-link').textContent = inProgress
+        ? 'Продолжить экзамен' : `Пробный экзамен (${qualification.ticket} вопросов)`;
     }
 
     function restoreExamAttempt(saved) {
@@ -4403,13 +4460,18 @@
       const pool = new Map((source === 'pdf' ? PDF_BANK : QUESTIONS).map(question => [question.id, question]));
       const questions = saved.ids.map(id => pool.get(id));
       if (questions.includes(undefined) || new Set(saved.ids).size !== ticket) return;
+      const answers = {};
+      for (const question of questions) {
+        const answer = saved.answers?.[question.id];
+        if (Number.isInteger(answer) && answer >= 0 && answer < question.options.length) answers[question.id] = answer;
+      }
       examSession = {
         ...newExamSession(),
         active: true,
         source,
         questions,
         finished: saved.finished === true,
-        answers: saved.answers ?? {},
+        answers,
         currentIndex: Number.isInteger(saved.currentIndex) ? Math.max(0, Math.min(saved.currentIndex, ticket - 1)) : 0,
         deadline: saved.deadline,
         secondsLeft: saved.secondsLeft ?? 0
@@ -4420,9 +4482,8 @@
       renderMockExam();
     }
 
-    function startMockExam() {
+    function startMockExam(source = document.getElementById('exam-source').value) {
       stopExamTimer();
-      const source = document.getElementById('exam-source').value;
       let finalQuestions;
       if (source === 'pdf') {
         const picked = BANK_TOPICS.map((_topic, index) =>
@@ -4454,13 +4515,29 @@
       renderExamStatus();
       renderMockExam();
       persistState();
+      revealExamQuestion();
+    }
+
+    function revealExamElement(element, stickyHeight = 0) {
+      if (!element) return;
+      const inset = document.querySelector('.pinned-topbar').offsetHeight + stickyHeight + 8;
+      element.focus({ preventScroll: true });
+      window.scrollTo({ top: window.scrollY + element.getBoundingClientRect().top - inset, behavior: 'instant' });
+    }
+
+    function revealExamQuestion() {
+      const bar = document.getElementById('exam-bar');
+      revealExamElement(document.querySelector('#exam-workspace .question-card'), bar.offsetHeight);
     }
 
     function selectExamQuestionIndex(idx) {
-      if (!examSession.active) return;
+      if (!examSession.questions[idx]) return;
+      const dialog = document.getElementById('exam-action-dialog');
+      if (dialog.open) dialog.close();
       examSession.currentIndex = idx;
       renderMockExam();
       persistState();
+      revealExamQuestion();
     }
 
     function answerMockExamQuestion(qid, optIdx) {
@@ -4474,7 +4551,7 @@
       persistState();
     }
 
-    function finishMockExam() {
+    function finishMockExam(showResult = false) {
       if (!examSession.active || examSession.finished) return;
       const timedOut = !refreshExamTime();
       examSession.finished = true;
@@ -4491,7 +4568,28 @@
       updateProgressSummaries();
       renderExamStatus();
       renderMockExam();
-      if (timedOut) showExamTimeout(examSession);
+      if (timedOut) {
+        const dialog = document.getElementById('exam-action-dialog');
+        if (dialog.open) dialog.close();
+        showExamTimeout(examSession);
+      } else if (showResult) {
+        revealExamElement(document.getElementById('exam-result-summary'));
+      }
+    }
+
+    function renderExamQuestionGrid() {
+      const { questions, answers, currentIndex, finished } = examSession;
+      return `<div class="exam-nav-grid">${questions.map((question, index) => {
+        const answer = answers[question.id];
+        const current = index === currentIndex;
+        const state = answer === undefined ? '' : finished
+          ? (answer === question.correct ? ' is-correct' : ' is-wrong') : ' is-answered';
+        const status = answer === undefined ? 'без ответа' : !finished ? 'ответ дан'
+          : answer === question.correct ? 'верно' : 'неверно';
+        return `<button type="button" class="exam-num-btn${state}${current ? ' is-current' : ''}"
+          ${current ? 'aria-current="step"' : ''} aria-label="Вопрос ${index + 1}, ${status}"
+          onclick="selectExamQuestionIndex(${index})">${index + 1}${!finished && answer !== undefined ? ' ✓' : ''}</button>`;
+      }).join('')}</div>`;
     }
 
     function renderMockExam() {
@@ -4506,45 +4604,42 @@
       }
 
       let html = '';
+      const { questions, answers, currentIndex } = examSession;
+      const total = questions.length;
+      const answeredCount = questions.filter(question => answers[question.id] !== undefined).length;
 
       if (examSession.finished) {
-        let score = 0;
-        examSession.questions.forEach(q => {
-          if (examSession.answers[q.id] === q.correct) score++;
-        });
+        const score = questions.filter(question => answers[question.id] === question.correct).length;
         const passed = score >= qualification.pass;
+        const firstWrong = questions.findIndex(question => answers[question.id] !== undefined && answers[question.id] !== question.correct);
+        const firstSkipped = questions.findIndex(question => answers[question.id] === undefined);
+        const actions = [
+          [firstWrong, 'Разобрать ошибки'],
+          [firstSkipped, 'Посмотреть пропущенные']
+        ].filter(([index]) => index >= 0).map(([index, label]) =>
+          `<button type="button" class="button button--secondary" onclick="selectExamQuestionIndex(${index})">${label}</button>`).join('');
         html += `
           <div class="inset" id="exam-result-summary" tabindex="-1" style="border-left: ${passed ? 'var(--inset-rule-positive)' : 'var(--inset-rule-error)'};">
             <div class="inset-title">Протокол: теория ${passed ? 'зачтена' : 'не зачтена'}</div>
-            <p>Правильных ответов: <strong>${score} из ${examSession.questions.length}</strong> (требуется не менее ${qualification.pass}). Нажмите на любой номер вопроса ниже, чтобы разобрать ошибки.</p>
+            <p>Правильных ответов: <strong>${score} из ${total}</strong> (требуется не менее ${qualification.pass}). Нажмите на любой номер вопроса ниже, чтобы разобрать ответ.</p>
+            <p>Верно: ${score} · Неверно: ${answeredCount - score} · Пропущено: ${total - answeredCount}</p>
+            ${actions ? `<div class="action-row exam-result-actions">${actions}</div>` : ''}
           </div>
         `;
+        html += renderExamQuestionGrid();
+      } else {
+        document.getElementById('exam-question-number').textContent = `Вопрос ${currentIndex + 1} из ${total}`;
+        document.getElementById('exam-answered').textContent = `Отвечено ${answeredCount} из ${total}`;
       }
 
-      // Навигационная сетка 1..30
-      html += `<div class="exam-nav-grid">`;
-      examSession.questions.forEach((q, idx) => {
-        const ans = examSession.answers[q.id];
-        let cls = 'exam-num-btn';
-        if (idx === examSession.currentIndex) cls += ' is-current';
-        if (examSession.finished) {
-          cls += (ans === q.correct) ? ' is-correct' : ' is-wrong';
-        } else if (typeof ans === 'number') {
-          cls += ' is-answered';
-        }
-        html += `<button type="button" class="${cls}" onclick="selectExamQuestionIndex(${idx})">${idx + 1}</button>`;
-      });
-      html += `</div>`;
-
       // Активный вопрос билета
-      const q = examSession.questions[examSession.currentIndex];
-      const chosen = examSession.answers[q.id];
-      const answeredCount = Object.keys(examSession.answers).length;
+      const q = questions[currentIndex];
+      const chosen = answers[q.id];
 
-      html += `<div class="question-card">`;
+      html += `<div class="question-card" tabindex="-1">`;
       const sourceLabel = q.no ? `№ ${q.no} · ${bankPageLabel(q)}` : `Раздел 0${q.sec}`;
       const letters = q.no ? PDF_LETTERS : LETTERS;
-      html += `<div class="question-meta">Билет · Вопрос ${examSession.currentIndex + 1} из ${examSession.questions.length} · ${sourceLabel} · Отвечено: ${answeredCount}/${examSession.questions.length}</div>`;
+      html += `<div class="question-meta">${examSession.finished ? `Вопрос ${currentIndex + 1} из ${total} · ` : ''}${sourceLabel}</div>`;
       html += q.no ? renderPdfPrompt(q) : `<div class="question-stem">${q.stem}</div>`;
       html += `<div class="options-list">`;
 
@@ -4567,7 +4662,7 @@
         const isCorrect = chosen === q.correct;
         html += q.no ? renderPdfAnswer(q, chosen) : (isCorrect
           ? `<div class="feedback-box feedback-box--correct"><div class="feedback-verdict-correct">Верно</div><div>${q.explanation}</div></div>`
-          : `<div class="feedback-box feedback-box--wrong"><div class="feedback-verdict-wrong">Ошибка — правильный вариант ${LETTERS[q.correct]}</div><div>${q.explanation}</div></div>`);
+          : `<div class="feedback-box feedback-box--wrong"><div class="feedback-verdict-wrong">${chosen === undefined ? 'Ответ не выбран' : 'Ошибка'} — правильный вариант ${LETTERS[q.correct]}</div><div>${q.explanation}</div></div>`);
       }
       html += `</div>`;
 
@@ -4821,6 +4916,16 @@
         requestAnimationFrame(revealCoveredAnchor);
       });
       window.addEventListener('load', revealCoveredAnchor);
+      document.addEventListener('click', event => {
+        const link = event.target.closest('a[href="#mock-exam"]');
+        if (!link || event.defaultPrevented || event.button !== 0
+          || event.ctrlKey || event.metaKey || event.altKey || event.shiftKey
+          || !examSession.active || examSession.finished) return;
+        event.preventDefault();
+        if (location.hash !== '#mock-exam') history.pushState(null, '', '#mock-exam');
+        markSelectedSection();
+        revealExamQuestion();
+      });
       bottomPanel.addEventListener('click', event => {
         const link = event.target.closest('a');
         if (link && link.hash === window.location.hash) requestAnimationFrame(revealCoveredAnchor);
@@ -4832,6 +4937,55 @@
       measureBars();
       updateTopButton();
       markSelectedSection();
+    }
+
+    function initExamActions() {
+      const dialog = document.getElementById('exam-action-dialog');
+      const title = document.getElementById('exam-action-title');
+      const copy = document.getElementById('exam-action-copy');
+      const grid = document.getElementById('exam-action-grid');
+      const confirm = document.getElementById('exam-action-confirm');
+      let onConfirm;
+
+      function open(titleText, message, buttonLabel, action) {
+        title.textContent = titleText;
+        copy.textContent = message;
+        copy.hidden = !action;
+        confirm.textContent = buttonLabel;
+        confirm.hidden = !action;
+        grid.hidden = Boolean(action);
+        if (!action) grid.innerHTML = renderExamQuestionGrid();
+        onConfirm = action;
+        dialog.showModal();
+      }
+
+      dialog.querySelector('form').addEventListener('submit', event => {
+        event.preventDefault();
+        const action = onConfirm;
+        onConfirm = null;
+        dialog.close();
+        if (event.submitter !== confirm || !action || !examSession.active || examSession.finished) return;
+        if (refreshExamTime()) action();
+        else finishMockExam();
+      });
+      document.getElementById('exam-list-btn').addEventListener('click', () => {
+        open('Все вопросы', '', '');
+      });
+      document.getElementById('exam-new-btn').addEventListener('click', () => {
+        open('Начать новый билет?', 'Ответы в текущей попытке будут потеряны.', 'Начать новый',
+          () => startMockExam(examSession.source));
+      });
+      document.getElementById('finish-exam-btn').addEventListener('click', () => {
+        if (!refreshExamTime()) {
+          finishMockExam();
+          return;
+        }
+        const { questions, answers } = examSession;
+        const remaining = questions.filter(question => answers[question.id] === undefined).length;
+        if (remaining === 0) finishMockExam(true);
+        else open('Завершить экзамен?', `Без ответа: ${remaining} из ${questions.length}.`,
+          'Завершить и проверить', () => finishMockExam(true));
+      });
     }
 
     function showExamTimeout(attempt) {
@@ -4851,11 +5005,7 @@
       const dialog = document.getElementById('exam-timeout-dialog');
       dialog.addEventListener('close', () => {
         if (dialog.returnValue !== 'result') return;
-        const result = document.getElementById('exam-result-summary');
-        if (!result) return;
-        const topBar = document.querySelector('.pinned-topbar');
-        result.focus({ preventScroll: true });
-        window.scrollTo(0, window.scrollY + result.getBoundingClientRect().top - topBar.offsetHeight - 8);
+        revealExamElement(document.getElementById('exam-result-summary'));
       });
     }
 
@@ -4887,6 +5037,7 @@
     }
 
     document.addEventListener('DOMContentLoaded', initAboutDialog);
+    document.addEventListener('DOMContentLoaded', initExamActions);
     document.addEventListener('DOMContentLoaded', initExamTimeoutDialog);
     document.addEventListener('DOMContentLoaded', initHandbookNavigation);
     document.addEventListener('DOMContentLoaded', initPageSearch);
