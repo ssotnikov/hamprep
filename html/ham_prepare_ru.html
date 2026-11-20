@@ -1250,10 +1250,7 @@
       z-index: 11;
       right: 11px;
       bottom: var(--bottom-control-gap);
-      display: grid;
-      grid-template: var(--to-top-diameter) / var(--to-top-diameter);
-      place-content: end;
-      place-items: center;
+      display: block;
       width: var(--pinned-bottom-height);
       height: var(--pinned-bottom-height);
       padding: 0;
@@ -1265,15 +1262,18 @@
     .to-top[hidden] { display: none; }
     .to-top::before {
       content: "";
-      grid-area: 1 / 1;
-      width: 100%;
-      height: 100%;
+      position: absolute;
+      right: 0;
+      bottom: 0;
+      width: var(--to-top-diameter);
+      height: var(--to-top-diameter);
       border-radius: 50%;
       background: var(--to-top-bg);
     }
     .to-top svg {
-      grid-area: 1 / 1;
-      z-index: 1;
+      position: absolute;
+      right: calc((var(--to-top-diameter) - 16.1px) / 2);
+      bottom: calc((var(--to-top-diameter) - 16.1px) / 2);
       width: 16.1px;
       height: 16.1px;
       fill: none;
