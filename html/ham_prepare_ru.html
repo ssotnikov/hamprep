@@ -1981,7 +1981,29 @@
     .review-answer.correct { background: var(--positive-container); color: var(--on-positive-container); }
     .review-body .button { display: block; width: 100%; min-height: 44px; margin: 7px 0 0; }
     .review-return { margin: 8px 0 12px; }
-</style>
+
+    .reading-tools { display:grid; gap:8px; margin: 10px 0 16px; }
+    .reading-tools .button { width:100%; justify-content:flex-start; text-align:left; }
+    .reading-tools .button[hidden] { display:none; }
+    .reading-tools .reading-resume { display:grid; gap:2px; }
+    .reading-resume small, .saved-meta { color:var(--on-surface-variant); font-size:.84em; font-weight:400; }
+    .saved-icon { width:20px; height:20px; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; fill:none; flex:none; }
+    .saved-toggle, .saved-remove { display:inline-grid; place-items:center; width:44px; height:44px; flex:none; border:0; border-radius:12px; background:var(--secondary-container); color:var(--on-secondary-container); cursor:pointer; }
+    .saved-toggle[aria-pressed="true"] svg { fill:currentColor; }
+    .saved-target-heading, .saved-question-meta { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+    .saved-target-heading > h3 { margin:0; }
+    .saved-target-heading { margin-bottom:8px; }
+    #saved-dialog { max-width:410px; overflow-y:auto; overscroll-behavior:contain; }
+    #saved-dialog > form .button { margin-top:12px; }
+    #saved-dialog h3 { margin:14px 0 6px; font-size:1rem; }
+    .saved-row { display:grid; grid-template-columns:minmax(0,1fr) 44px; align-items:start; gap:8px; margin:0 0 8px; }
+    .saved-row .saved-destination { display:grid; gap:2px; text-align:left; justify-items:start; line-height:1.35; }
+    .saved-row .saved-destination:disabled { opacity: 1; }
+    .saved-destination span { overflow-wrap:anywhere; }
+    #saved-dialog p { margin:0 0 8px; }
+
+    .reading-save-status:not(:empty) { display:block; color:var(--on-surface-variant); }
+  </style>
 </head>
 <body>
   <div class="pinned-topbar">
@@ -1989,7 +2011,7 @@
       <div class="appearance-row">
         <div class="version-group">
           <button class="about-button toolbar-icon" id="about-button" type="button" title="О приложении" aria-label="О приложении" aria-haspopup="dialog"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M10 9a10 10 0 0 0 0 14m12-14a10 10 0 0 1 0 14M6.5 6a14 14 0 0 0 0 20m19-20a14 14 0 0 1 0 20" fill="none" stroke="#4785c5" stroke-width="1.9" stroke-linecap="round"/><circle cx="16" cy="12" r="1.75" fill="#edac2d"/><path d="M16 16v7" stroke="#4785c5" stroke-width="2.8" stroke-linecap="round"/></svg></button>
-          <span class="app-version">Версия <span id="app-version">0.12.0</span></span>
+          <span class="app-version">Версия <span id="app-version">0.13.0</span></span>
         </div>
         <div class="appearance-actions">
           <button class="find-toggle" id="find-toggle" type="button" aria-label="Поиск по материалам" aria-expanded="false" aria-controls="find-panel" title="Поиск по материалам">
@@ -2056,6 +2078,11 @@
       <div class="quick-entry">
         <button type="button" class="button button--secondary" id="quick-study-open">5 вопросов на сегодня</button>
         <small>Короткая тренировка по слабой теме</small>
+      </div>
+      <div class="reading-tools">
+        <button type="button" class="button button--secondary reading-resume" id="reading-resume" hidden>Продолжить чтение<small></small></button>
+        <button type="button" class="button button--secondary" id="saved-open">Закладки</button>
+        <small class="reading-save-status" id="reading-save-status" role="status"></small>
       </div>
       <dl class="home-exam-facts" aria-label="Условия пробного экзамена">
         <div><dt>Вопросов</dt><dd id="category-kpi-total">30</dd></div>
@@ -2146,7 +2173,7 @@
             <strong>Международного союза радиолюбителей (IARU)</strong>. Российская Федерация относится к <strong>1-му району МСЭ (IARU Region 1)</strong>.
           </p>
 
-          <h3>Ключевые определения статьи 1 Регламента радиосвязи</h3>
+          <h3 id="itu-definitions" data-reading-heading>Ключевые определения статьи 1 Регламента радиосвязи</h3>
           <ul>
             <li><strong>Любительская служба (п. 1.56):</strong> служба радиосвязи для целей самообучения, переговорной связи и технических исследований, осуществляемая лицами с должным разрешением исключительно из личного интереса и <em>без извлечения материальной выгоды</em>.</li>
             <li><strong>Любительская спутниковая служба (п. 1.57):</strong> использует космические станции на спутниках Земли для тех же целей.</li>
@@ -2167,7 +2194,7 @@
             </p>
           </div>
 
-          <h3>Статьи 19, 25 Регламента радиосвязи и документы CEPT</h3>
+          <h3 id="itu-rules-and-cept" data-reading-heading>Статьи 19, 25 Регламента радиосвязи и документы CEPT</h3>
           <div class="table-wrap">
             <table>
               <thead>
@@ -2226,7 +2253,7 @@
 
           <div class="quiz-block" id="quiz-sec-1">
             <div class="quiz-block-head">
-              <h3>Самопроверка по разделу 01</h3>
+              <h3 id="self-check-1" data-reading-heading>Самопроверка по разделу 01</h3>
               <span class="caption">Выберите вариант ответа — проверка и пояснение появятся сразу</span>
             </div>
             <div id="quiz-container-1"></div>
@@ -2252,7 +2279,7 @@
             Возрастного ценза нет (за лиц младше 14 лет заявление подают законные представители).
           </p>
 
-          <h3>Основные нормативные акты РФ и ключевые сроки</h3>
+          <h3 id="russian-radio-rules" data-reading-heading>Основные нормативные акты РФ и ключевые сроки</h3>
           <div class="table-wrap">
             <table>
               <thead>
@@ -2290,7 +2317,7 @@
             </table>
           </div>
 
-          <h3>Позывные по категориям и предельная мощность по таблице № 7 ГКРЧ</h3>
+          <h3 id="callsign-bands-and-power" data-reading-heading>Позывные по категориям и предельная мощность по таблице № 7 ГКРЧ</h3>
           <div class="table-wrap">
             <table>
               <thead>
@@ -2353,7 +2380,7 @@
           <!-- Интерактивный конструктор позывного -->
           <div class="lab-panel" id="lab-callsign">
             <div class="lab-header">
-              <h3>Интерактивный анализатор позывных и условной нумерации округов</h3>
+              <h3 id="callsign-analyzer" data-reading-heading>Интерактивный анализатор позывных и условной нумерации округов</h3>
               <p class="caption">Пример показывает структуру позывного. При временной работе в другом федеральном округе добавляется условный номер округа пребывания (п. 4.4.1 и приложение № 1 к приказу № 184).</p>
             </div>
             <div class="form-grid">
@@ -2404,7 +2431,7 @@
 
           <div class="quiz-block" id="quiz-sec-2">
             <div class="quiz-block-head">
-              <h3>Самопроверка по разделу 02</h3>
+              <h3 id="self-check-2" data-reading-heading>Самопроверка по разделу 02</h3>
             </div>
             <div id="quiz-container-2"></div>
           </div>
@@ -2429,7 +2456,7 @@
             не более трёх раз, а во время длительного радиообмена — <strong>не реже одного раза в 10 минут</strong> (любительские ретрансляторы передают свой позывной не реже 1 раза в 15 минут).
           </p>
 
-          <h3>Ключевые эксплуатационные правила</h3>
+          <h3 id="operating-procedures" data-reading-heading>Ключевые эксплуатационные правила</h3>
           <ul>
             <li><strong>Время и календарь:</strong> время сообщается по <strong>UTC</strong> (всемирное координированное время), дата — по григорианскому календарю.</li>
             <li><strong>Вызывные частоты:</strong> предназначены только для установления радиосвязи с обязательным последующим переходом (<span class="mono">QSY</span>) на другую свободную частоту. Преимущество на частоте имеет оператор, приглашавший корреспондентов.</li>
@@ -2442,7 +2469,7 @@
           <!-- Интерактивный фонетический алфавит и Q-код -->
           <div class="lab-panel" id="lab-phonetic">
             <div class="lab-header">
-              <h3>Тренажёр фонетического алфавита и Q-кодов (Приложение № 2 к Приказу № 184)</h3>
+              <h3 id="phonetic-and-q-codes" data-reading-heading>Тренажёр фонетического алфавита и Q-кодов (Приложение № 2 к Приказу № 184)</h3>
               <p class="caption">В эфире запрещено заменять утверждённые кодовые слова уменьшительными или произвольными формами. Повторяющиеся знаки передаются раздельно.</p>
             </div>
             <div class="form-grid">
@@ -2474,7 +2501,7 @@
 
           <div class="quiz-block" id="quiz-sec-3">
             <div class="quiz-block-head">
-              <h3>Самопроверка по разделу 03</h3>
+              <h3 id="self-check-3" data-reading-heading>Самопроверка по разделу 03</h3>
             </div>
             <div id="quiz-container-3"></div>
           </div>
@@ -2553,7 +2580,7 @@
           <!-- Интерактивный декодер класса излучений -->
           <div class="lab-panel" id="lab-emission">
             <div class="lab-header">
-              <h3>Интерактивный декодер класса излучений (Прил. 1 РР МСЭ)</h3>
+              <h3 id="emission-decoder" data-reading-heading>Интерактивный декодер класса излучений (Прил. 1 РР МСЭ)</h3>
               <p class="caption">Нажмите на экзаменационный пример или соберите свой трёхзначный код.</p>
             </div>
             <div class="preset-row">
@@ -2618,7 +2645,7 @@
 
           <div class="quiz-block" id="quiz-sec-4">
             <div class="quiz-block-head">
-              <h3>Самопроверка по разделу 04</h3>
+              <h3 id="self-check-4" data-reading-heading>Самопроверка по разделу 04</h3>
             </div>
             <div id="quiz-container-4"></div>
           </div>
@@ -2636,14 +2663,14 @@
             <span class="status-tag" id="badge-sec-5">—</span>
           </div>
 
-          <h3>Основы электро- и радиотехники</h3>
+          <h3 id="radio-electronics-basics" data-reading-heading>Основы электро- и радиотехники</h3>
           <ul>
             <li><strong>Закон Ома и мощность:</strong> <span class="mono">I = U / R</span>, <span class="mono">P = U · I = I² · R = U² / R</span>. При последовательном соединении резисторов сопротивления складываются (<span class="mono">R<sub>общ</sub> = R<sub>1</sub> + R<sub>2</sub></span>), а ёмкости конденсаторов уменьшаются (<span class="mono">1/C<sub>общ</sub> = 1/C<sub>1</sub> + 1/C<sub>2</sub></span>). При параллельном соединении — наоборот: ёмкости складываются, а общее сопротивление меньше наименьшего.</li>
             <li><strong>Резонанс колебательного контура:</strong> частота резонанса <span class="mono">f<sub>0</sub> = 1 / (2π√(LC))</span>. При увеличении L или C в 4 раза частота уменьшается в 2 раза. На частоте резонанса реактивные сопротивления равны (<span class="mono">X<sub>L</sub> = X<sub>C</sub></span>): у <strong>последовательного</strong> контура общее сопротивление <em>минимально</em>, у <strong>параллельного</strong> — <em>максимально</em>. Добротность <span class="mono">Q = f<sub>0</sub> / Δf</span>.</li>
             <li><strong>Полупроводники и усилительные классы:</strong> диод проводит ток в одном направлении (выпрямление), стабилитрон работает в режиме обратного пробоя для стабилизации напряжения. В усилителях мощности: <strong>класс A</strong> — максимальная линейность и самый низкий КПД (ток течёт весь период); <strong>класс AB</strong> — основной для линейного усиления SSB; <strong>класс C</strong> — высокий КПД (отсечка больше полупериода), пригоден только для CW и FM.</li>
           </ul>
 
-          <h3>Супергетеродинный приёмник и передатчик</h3>
+          <h3 id="superheterodyne-and-transmitter" data-reading-heading>Супергетеродинный приёмник и передатчик</h3>
           <div class="schematic-box">
             <svg class="receiver-schematic" viewBox="0 0 760 150" role="img" aria-label="Структурная схема супергетеродинного приёмника">
               <rect x="10" y="35" width="90" height="54" fill="#f3f2f1" stroke="#0b0c0c" stroke-width="2"></rect>
@@ -2698,7 +2725,7 @@
             В передатчике выходной <strong>П-контур</strong> (или ФНЧ) выполняет две задачи: согласует выходное сопротивление каскада с фидером и подавляет высшие гармоники.
           </p>
 
-          <h3>Антенны, фидеры и распространение радиоволн</h3>
+          <h3 id="antennas-and-propagation" data-reading-heading>Антенны, фидеры и распространение радиоволн</h3>
           <ul>
             <li><strong>Полуволновый диполь (<span class="mono">λ/2</span>):</strong> входное сопротивление в свободном пространстве <span class="mono">≈ 73 Ом</span>, горизонтальная поляризация (если подвешен горизонтально), максимум излучения перпендикулярен полотну («восьмёрка»). Для провода учитывается коэффициент укорочения ≈ 0,95 (<span class="mono">L<sub>дип</sub> ≈ 142,5 / f<sub>МГц</sub></span>).</li>
             <li><strong>Четвертьволновый штырь GP (<span class="mono">λ/4</span>):</strong> вертикальная поляризация, круговая диаграмма в горизонтальной плоскости, входное сопротивление <span class="mono">≈ 36 Ом</span> (с наклонными противовесами — около 50 Ом).</li>
@@ -2716,7 +2743,7 @@
           <!-- Инженерный калькулятор антенн и КСВ -->
           <div class="lab-panel" id="lab-rf">
             <div class="lab-header">
-              <h3>Инженерный калькулятор: длина волны, диполь и КСВ</h3>
+              <h3 id="antenna-calculator" data-reading-heading>Инженерный калькулятор: длина волны, диполь и КСВ</h3>
               <p class="caption">Расчёт геометрических размеров антенн и рассогласования в 50-омном тракте.</p>
             </div>
             <div class="form-grid">
@@ -2736,7 +2763,7 @@
 
           <div class="quiz-block" id="quiz-sec-5">
             <div class="quiz-block-head">
-              <h3>Самопроверка по разделу 05</h3>
+              <h3 id="self-check-5" data-reading-heading>Самопроверка по разделу 05</h3>
             </div>
             <div id="quiz-container-5"></div>
           </div>
@@ -2754,13 +2781,14 @@
             <span class="status-tag" id="badge-sec-6">—</span>
           </div>
 
+          <h3 id="decibel-formula" data-reading-heading>Расчет уровня в децибелах</h3>
           <p>
             Для оценки усиления, ослабления и уровней сигналов в радиотехнике используют логарифмическую единицу — <strong>децибел (дБ)</strong>:
             по мощности <span class="mono">L = 10 · lg(P<sub>2</sub> / P<sub>1</sub>)</span>, а по напряжению или току <span class="mono">L = 20 · lg(U<sub>2</sub> / U<sub>1</sub>)</span>.
           </p>
 
           <div class="db-reference">
-            <h3 id="db-reference-title">Отношения в децибелах</h3>
+            <h3 id="db-reference-title" data-reading-heading>Отношения в децибелах</h3>
             <div class="table-wrap">
               <table aria-labelledby="db-reference-title">
                 <colgroup><col><col><col></colgroup>
@@ -2806,7 +2834,7 @@
             </details>
           </div>
 
-          <h3>Основные приборы радиолюбителя и правила их подключения</h3>
+          <h3 id="measuring-instruments" data-reading-heading>Основные приборы радиолюбителя и правила их подключения</h3>
           <ul>
             <li><strong>Мультиметр (тестер):</strong> вольтметр подключается <em>параллельно</em> участку цепи (имеет очень большое входное сопротивление); амперметр — <em>последовательно</em> в разрыв цепи (имеет очень малое сопротивление); омметр — только к полностью <em>обесточенной</em> цепи с разряженными конденсаторами.</li>
             <li><strong>КСВ-метр и ваттметр:</strong> включаются в разрыв коаксиального фидера. Для настройки антенны КСВ-метр стоит перед антенной (или после тюнера), а для контроля согласования, которое «видит» трансивер — между трансивером и антенным тюнером.</li>
@@ -2817,7 +2845,7 @@
           <!-- Интерактивный конвертер дБ и S-шкалы -->
           <div class="lab-panel" id="lab-db">
             <div class="lab-header">
-              <h3>Конвертер децибел (дБ / дБм / Вт) и шкалы S-метра</h3>
+              <h3 id="decibel-converter" data-reading-heading>Конвертер децибел (дБ / дБм / Вт) и шкалы S-метра</h3>
               <p class="caption">Проверьте соотношения мощности, напряжения и прирост баллов S.</p>
             </div>
             <div class="form-grid">
@@ -2839,7 +2867,7 @@
 
           <div class="quiz-block" id="quiz-sec-6">
             <div class="quiz-block-head">
-              <h3>Самопроверка по разделу 06</h3>
+              <h3 id="self-check-6" data-reading-heading>Самопроверка по разделу 06</h3>
             </div>
             <div id="quiz-container-6"></div>
           </div>
@@ -2877,7 +2905,7 @@
 
           <div class="quiz-block" id="quiz-sec-7">
             <div class="quiz-block-head">
-              <h3>Самопроверка по разделу 07</h3>
+              <h3 id="self-check-7" data-reading-heading>Самопроверка по разделу 07</h3>
             </div>
             <div id="quiz-container-7"></div>
           </div>
@@ -2941,7 +2969,7 @@
 
           <div class="quiz-block" id="quiz-sec-8">
             <div class="quiz-block-head">
-              <h3>Самопроверка по разделу 08</h3>
+              <h3 id="self-check-8" data-reading-heading>Самопроверка по разделу 08</h3>
             </div>
             <div id="quiz-container-8"></div>
           </div>
@@ -3107,6 +3135,12 @@
     <h2 id="spaced-title" tabindex="-1">Повторить сегодня</h2>
     <div id="spaced-body"></div>
     <small class="spaced-save-status" id="spaced-dialog-save-status" role="status"></small>
+    <form method="dialog"><button class="button button--secondary">Закрыть</button></form>
+  </dialog>
+  <dialog class="exam-timeout-dialog" id="saved-dialog" aria-labelledby="saved-title">
+    <h2 id="saved-title" tabindex="-1">Закладки</h2>
+    <div id="saved-list"></div>
+    <small class="reading-save-status" id="saved-status" role="status"></small>
     <form method="dialog"><button class="button button--secondary">Закрыть</button></form>
   </dialog>
   <dialog class="exam-timeout-dialog" id="quick-study-dialog" aria-labelledby="quick-study-title">
@@ -4390,6 +4424,7 @@
         quizAnswers: appState.quizAnswers,
         bankAnswers: appState.bankAnswers,
         spacedReview: {version: 1, entries: appState.spacedReviews},
+        reading: readingTools.state(),
         examBankRevision: EXAM_BANK_REVISION,
         category,
         examsByCategory,
@@ -4574,7 +4609,8 @@
         const chosen = showFeedback ? appState.bankAnswers[question.id] : undefined;
         const options = renderBankOptions(question, chosen);
         return `<article class="question-card">
-          <div class="question-meta">№ ${question.no} · ${bankPageLabel(question)}</div>
+          <div class="question-meta saved-question-meta"><span>№ ${question.no} · ${bankPageLabel(question)}</span>
+            ${readingTools.markup('q', question.id)}</div>
           ${renderPdfPrompt(question)}
           <div class="options-list">${options}</div>
           ${chosen === undefined ? '' : renderPdfAnswer(question, chosen)}
@@ -4582,8 +4618,8 @@
       }).join('');
     }
 
-    function setBankTopic(start) {
-      document.getElementById('bank-search').value = '';
+    function setBankTopic(start, query = '') {
+      document.getElementById('bank-search').value = query;
       const topic = document.getElementById('bank-topic');
       topic.value = String(start);
       topic.dispatchEvent(new Event('change', {bubbles: true}));
@@ -4654,11 +4690,13 @@
     }
 
     function setCategory(next) {
+      readingTools.suspend();
       quickStudy.close();
       spacedStudy.close();
       stopExamTimer();
       category = next;
       qualification = CATEGORIES[category];
+      readingTools.update();
       const { ticket, pass, minutes, ranges } = qualification;
       PDF_BANK = ALL_PDF_QUESTIONS.filter(({ no }) => ranges.some(([start, end]) => no >= start && no <= end));
       const bankCount = PDF_BANK.length;
@@ -5199,6 +5237,7 @@
 
     function revealBelowTopbar(element, stickyHeight = 0) {
       if (!element) return;
+      readingTools.suspend();
       const inset = document.querySelector('.pinned-topbar').offsetHeight + stickyHeight + 8;
       element.focus({ preventScroll: true });
       window.scrollTo({ top: window.scrollY + element.getBoundingClientRect().top - inset, behavior: 'instant' });
@@ -5396,10 +5435,10 @@
       });
     }
 
-    function resetBankTopic(start) {
+    function resetBankTopic(start, query = '') {
       document.getElementById('bank-mistakes').checked = false;
       bankRetryFeedback.clear();
-      setBankTopic(start);
+      setBankTopic(start, query);
     }
 
     function navigateFromExamReview(target, context) {
@@ -5766,6 +5805,269 @@
       return {update, close: () => { if (dialog.open) dialog.close(); }};
     })();
 
+
+    const readingTools = (() => {
+      const resume = document.getElementById('reading-resume');
+      const opener = document.getElementById('saved-open');
+      const dialog = document.getElementById('saved-dialog');
+      const list = document.getElementById('saved-list');
+      const title = document.getElementById('saved-title');
+      const topbar = document.querySelector('.pinned-topbar');
+      const docs = new Map([...document.querySelectorAll('.study-section[id^="sec-"]')]
+        .map(section => [section.id, section]));
+      const headings = new Map([...docs.values()].flatMap(section =>
+        [section, ...section.querySelectorAll('[data-reading-heading]')].map(target => [target.id, {target, section}])));
+      const materials = new Map([
+        ['db-reference-title', 'Таблица · Раздел 06'],
+        ['decibel-formula', 'Формула · Раздел 06'],
+        ['sec-7', 'Раздел 07']
+      ]);
+      const questions = new Map(ALL_PDF_QUESTIONS.map(question => [question.id, question]));
+      const places = new Map();
+      const bookmarks = new Set();
+      const icon = '<svg class="saved-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v16l-6-4-6 4z"/></svg>';
+      const cross = '<svg class="saved-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg>';
+      let pending;
+      let ignoreUntil = 0;
+      let restoreFocus = true;
+
+      function label(target) {
+        return (target.querySelector('.section-head h2') || target).textContent.trim();
+      }
+
+      function destination(place) {
+        if (!place) return undefined;
+        const heading = headings.get(place.id);
+        return heading?.section.id === place.section && heading.target.isConnected
+          ? heading.target : docs.get(place.section);
+      }
+
+      function update() {
+        const target = destination(places.get(category));
+        resume.hidden = !target;
+        const subtitle = resume.querySelector('small');
+        const text = target ? label(target) : '';
+        if (subtitle.textContent !== text) subtitle.textContent = text;
+        const caption = 'Закладки' + (bookmarks.size ? ' · ' + bookmarks.size : '');
+        const count = opener.querySelector('span');
+        if (count.textContent !== caption) count.textContent = caption;
+        document.querySelectorAll('[data-reading-bookmark]').forEach(button => {
+          const active = bookmarks.has(button.dataset.readingBookmark);
+          const hint = active ? 'Убрать закладку' : 'Сохранить в закладки';
+          button.setAttribute('aria-pressed', String(active));
+          button.setAttribute('aria-label', hint);
+          button.title = hint;
+        });
+      }
+
+      function state() {
+        const byCategory = {};
+        for (const [categoryId, place] of places) byCategory[categoryId] = place;
+        return {version: 1, places: byCategory, bookmarks: [...bookmarks]};
+      }
+
+      function restore(saved) {
+        if (saved?.version !== 1) return;
+        for (const key of Object.keys(CATEGORIES)) {
+          const place = saved.places?.[key];
+          if (typeof place?.id === 'string' && /^[a-z0-9-]{1,64}$/.test(place.id)
+            && docs.has(place.section)) places.set(key, {id: place.id, section: place.section});
+        }
+        if (!Array.isArray(saved.bookmarks)) return;
+        for (const key of saved.bookmarks) {
+          if (typeof key === 'string' && /^(m:[a-z0-9-]{1,64}|q:pdf_[1-9][0-9]{0,3})$/.test(key)) bookmarks.add(key);
+        }
+      }
+
+      function save() {
+        update();
+        persistState().then(ok => {
+          const message = ok ? '' : 'Не удалось сохранить закладки или место чтения на устройстве.';
+          document.getElementById('reading-save-status').textContent = message;
+          document.getElementById('saved-status').textContent = message;
+        });
+      }
+
+      function remember(id, section) {
+        const previous = places.get(category);
+        if (previous?.id === id && previous.section === section) return;
+        places.set(category, {id, section});
+        save();
+      }
+
+      function suspend() {
+        clearTimeout(pending);
+        pending = undefined;
+        ignoreUntil = performance.now() + 600;
+      }
+
+      function recordPosition() {
+        pending = undefined;
+        if (performance.now() < ignoreUntil || document.querySelector('dialog[open]')
+          || !document.getElementById('find-panel').hidden) return;
+        const line = topbar.getBoundingClientRect().bottom + 12;
+        const section = [...docs.values()].find(node => {
+          const box = node.getBoundingClientRect();
+          return box.top <= line && box.bottom > line;
+        });
+        if (!section) return;
+        const local = [...section.querySelectorAll('[data-reading-heading]')].filter(node =>
+          node.getClientRects().length && node.getBoundingClientRect().top <= line);
+        remember(local.length ? local[local.length - 1].id : section.id, section.id);
+      }
+
+      function markup(kind, id) {
+        const key = kind + ':' + id;
+        const active = bookmarks.has(key);
+        const name = active ? 'Убрать закладку' : 'Сохранить в закладки';
+        return `<button type="button" class="saved-toggle" data-reading-bookmark="${key}" aria-pressed="${active}"
+          aria-label="${name}" title="${name}">${icon}</button>`;
+      }
+
+      function describe(key) {
+        const [kind, id] = key.split(':');
+        if (kind === 'q') {
+          const question = questions.get(id);
+          const meta = 'Вопрос № ' + id.slice(4);
+          return {
+            name: question?.stem ?? 'Вопрос удален',
+            meta: !question ? meta + ' · Больше не доступен' : PDF_BANK.includes(question)
+              ? meta : meta + ' · Недоступен для выбранной категории',
+            question: PDF_BANK.includes(question) ? question : undefined
+          };
+        }
+        const target = materials.has(id) ? headings.get(id)?.target : undefined;
+        return target?.isConnected ? {name: label(target), meta: materials.get(id), target}
+          : {name: 'Материал удален', meta: 'Материал · Больше не доступен'};
+      }
+
+      function openDestination(item) {
+        restoreFocus = false;
+        dialog.close();
+        let target = item.target;
+        if (item.question) {
+          resetBankTopic('', String(item.question.no));
+          target = document.querySelector('#bank-results .question-card');
+        }
+        if (!target) return;
+        target.tabIndex = -1;
+        revealBelowTopbar(target);
+      }
+
+      function renderList() {
+        // textContent keeps questions and restored entries out of HTML.
+        list.textContent = '';
+        if (!bookmarks.size) {
+          const empty = document.createElement('p');
+          empty.textContent = 'Закладок пока нет. Нажмите значок закладки у материала или вопроса, чтобы сохранить его.';
+          list.append(empty);
+          return;
+        }
+        for (const [kind, name] of [['m:', 'Материалы'], ['q:', 'Вопросы']]) {
+          const keys = [...bookmarks].filter(key => key.startsWith(kind));
+          if (!keys.length) continue;
+          const group = document.createElement('h3');
+          group.textContent = name;
+          list.append(group);
+          for (const key of keys) {
+            const item = describe(key);
+            const row = document.createElement('div');
+            row.className = 'saved-row';
+            const open = document.createElement('button');
+            open.type = 'button';
+            open.className = 'button button--secondary saved-destination';
+            open.disabled = !item.target && !item.question;
+            const name = document.createElement('span');
+            name.textContent = item.name;
+            const meta = document.createElement('small');
+            meta.className = 'saved-meta';
+            meta.textContent = item.meta;
+            open.append(name, meta);
+            open.addEventListener('click', () => openDestination(item));
+            const remove = document.createElement('button');
+            remove.type = 'button';
+            remove.className = 'saved-remove';
+            remove.setAttribute('aria-label', 'Удалить закладку: ' + item.name);
+            remove.innerHTML = cross;
+            remove.addEventListener('click', () => {
+              const index = [...list.querySelectorAll('.saved-remove')].indexOf(remove);
+              bookmarks.delete(key);
+              renderList();
+              save();
+              const remaining = list.querySelectorAll('.saved-remove');
+              (remaining[Math.min(index, remaining.length - 1)] || title).focus();
+            });
+            row.append(open, remove);
+            list.append(row);
+          }
+        }
+      }
+
+      opener.innerHTML = icon + '<span>Закладки</span>';
+      for (const id of materials.keys()) {
+        const target = headings.get(id).target;
+        if (target.matches('section')) {
+          target.querySelector('.section-head').insertAdjacentHTML('beforeend', markup('m', id));
+        } else {
+          const row = document.createElement('div');
+          row.className = 'saved-target-heading';
+          target.before(row);
+          row.append(target);
+          row.insertAdjacentHTML('beforeend', markup('m', id));
+        }
+      }
+      document.addEventListener('click', event => {
+        const button = event.target.closest('[data-reading-bookmark]');
+        if (!button) return;
+        const key = button.dataset.readingBookmark;
+        if (!bookmarks.delete(key)) bookmarks.add(key);
+        save();
+      });
+      document.getElementById('topics').addEventListener('click', event => {
+        const id = event.target.closest('a')?.hash.slice(1);
+        if (!docs.has(id) || event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+        suspend();
+        remember(id, id);
+      });
+      window.addEventListener('scroll', () => {
+        if (performance.now() < ignoreUntil) return;
+        clearTimeout(pending);
+        pending = setTimeout(recordPosition, 220);
+      }, {passive: true});
+      const resumeTracking = () => { ignoreUntil = 0; };
+      window.addEventListener('wheel', resumeTracking, {passive: true});
+      window.addEventListener('touchmove', resumeTracking, {passive: true});
+      window.addEventListener('keydown', event => {
+        if (['ArrowDown', 'ArrowUp', 'PageDown', 'PageUp', 'Home', 'End', ' '].includes(event.key)
+          && !event.target.closest('input, textarea, select, button, [contenteditable], dialog')) resumeTracking();
+      });
+      window.addEventListener('resize', suspend);
+      window.addEventListener('hashchange', suspend);
+      window.addEventListener('pagehide', () => {
+        if (pending === undefined) return;
+        clearTimeout(pending);
+        recordPosition();
+      });
+      new MutationObserver(suspend).observe(document.documentElement, {attributes: true, attributeFilter: ['data-palette']});
+      opener.addEventListener('click', () => {
+        suspend();
+        restoreFocus = true;
+        renderList();
+        dialog.showModal();
+        title.focus();
+      });
+      dialog.addEventListener('close', () => {
+        if (restoreFocus && !dialog.open) opener.focus({preventScroll: true});
+      });
+      resume.addEventListener('click', () => {
+        const target = destination(places.get(category));
+        if (!target) return;
+        target.tabIndex = -1;
+        revealBelowTopbar(target);
+      });
+      return {restore, state, update, suspend, markup};
+    })();
+
     function renderMockExam() {
       const ws = document.getElementById('exam-workspace');
       const timerEl = document.getElementById('exam-timer-display');
@@ -5867,6 +6169,7 @@
     // =========================================================================
     async function initApp() {
       const saved = await loadState();
+      readingTools.restore(saved?.reading);
       if (saved && typeof saved === 'object') {
         appState.quizAnswers = saved.quizAnswers ?? {};
         appState.bankAnswers = saved.bankAnswers ?? {};
@@ -6008,6 +6311,7 @@
           const bottom = (viewport?.offsetTop ?? 0) + (viewport?.height ?? window.innerHeight) - 8;
           const mark = active[0].getBoundingClientRect();
           const target = Math.max(top, (top + bottom - mark.height) / 2);
+          readingTools.suspend();
           window.scrollBy({ top: mark.top - target, behavior: 'instant' });
         }
       }
@@ -6037,6 +6341,7 @@
       });
 
       function closeSearch(restoreFocus = true) {
+        readingTools.suspend();
         clearTimeout(pendingSearch);
         observer.disconnect();
         clearHighlights();
@@ -6157,6 +6462,7 @@
         if (link && link.hash === window.location.hash) updateAfterAnchor();
       });
       topButton.addEventListener('click', () => {
+        readingTools.suspend();
         const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
         const nearTop = window.scrollY <= window.innerHeight;
         window.scrollTo({ top: 0, behavior: nearTop && !reduceMotion ? 'smooth' : 'instant' });
