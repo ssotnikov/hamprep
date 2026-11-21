@@ -49,7 +49,7 @@ public final class MainActivity extends AppActivity {
 
     private WebView webView;
     private FrameLayout contentRoot;
-    private View startupCover;
+    private StartupCover startupCover;
     private StudyReminders reminders;
     private ExamHtmlExport examExport;
     private boolean requestingPermission;
@@ -89,10 +89,7 @@ public final class MainActivity extends AppActivity {
                 .getString(STARTUP_APPEARANCE, "system");
         int background = backgroundFor(mode);
         contentRoot = setAppContent(webView, background);
-        startupCover = new View(this);
-        startupCover.setBackgroundColor(background);
-        startupCover.setClickable(true);
-        startupCover.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
+        startupCover = new StartupCover(this, background);
         contentRoot.addView(startupCover, new FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
         webView.postDelayed(startupTimeout, STARTUP_TIMEOUT_MS);
@@ -247,7 +244,7 @@ public final class MainActivity extends AppActivity {
             firstFrameRequested = true;
             int background = backgroundFor(mode);
             contentRoot.setBackgroundColor(background);
-            startupCover.setBackgroundColor(background);
+            startupCover.setPalette(background);
             openStudySection();
             webView.postVisualStateCallback(0, new WebView.VisualStateCallback() {
                 @Override
