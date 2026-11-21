@@ -1669,6 +1669,36 @@
     #quick-study-dialog .button { width: 100%; margin: 8px 0 0; }
     #quick-study-dialog h2 { margin: 0 0 6px; }
     #quick-study-dialog .quick-topic { color: var(--on-surface-variant); font-size: .88rem; margin: 0 0 12px; }
+
+    #history-open { margin: 10px 0 4px; width:100%; max-width:26rem; }
+    #history-dialog { max-width:490px; overflow:auto; overscroll-behavior:contain; }
+    .history-head { display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:14px; }
+    #history-dialog .history-head h2 { margin:0; }
+    .history-head form { margin:0; }
+    #history-dialog .history-close { width:44px; min-height:44px; padding:0; border:0; background:transparent; font-size:1.6rem; color:var(--on-surface); }
+    .history-filters { display:grid; gap:8px; grid-template-columns:minmax(0,1fr) minmax(0,1fr); }
+    .history-filters > [hidden] { display:none; }
+    .history-filters .ui-dropdown { margin:0; }
+    .history-filters .ui-dropdown-value { white-space:normal; }
+    .history-coverage { margin:12px 0 16px; padding:12px; background:var(--surface-container-low); border:1px solid var(--outline-variant); border-radius:12px; }
+    .history-coverage strong { display:block; margin-bottom:6px; }
+    .history-caption { display:block; color:var(--on-surface-variant); font-size:.86rem; }
+    #history-dialog h3 { margin:12px 0 8px; font-size:1rem; }
+    .history-chart { display:grid; gap:8px; grid-template-columns:repeat(var(--points),minmax(0,1fr)); padding:10px; margin-bottom:16px; background:var(--surface-container-low); border-radius:12px; }
+    .history-point { display:grid; gap:4px; justify-items:center; font-size:.79rem; }
+    .history-meter { display:flex; align-items:end; width:72%; height:48px; background:var(--secondary-container); border-radius:5px; overflow:hidden; }
+    .history-meter span { width:100%; height:var(--score); background:var(--primary); }
+    .history-rows { display:grid; gap:8px; }
+    .history-attempt { padding:10px 12px; border:1px solid var(--outline-variant); border-radius:12px; }
+    .history-attempt-head { display:flex; align-items:baseline; justify-content:space-between; gap:6px 12px; flex-wrap:wrap; }
+    .history-attempt-head strong { font-size:1.16rem; }
+    .history-status { font-size:.83rem; font-weight:650; color:var(--error); }
+    .history-status.is-passed { color:var(--positive); }
+    #history-dialog .history-attempt .button { margin:7px 0 0; }
+    .history-topics { margin:14px 0 0; }
+    .history-topics summary { cursor:pointer; font-weight:650; padding:9px 4px; }
+    .history-topic { padding:8px 4px; border-top:1px solid var(--outline-variant); }
+    @media(max-width:400px) { .history-filters { grid-template-columns:minmax(0,1fr); } }
     .spaced-entry { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; margin: 16px 0 22px; }
     .spaced-entry small { flex: 1 1 160px; color: var(--on-surface-variant); }
     .spaced-save-status:not(:empty) { display: block; margin: 8px 0; color: var(--on-surface-variant); }
@@ -2013,7 +2043,7 @@
       <div class="appearance-row">
         <div class="version-group">
           <button class="about-button toolbar-icon" id="about-button" type="button" title="О приложении" aria-label="О приложении" aria-haspopup="dialog"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M10 9a10 10 0 0 0 0 14m12-14a10 10 0 0 1 0 14M6.5 6a14 14 0 0 0 0 20m19-20a14 14 0 0 1 0 20" fill="none" stroke="#4785c5" stroke-width="1.9" stroke-linecap="round"/><circle cx="16" cy="12" r="1.75" fill="#edac2d"/><path d="M16 16v7" stroke="#4785c5" stroke-width="2.8" stroke-linecap="round"/></svg></button>
-          <span class="app-version">Версия <span id="app-version">0.13.3</span></span>
+          <span class="app-version">Версия <span id="app-version">0.14.0</span></span>
         </div>
         <div class="appearance-actions">
           <button class="find-toggle" id="find-toggle" type="button" aria-label="Поиск по материалам" aria-expanded="false" aria-controls="find-panel" title="Поиск по материалам">
@@ -3003,6 +3033,7 @@
             </select>
           </div>
 
+          <button type="button" class="button button--secondary" id="history-open">История попыток</button>
           <div class="exam-controls" id="exam-start-controls">
             <button type="button" class="button" id="start-exam-btn" onclick="startMockExam()">Начать экзамен</button>
           </div>
@@ -3133,6 +3164,23 @@
     </div>
   </section>
 
+  <dialog class="exam-timeout-dialog" id="history-dialog" aria-labelledby="history-title">
+    <div class="history-head">
+      <h2 id="history-title" tabindex="-1">История попыток</h2>
+      <form method="dialog"><button class="button history-close" aria-label="Закрыть">×</button></form>
+    </div>
+    <div class="history-filters">
+      <div><label for="history-category">Категория</label><select id="history-category">
+        <option value="1">1-я категория</option><option value="2">2-я категория</option>
+        <option value="3">3-я категория</option><option value="4">4-я категория</option>
+      </select></div>
+      <div id="history-source-group"><label for="history-source">Источник</label><select id="history-source">
+        <option value="pdf">Блок вопросов</option><option value="study">Учебные вопросы</option>
+      </select></div>
+    </div>
+    <div id="history-content"></div>
+  </dialog>
+
   <dialog class="exam-timeout-dialog" id="spaced-dialog" aria-labelledby="spaced-title">
     <h2 id="spaced-title" tabindex="-1">Повторить сегодня</h2>
     <div id="spaced-body"></div>
@@ -3180,7 +3228,7 @@
 
   <dialog id="reset-progress-dialog" class="exam-timeout-dialog" aria-labelledby="reset-progress-title" aria-describedby="reset-progress-copy">
     <h2 id="reset-progress-title">Сбросить весь прогресс?</h2>
-    <p id="reset-progress-copy">Удалятся ответы в учебных темах и блоке вопросов, очередь повторения, результаты и текущие попытки экзамена для всех категорий.</p>
+    <p id="reset-progress-copy">Удалятся ответы в учебных темах и блоке вопросов, очередь повторения, история, результаты и текущие попытки экзамена для всех категорий.</p>
     <form method="dialog">
       <button class="button" value="cancel" autofocus>Отмена</button>
       <button class="button reset-progress-confirm" value="reset">Сбросить прогресс</button>
@@ -3191,7 +3239,7 @@
     <p id="exam-action-copy" hidden></p>
     <div id="exam-action-grid" hidden></div>
     <form method="dialog">
-      <button type="submit" class="button" id="exam-action-confirm" value="confirm" hidden></button>
+      <button type="button" class="button" id="exam-action-confirm" value="confirm" hidden></button>
       <button type="submit" class="button button--secondary" value="cancel">Вернуться к билету</button>
     </form>
   </dialog>
@@ -4391,6 +4439,8 @@
       spacedReviews: {}
     };
     const examsByCategory = {};
+    const EXAM_HISTORY_LIMIT = 20;
+    let examHistory = {};
 
     const STORAGE_KEY = 'ham-prepare-ru:progress';
     const initialExamMarkup = document.getElementById('exam-workspace').innerHTML;
@@ -4399,6 +4449,7 @@
 
     function newExamSession() {
       return {
+        id: null,
         active: false,
         finished: false,
         source: 'pdf',
@@ -4412,10 +4463,10 @@
     }
 
     function saveCategoryExam() {
-      const { active, source, finished, questions, answers, currentIndex, deadline, secondsLeft } = examSession;
+      const { id, active, source, finished, questions, answers, currentIndex, deadline, secondsLeft } = examSession;
       examsByCategory[category] = {
         examRecord: appState.examRecord,
-        examAttempt: active ? { source, finished, ids: questions.map(question => question.id),
+        examAttempt: active ? { id, source, finished, ids: questions.map(question => question.id),
           answers, currentIndex, deadline, secondsLeft } : null
       };
     }
@@ -4428,6 +4479,7 @@
         spacedReview: {version: 1, entries: appState.spacedReviews},
         reading: readingTools.state(),
         examBankRevision: EXAM_BANK_REVISION,
+        examHistory: {version: 1, categories: examHistory},
         category,
         examsByCategory,
         ...examsByCategory['2']
@@ -4699,8 +4751,8 @@
       category = next;
       qualification = CATEGORIES[category];
       readingTools.update();
-      const { ticket, pass, minutes, ranges } = qualification;
-      PDF_BANK = ALL_PDF_QUESTIONS.filter(({ no }) => ranges.some(([start, end]) => no >= start && no <= end));
+      const { ticket, pass, minutes } = qualification;
+      PDF_BANK = questionsForCategory(category);
       const bankCount = PDF_BANK.length;
       const requiresMorse = category === '1';
       const savedExam = examsByCategory[category];
@@ -4846,6 +4898,7 @@
 
     function handleResetProgress() {
       spacedStudy.close();
+      examHistory = {};
       appState = { quizAnswers: {}, bankAnswers: {}, examRecord: null, spacedReviews: {} };
       for (const key of Object.keys(examsByCategory)) delete examsByCategory[key];
       stopExamTimer();
@@ -5172,21 +5225,34 @@
         ? 'Продолжить экзамен' : 'Пробный экзамен';
     }
 
-    function restoreExamAttempt(saved) {
-      const { ticket } = qualification;
-      if (!Array.isArray(saved?.ids) || saved.ids.length !== ticket || !Number.isFinite(saved.deadline)) return;
-      const source = saved.source === 'study' && category === '2' ? 'study' : 'pdf';
-      const pool = new Map((source === 'pdf' ? PDF_BANK : QUESTIONS).map(question => [question.id, question]));
+    function questionsForCategory(categoryId) {
+      return ALL_PDF_QUESTIONS.filter(({no}) =>
+        CATEGORIES[categoryId].ranges.some(([start, end]) => no >= start && no <= end));
+    }
+
+    function createExamAttemptId() {
+      const bytes = crypto.getRandomValues(new Uint8Array(12));
+      return 'exam-' + Array.from(bytes, value => value.toString(16).padStart(2, '0')).join('');
+    }
+
+    function isAttemptId(id, categoryId) {
+      return typeof id === 'string' && (/^exam-[0-9a-f]{24}$/.test(id) || id === 'legacy-' + categoryId);
+    }
+
+    function decodeExamAttempt(saved, categoryId, bank) {
+      const {ticket} = CATEGORIES[categoryId];
+      if (!Array.isArray(saved?.ids) || saved.ids.length !== ticket || !Number.isFinite(saved.deadline)) return null;
+      const source = saved.source === 'study' && categoryId === '2' ? 'study' : 'pdf';
+      const pool = new Map((source === 'pdf' ? bank : QUESTIONS).map(question => [question.id, question]));
       const questions = saved.ids.map(id => pool.get(id));
-      if (questions.includes(undefined) || new Set(saved.ids).size !== ticket) return;
+      if (questions.includes(undefined) || new Set(saved.ids).size !== ticket) return null;
       const answers = {};
       for (const question of questions) {
         const answer = saved.answers?.[question.id];
         if (Number.isInteger(answer) && answer >= 0 && answer < question.options.length) answers[question.id] = answer;
       }
-      examSession = {
-        ...newExamSession(),
-        active: true,
+      return {
+        id: isAttemptId(saved.id, categoryId) ? saved.id : null,
         source,
         questions,
         finished: saved.finished === true,
@@ -5195,7 +5261,13 @@
         deadline: saved.deadline,
         secondsLeft: saved.secondsLeft ?? 0
       };
-      document.getElementById('exam-source').value = source;
+    }
+
+    function restoreExamAttempt(saved) {
+      const attempt = decodeExamAttempt(saved, category, PDF_BANK);
+      if (!attempt) return;
+      examSession = {...newExamSession(), ...attempt, id: attempt.id ?? createExamAttemptId(), active: true};
+      document.getElementById('exam-source').value = attempt.source;
       renderExamStatus();
       if (!examSession.finished) startExamTimer();
       renderMockExam();
@@ -5224,6 +5296,7 @@
 
       examSession = {
         ...newExamSession(),
+        id: createExamAttemptId(),
         active: true,
         source,
         questions: finalQuestions,
@@ -5285,6 +5358,7 @@
         passed: score >= qualification.pass,
         source: examSession.source
       };
+      recordExamHistory(timedOut ? Math.min(examSession.deadline, Date.now()) : Date.now());
       persistState();
       updateProgressSummaries();
       renderExamStatus();
@@ -5337,6 +5411,212 @@
       return [...groups.values()].sort((a, b) => b.wrong.length - a.wrong.length
         || b.skipped.length - a.skipped.length || a.topic - b.topic);
     }
+
+
+    function getExamHistoryStats(attempt) {
+      const topics = getExamReviewGroups(attempt).map(row => [row.topic, row.wrong.length, row.skipped.length]);
+      return {
+        wrong: topics.reduce((sum, row) => sum + row[1], 0),
+        skipped: topics.reduce((sum, row) => sum + row[2], 0),
+        topics
+      };
+    }
+
+    function addExamHistoryRow(history, categoryId, row) {
+      const rows = history[categoryId] ?? [];
+      if (rows.some(item => item.id === row.id)) return;
+      history[categoryId] = [row, ...rows]
+        .sort((a, b) => (b.finishedAt ?? 0) - (a.finishedAt ?? 0)).slice(0, EXAM_HISTORY_LIMIT);
+    }
+
+    function recordExamHistory(finishedAt) {
+      const {id, source} = examSession;
+      const {score, total, passed} = appState.examRecord;
+      addExamHistoryRow(examHistory, category, {
+        id, source, score, total, passed, finishedAt, ...getExamHistoryStats(examSession)
+      });
+    }
+
+    function validExamSummary(row) {
+      return Number.isInteger(row?.total) && row.total > 0 && row.total <= CATEGORIES['1'].ticket
+        && Number.isInteger(row.score) && row.score >= 0 && row.score <= row.total;
+    }
+
+    function knownHistorySource(source, categoryId) {
+      if (source === 'pdf' || (categoryId === '2' && source === 'study')) return source;
+      return null;
+    }
+
+    function restoreExamHistory(saved) {
+      const history = {};
+      if (saved?.version !== 1) return history;
+      for (const categoryId of Object.keys(CATEGORIES)) {
+        const rows = saved.categories?.[categoryId];
+        if (!Array.isArray(rows)) continue;
+        for (const row of rows) {
+          if (!validExamSummary(row) || !isAttemptId(row.id, categoryId)) continue;
+          const legacy = row.id === 'legacy-' + categoryId;
+          const source = knownHistorySource(row.source, categoryId);
+          if (!legacy && (!source || !Number.isSafeInteger(row.finishedAt) || row.finishedAt <= 0
+            || row.finishedAt > Date.UTC(9999, 11, 31))) continue;
+          const summary = {id: row.id, source, score: row.score, total: row.total,
+            passed: typeof row.passed === 'boolean' ? row.passed : null,
+            finishedAt: legacy ? null : row.finishedAt};
+          const {wrong, skipped, topics} = row;
+          if (Number.isInteger(wrong) && Number.isInteger(skipped) && wrong >= 0 && skipped >= 0
+            && row.score + wrong + skipped === row.total) {
+            summary.wrong = wrong;
+            summary.skipped = skipped;
+            if (Array.isArray(topics) && topics.length <= BANK_TOPICS.length + 1
+              && topics.every(entry => Array.isArray(entry) && entry.length === 3
+                && entry.every(value => Number.isInteger(value) && value >= 0)
+                && entry[0] <= BANK_TOPICS.length && entry[1] + entry[2] > 0)
+              && new Set(topics.map(entry => entry[0])).size === topics.length
+              && topics.reduce((sum, entry) => sum + entry[1], 0) === wrong
+              && topics.reduce((sum, entry) => sum + entry[2], 0) === skipped) {
+              summary.topics = topics.map(entry => [...entry]);
+            }
+          }
+          addExamHistoryRow(history, categoryId, summary);
+        }
+      }
+      return history;
+    }
+
+    function migrateExamHistory() {
+      const history = {};
+      for (const categoryId of Object.keys(CATEGORIES)) {
+        const saved = examsByCategory[categoryId];
+        const previous = saved?.examRecord;
+        const attempt = decodeExamAttempt(saved?.examAttempt, categoryId, questionsForCategory(categoryId));
+        const id = 'legacy-' + categoryId;
+        const hasSummary = validExamSummary(previous);
+        const rawAnswers = saved?.examAttempt?.answers;
+        const trustworthy = attempt?.finished && rawAnswers && typeof rawAnswers === 'object'
+          && !Array.isArray(rawAnswers) && Object.keys(rawAnswers).length === Object.keys(attempt.answers).length;
+        const snapshotScore = trustworthy ? attempt.questions.filter(q => attempt.answers[q.id] === q.correct).length : null;
+        if (!hasSummary && !trustworthy) continue;
+        const knownSource = knownHistorySource(previous?.source, categoryId);
+        const matching = trustworthy && (!hasSummary || (previous.score === snapshotScore
+          && previous.total === attempt.questions.length && (!knownSource || knownSource === attempt.source)));
+        const score = hasSummary ? previous.score : snapshotScore;
+        const row = {
+          id, source: matching ? attempt.source : knownSource,
+          score, total: hasSummary ? previous.total : attempt.questions.length,
+          passed: hasSummary ? (typeof previous.passed === 'boolean' ? previous.passed : null) : score >= CATEGORIES[categoryId].pass,
+          finishedAt: null
+        };
+        if (matching) {
+          Object.assign(row, getExamHistoryStats(attempt));
+          saved.examAttempt.id = id;
+        }
+        addExamHistoryRow(history, categoryId, row);
+      }
+      return history;
+    }
+
+    (() => {
+      const launch = document.getElementById('history-open');
+      const dialog = document.getElementById('history-dialog');
+      const title = document.getElementById('history-title');
+      const body = document.getElementById('history-content');
+      const categoryFilter = document.getElementById('history-category');
+      const sourceFilter = document.getElementById('history-source');
+      const sourceGroup = document.getElementById('history-source-group');
+      const shortDate = new Intl.DateTimeFormat('ru-RU', {day: '2-digit', month: '2-digit'});
+      const fullDate = new Intl.DateTimeFormat('ru-RU', {day: 'numeric', month: 'long', year: 'numeric'});
+      let reviewId;
+      let openReview = false;
+
+      function chart(rows) {
+        const dated = rows.filter(row => row.finishedAt !== null).slice(0, 5).reverse();
+        if (dated.length < 2) return '';
+        return `<h3>Динамика результатов</h3><div class="history-chart" style="--points:${dated.length}">`
+          + dated.map(row => `<div class="history-point"><strong>${row.score} из ${row.total}</strong>
+              <div class="history-meter" aria-hidden="true"><span style="--score:${100 * row.score / row.total}%"></span></div>
+              <span class="history-caption">${shortDate.format(row.finishedAt)}</span></div>`).join('') + '</div>';
+      }
+
+      function attempt(row) {
+        const status = row.passed === null ? '' : `<span class="history-status${row.passed ? ' is-passed' : ''}">
+          ${row.passed ? 'Теория зачтена' : 'Теория не зачтена'}</span>`;
+        const date = row.finishedAt === null ? 'Результат до появления истории' : fullDate.format(row.finishedAt);
+        return `<article class="history-attempt">
+          <div class="history-attempt-head"><strong>${row.score} из ${row.total}</strong>${status}</div>
+          <span class="history-caption">${date}${row.source === null ? ' · Источник неизвестен' : ''}</span>
+          ${row.wrong === undefined ? '' : `<span class="history-caption">Неверно: ${row.wrong} · Пропущено: ${row.skipped}</span>`}
+          ${row.id === reviewId ? '<button type="button" class="button button--secondary" id="history-review">Открыть разбор</button>' : ''}
+        </article>`;
+      }
+
+      function summary(rows) {
+        const topics = new Map();
+        for (const row of rows) {
+          for (const [topic, wrong, skipped] of row.topics ?? []) {
+            const totals = topics.get(topic) ?? {topic, wrong: 0, skipped: 0, count: 0};
+            totals.wrong += wrong;
+            totals.skipped += skipped;
+            totals.count += Number(wrong > 0);
+            topics.set(topic, totals);
+          }
+        }
+        const ranked = [...topics.values()].sort((a, b) =>
+          b.count - a.count || b.wrong - a.wrong || b.skipped - a.skipped || a.topic - b.topic);
+        if (!ranked.length) return '';
+        return '<details class="history-topics"><summary>Ошибки и пропуски по темам</summary>'
+          + ranked.map(row => `<div class="history-topic"><strong>${BANK_TOPICS[row.topic]?.[1] ?? 'Без темы'}</strong>
+            <small class="history-caption">Попыток с ошибками: ${row.count} · Ошибок: ${row.wrong} · Пропущено: ${row.skipped}</small></div>`).join('') + '</details>';
+      }
+
+      function render() {
+        const selected = categoryFilter.value;
+        sourceGroup.hidden = selected !== '2';
+        if (sourceGroup.hidden) sourceFilter.value = 'pdf';
+        const pool = selected === category ? PDF_BANK : questionsForCategory(selected);
+        const answered = pool.filter(q => {
+          const value = appState.bankAnswers[q.id];
+          return Number.isInteger(value) && value >= 0 && value < q.options.length;
+        }).length;
+        const rows = (examHistory[selected] ?? []).filter(row => row.source === sourceFilter.value);
+        const legacy = (examHistory[selected] ?? []).find(row => row.source === null);
+        const snapshot = selected === category ? examSession : examsByCategory[selected]?.examAttempt;
+        reviewId = snapshot?.finished && rows.some(row => row.id === snapshot.id) ? snapshot.id : null;
+        const ratio = answered / pool.length;
+        body.innerHTML = `<div class="history-coverage"><strong>Покрытие блока вопросов</strong>
+          <span>Отвечено ${answered} из ${pool.length} · ${Math.round(100 * ratio)}%</span>
+          <div class="progress-track" aria-hidden="true"><div class="progress-fill" style="width:${100 * ratio}%"></div></div></div>`
+          + chart(rows) + '<h3>Завершенные попытки</h3>'
+          + (rows.length ? '<div class="history-rows">' + rows.map(attempt).join('') + '</div>'
+            : '<p class="history-caption">Завершенных попыток по выбранному источнику пока нет.</p>')
+          + (legacy ? '<h3>Старый результат без источника</h3>' + attempt(legacy) : '')
+          + summary(rows);
+      }
+
+      launch.addEventListener('click', () => {
+        openReview = false;
+        categoryFilter.value = category;
+        sourceFilter.value = document.getElementById('exam-source').value;
+        render();
+        dialog.showModal();
+        dialog.scrollTop = 0;
+        title.focus({preventScroll: true});
+      });
+      categoryFilter.addEventListener('change', render);
+      sourceFilter.addEventListener('change', render);
+      dialog.addEventListener('close', () => { if (!openReview && !dialog.open) launch.focus({preventScroll: true}); });
+      body.addEventListener('click', event => {
+        if (!event.target.closest('#history-review') || !reviewId) return;
+        if (categoryFilter.value !== category) {
+          const selector = document.getElementById('qualification-category');
+          selector.value = categoryFilter.value;
+          selector.dispatchEvent(new Event('change', {bubbles: true}));
+        }
+        if (!examSession.finished || examSession.id !== reviewId) return;
+        openReview = true;
+        dialog.close();
+        revealBelowTopbar(document.getElementById('exam-result-summary'));
+      });
+    })();
 
     function getExamReviewDestination(topic, question, destination) {
       const section = document.getElementById('sec-' + (topic + 1));
@@ -6197,6 +6477,8 @@
         }
       }
 
+      const needsHistoryMigration = Boolean(saved) && !Object.prototype.hasOwnProperty.call(saved, 'examHistory');
+      examHistory = needsHistoryMigration ? migrateExamHistory() : restoreExamHistory(saved?.examHistory);
       const needsReviewMigration = Boolean(saved) && !Object.prototype.hasOwnProperty.call(saved, 'spacedReview');
       appState.spacedReviews = restoreSpacedReviews(saved?.spacedReview, appState.bankAnswers, needsReviewMigration);
       updatePhoneticLab();
@@ -6208,6 +6490,7 @@
       setCategory(Object.hasOwnProperty.call(CATEGORIES, savedCategory) ? savedCategory : '2');
       renderAllSectionQuizzes();
       if (needsReviewMigration) saveSpacedProgress();
+      else if (needsHistoryMigration) persistState();
       document.getElementById('qualification-category').addEventListener('change', event => {
         saveCategoryExam();
         setCategory(event.target.value);
@@ -6498,14 +6781,16 @@
         dialog.showModal();
       }
 
-      dialog.querySelector('form').addEventListener('submit', event => {
-        event.preventDefault();
+      confirm.addEventListener('click', () => {
         const action = onConfirm;
         onConfirm = null;
         dialog.close();
-        if (event.submitter !== confirm || !action || !examSession.active || examSession.finished) return;
+        if (!action || !examSession.active || examSession.finished) return;
         if (refreshExamTime()) action();
         else finishMockExam();
+      });
+      dialog.addEventListener('close', () => {
+        if (!dialog.open) onConfirm = null;
       });
       document.getElementById('exam-list-btn').addEventListener('click', () => {
         open('Все вопросы', '', '');
