@@ -75,7 +75,8 @@
       --outline-variant: #b1b4b6;
 
       /* Accents */
-      --primary: #162e51;
+      --primary-rgb: 22, 46, 81;
+      --primary: rgb(var(--primary-rgb));
       --on-primary: #ffffff;
       --primary-container: #d2e2f1;
       --on-primary-container: #0c2d4a;
@@ -164,7 +165,8 @@
       --on-surface-variant: #b7c0cd;
       --outline: #6c7889;
       --outline-variant: #535e6d;
-      --primary: #a9c8f4;
+      --primary-rgb: 169, 200, 244;
+      --primary: rgb(var(--primary-rgb));
       --on-primary: #162e51;
       --primary-container: #293a51;
       --on-primary-container: #d3e6ff;
@@ -1311,7 +1313,7 @@
       --find-muted: #4c6175;
       --find-hover: #223f5c14;
       --find-accent: #215788;
-      --to-top-bg: rgba(241, 231, 207, .70);
+      --to-top-bg: rgba(var(--primary-rgb), .70);
       --to-top-border: #e0e8f0;
     }
     :root[data-palette="dark"] {
@@ -1322,7 +1324,7 @@
       --find-muted: #a5b8c7;
       --find-hover: #ffffff20;
       --find-accent: #ffcf19;
-      --to-top-bg: rgba(213, 198, 161, .74);
+      --to-top-bg: rgba(var(--primary-rgb), .74);
       --to-top-border: #8497ae;
       --sections-background: rgba(23, 26, 31, .78);
       --sections-tile-background: rgba(33, 37, 44, .76);
@@ -1412,7 +1414,7 @@
       padding: 0;
       border: 0;
       background: transparent;
-      color: #182a3d;
+      color: var(--on-primary);
       cursor: pointer;
     }
     .to-top[hidden] { display: none; }
@@ -1902,7 +1904,7 @@
       <div class="appearance-row">
         <div class="version-group">
           <button class="about-button toolbar-icon" id="about-button" type="button" title="О приложении" aria-label="О приложении" aria-haspopup="dialog"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M10 9a10 10 0 0 0 0 14m12-14a10 10 0 0 1 0 14M6.5 6a14 14 0 0 0 0 20m19-20a14 14 0 0 1 0 20" fill="none" stroke="#4785c5" stroke-width="1.9" stroke-linecap="round"/><circle cx="16" cy="12" r="1.75" fill="#edac2d"/><path d="M16 16v7" stroke="#4785c5" stroke-width="2.8" stroke-linecap="round"/></svg></button>
-          <span class="app-version">Версия <span id="app-version">0.8.2</span></span>
+          <span class="app-version">Версия <span id="app-version">0.8.3</span></span>
         </div>
         <div class="appearance-actions">
           <button class="find-toggle" id="find-toggle" type="button" aria-label="Поиск по материалам" aria-expanded="false" aria-controls="find-panel" title="Поиск по материалам">
