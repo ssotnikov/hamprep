@@ -1707,6 +1707,91 @@
     #spaced-dialog .spaced-topic { color: var(--on-surface-variant); margin-bottom: 10px; font-size: .88rem; }
     .spaced-next-date { margin-top: 12px; font-weight: 650; }
     @media (max-width: 500px) { .spaced-entry .button { width: 100%; } }
+    .practical-panel { margin-block: 28px; }
+    .practical-header { display: flex; align-items: baseline; flex-wrap: wrap; justify-content: space-between; gap: 4px 12px; }
+    .practical-header h3 { margin: 0; }
+    .practical-progress, .practical-catalog small, .practical-status { color: var(--on-surface-variant); }
+    .practical-status:not(:empty) { margin: 8px 0; }
+    .practical-catalog, .practical-choices, .practical-order { display: grid; gap: 8px; }
+    .practical-catalog { margin-block: 10px 16px; }
+    .practical-catalog .button {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 2px 10px;
+      min-height: 54px;
+      text-align: left;
+    }
+    .practical-catalog .button[aria-pressed="true"] { background: var(--ui-focus); }
+    .practical-catalog small { font-weight: 500; }
+    .practical-badge {
+      grid-column: 2;
+      grid-row: 1 / 3;
+      border-radius: 8px;
+      padding: 2px 8px;
+      color: var(--on-positive-container);
+      background: var(--positive-container);
+      font-size: .8rem;
+    }
+    .practical-exercise {
+      min-width: 0;
+      padding: 12px;
+      padding: clamp(12px, 4vw, 22px);
+      background: var(--surface-container-low);
+      border: 1px solid var(--outline-variant);
+      border-radius: 16px;
+    }
+    .practical-exercise h4, .practical-exercise h5, .practical-exercise p { margin: 0; }
+    .practical-exercise .practical-title { font-size: 1.25rem; line-height: 1.28; }
+    .practical-exercise .practical-prompt { margin-block: 9px 14px; }
+    .practical-order { margin: 0; padding: 0; list-style: none; }
+    .practical-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 48px;
+      padding: 6px 8px;
+      background: var(--ui-tone);
+      color: var(--on-surface);
+      border-radius: 11px;
+    }
+    .practical-choices .practical-item { cursor: pointer; }
+    .practical-choices .practical-item:focus-within { background: var(--ui-focus); }
+    .practical-item input { flex: none; width: 18px; height: 18px; accent-color: var(--primary); }
+    .practical-number { flex: none; width: 1rem; color: var(--on-surface-variant); text-align: center; }
+    .practical-order .practical-item > span:nth-child(2) { flex: 1; overflow-wrap: anywhere; }
+    .practical-moves { display: flex; flex: none; gap: 1px; }
+    .practical-move {
+      background: transparent;
+      color: var(--on-surface);
+      border: 0;
+      border-radius: 8px;
+      font: inherit;
+      width: 44px;
+      height: 48px;
+      padding: 0;
+      cursor: pointer;
+    }
+    .practical-move:not(:disabled):hover { background: var(--ui-focus); }
+    .practical-move:disabled { opacity: .45; cursor: default; }
+    .practical-feedback {
+      margin-top: 12px;
+      padding: 12px;
+      border-radius: 12px;
+      background: var(--positive-container);
+      color: var(--on-positive-container);
+    }
+    .practical-feedback[data-wrong="true"] { background: var(--warning-container); color: var(--warning); }
+    .practical-feedback p { margin-top: 6px; }
+    .practical-feedback ol { padding-inline-start: 1.5rem; margin: 8px 0 0; }
+    .practical-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-block: 14px 10px; }
+    .practical-actions .button { flex: 1 1 126px; text-align: center; justify-content: center; }
+    .practical-panel [hidden] { display: none; }
+    @media (max-width: 360px) {
+      .practical-catalog .practical-badge { grid-column: 1; grid-row: auto; justify-self: start; }
+      .practical-order .practical-item { gap: 4px; }
+    }
+
     .quick-score { padding: 10px; border-left: var(--inset-rule); }
     #exam-action-dialog [hidden] { display: none; }
     #exam-action-dialog .button + .button { margin-top: var(--space-sm); }
@@ -2055,7 +2140,7 @@
       <div class="appearance-row">
         <div class="version-group">
           <button class="about-button toolbar-icon" id="about-button" type="button" title="О приложении" aria-label="О приложении" aria-haspopup="dialog"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M10 9a10 10 0 0 0 0 14m12-14a10 10 0 0 1 0 14M6.5 6a14 14 0 0 0 0 20m19-20a14 14 0 0 1 0 20" fill="none" stroke="#4785c5" stroke-width="1.9" stroke-linecap="round"/><circle cx="16" cy="12" r="1.75" fill="#edac2d"/><path d="M16 16v7" stroke="#4785c5" stroke-width="2.8" stroke-linecap="round"/></svg></button>
-          <span class="app-version">Версия <span id="app-version">0.15.0</span></span>
+          <span class="app-version">Версия <span id="app-version">0.16.0</span></span>
         </div>
         <div class="appearance-actions">
           <button class="find-toggle" id="find-toggle" type="button" aria-label="Поиск по материалам" aria-expanded="false" aria-controls="find-panel" title="Поиск по материалам">
@@ -2493,20 +2578,20 @@
             <span class="status-tag" id="badge-sec-3">—</span>
           </div>
 
-          <p>
+          <p id="listen-before-transmitting" tabindex="-1">
             Раздел IV Приказа Минкомсвязи № 184 строго регламентирует порядок работы в эфире. Перед началом передачи радиооператор обязан
             прослушать частоту и убедиться, что он не создаст помех другим станциям. Мощность должна устанавливаться минимально необходимой
             для уверенного приёма. При общем вызове (<span class="mono">CQ</span> / «Всем») или вызове конкретной станции позывные передаются
             не более трёх раз, а во время длительного радиообмена — <strong>не реже одного раза в 10 минут</strong> (любительские ретрансляторы передают свой позывной не реже 1 раза в 15 минут).
           </p>
 
-          <h3 id="operating-procedures" data-reading-heading>Ключевые эксплуатационные правила</h3>
+          <h3 id="operating-procedures" data-reading-heading tabindex="-1">Ключевые эксплуатационные правила</h3>
           <ul>
             <li><strong>Время и календарь:</strong> время сообщается по <strong>UTC</strong> (всемирное координированное время), дата — по григорианскому календарю.</li>
-            <li><strong>Вызывные частоты:</strong> предназначены только для установления радиосвязи с обязательным последующим переходом (<span class="mono">QSY</span>) на другую свободную частоту. Преимущество на частоте имеет оператор, приглашавший корреспондентов.</li>
+            <li id="calling-frequencies" tabindex="-1"><strong>Вызывные частоты:</strong> предназначены только для установления радиосвязи с обязательным последующим переходом (<span class="mono">QSY</span>) на другую свободную частоту. Преимущество на частоте имеет оператор, приглашавший корреспондентов.</li>
             <li><strong>Работа через ретрансляторы:</strong> перед переходом на передачу выдерживают <strong>паузу не менее 1 секунды</strong>. По п. 3.10 запрещены настройка аппаратуры через любительский ретранслятор и использование международных любительских ретрансляторов, кроме установленных на борту космических аппаратов.</li>
             <li><strong>Сигналы бедствия (п. 4.14–4.15):</strong> вызов бедствия имеет абсолютный приоритет. Все услышавшие его немедленно прекращают передачу и ведут наблюдение. При непосредственной угрозе жизни и здоровью граждан разрешена передача сигнала бедствия на частотах других служб, но о каждой такой передаче оператор <strong>обязан проинформировать Роскомнадзор</strong>.</li>
-            <li><strong>Аппаратный журнал (п. 4.17–4.21):</strong> ведётся в бумажном или электронном виде; заносятся дата (григорианский календарь), время (UTC), диапазон и вид работы, позывной корреспондента, а при допуске обучаемого/гостя — его имя и используемый позывной. На УКВ (выше 30 МГц) при работе с мобильных РЭС ведение журнала не обязательно. Хранится журнал <strong>не менее 1 года</strong> после внесения последних сведений.</li>
+            <li id="station-log" tabindex="-1"><strong>Аппаратный журнал (п. 4.17–4.21):</strong> ведётся в бумажном или электронном виде; заносятся дата (григорианский календарь), время (UTC), диапазон и вид работы, позывной корреспондента, а при допуске обучаемого/гостя — его имя и используемый позывной. На УКВ (выше 30 МГц) при работе с мобильных РЭС ведение журнала не обязательно. Хранится журнал <strong>не менее 1 года</strong> после внесения последних сведений.</li>
             <li><strong>Прямые запреты (п. 4.13):</strong> работа без позывного или в состоянии алкогольного/наркотического опьянения; изменение частоты в режиме излучения (кроме компенсации эффекта Доплера при связи через ИСЗ); трансляция музыки и вещательных программ; государственная тайна, шифры (контрольные номера тестов и телеметрия ИСЗ шифрами не считаются); политика, религия, коммерческая реклама, ненормативная лексика, экстремизм.</li>
           </ul>
 
@@ -2541,6 +2626,27 @@
               </div>
             </div>
             <div class="lab-output" id="phonetic-output"></div>
+          </div>
+
+          <div class="practical-panel" data-practical-section="3">
+            <div class="practical-header">
+              <h3 id="practical-heading-3">Практические мини-сценарии</h3>
+              <small class="practical-progress" role="status"></small>
+            </div>
+            <div class="practical-catalog" role="group" aria-labelledby="practical-heading-3"></div>
+            <article class="practical-exercise" id="practical-exercise-3" aria-labelledby="practical-title-3" hidden>
+              <h4 class="practical-title" id="practical-title-3" tabindex="-1"></h4>
+              <p class="practical-prompt" id="practical-prompt-3"></p>
+              <div class="practical-answers"></div>
+              <div class="practical-feedback" tabindex="-1" hidden></div>
+              <div class="practical-status" role="status"></div>
+              <div class="practical-actions">
+                <button type="button" class="button practical-check">Проверить</button>
+                <button type="button" class="button button--secondary practical-retry" hidden>Пройти заново</button>
+                <a class="button button--secondary practical-theory" hidden>К теории</a>
+              </div>
+              <a class="practical-back" href="#practical-heading-3">К списку заданий</a>
+            </article>
           </div>
 
           <div class="quiz-block" id="quiz-sec-3">
@@ -2881,9 +2987,9 @@
           <h3 id="measuring-instruments" data-reading-heading>Основные приборы радиолюбителя и правила их подключения</h3>
           <ul>
             <li><strong>Мультиметр (тестер):</strong> вольтметр подключается <em>параллельно</em> участку цепи (имеет очень большое входное сопротивление); амперметр — <em>последовательно</em> в разрыв цепи (имеет очень малое сопротивление); омметр — только к полностью <em>обесточенной</em> цепи с разряженными конденсаторами.</li>
-            <li><strong>КСВ-метр и ваттметр:</strong> включаются в разрыв коаксиального фидера. Для настройки антенны КСВ-метр стоит перед антенной (или после тюнера), а для контроля согласования, которое «видит» трансивер — между трансивером и антенным тюнером.</li>
-            <li><strong>Эквивалент нагрузки (Dummy Load):</strong> безиндукционный резистор номиналом 50 Ом нужной рассеиваемой мощности (в масляном или воздушном охлаждении). Применяется для проверки и настройки передатчика <strong>без излучения в эфир</strong>.</li>
-            <li><strong>Осциллограф и анализатор спектра:</strong> осциллограф показывает форму сигнала во времени (позволяет оценить линейность SSB по двутональному сигналу и глубину АМ); анализатор спектра показывает частотный состав (гармоники, побочные излучения).</li>
+            <li id="swr-meter-placement" tabindex="-1"><strong>КСВ-метр и ваттметр:</strong> включаются в разрыв коаксиального фидера. Для настройки антенны КСВ-метр стоит перед антенной (или после тюнера), а для контроля согласования, которое «видит» трансивер — между трансивером и антенным тюнером.</li>
+            <li id="dummy-load" tabindex="-1"><strong>Эквивалент нагрузки (Dummy Load):</strong> безиндукционный резистор номиналом 50 Ом нужной рассеиваемой мощности (в масляном или воздушном охлаждении). Применяется для проверки и настройки передатчика <strong>без излучения в эфир</strong>.</li>
+            <li id="spectrum-analyzer" tabindex="-1"><strong>Осциллограф и анализатор спектра:</strong> осциллограф показывает форму сигнала во времени (позволяет оценить линейность SSB по двутональному сигналу и глубину АМ); анализатор спектра показывает частотный состав (гармоники, побочные излучения).</li>
           </ul>
 
           <!-- Интерактивный конвертер дБ и S-шкалы -->
@@ -2907,6 +3013,27 @@
               </div>
             </div>
             <div class="lab-output" id="db-output"></div>
+          </div>
+
+          <div class="practical-panel" data-practical-section="6">
+            <div class="practical-header">
+              <h3 id="practical-heading-6">Практические мини-сценарии</h3>
+              <small class="practical-progress" role="status"></small>
+            </div>
+            <div class="practical-catalog" role="group" aria-labelledby="practical-heading-6"></div>
+            <article class="practical-exercise" id="practical-exercise-6" aria-labelledby="practical-title-6" hidden>
+              <h4 class="practical-title" id="practical-title-6" tabindex="-1"></h4>
+              <p class="practical-prompt" id="practical-prompt-6"></p>
+              <div class="practical-answers"></div>
+              <div class="practical-feedback" tabindex="-1" hidden></div>
+              <div class="practical-status" role="status"></div>
+              <div class="practical-actions">
+                <button type="button" class="button practical-check">Проверить</button>
+                <button type="button" class="button button--secondary practical-retry" hidden>Пройти заново</button>
+                <a class="button button--secondary practical-theory" hidden>К теории</a>
+              </div>
+              <a class="practical-back" href="#practical-heading-6">К списку заданий</a>
+            </article>
           </div>
 
           <div class="quiz-block" id="quiz-sec-6">
@@ -2982,22 +3109,22 @@
                 </tr>
               </thead>
               <tbody>
-                <tr>
+                <tr id="harmonic-interference" tabindex="-1">
                   <td><strong>Гармонические помехи</strong> на УКВ-ТВ / вещании (кратные рабочей частоте)</td>
                   <td>Высшие гармоники (2f, 3f...) из-за нелинейности выходного каскада</td>
                   <td>Установить <strong>фильтр нижних частот (ФНЧ / LPF)</strong> на выходе передатчика; настроить П-контур; не перекачивать УМ</td>
                 </tr>
-                <tr>
+                <tr id="receiver-overload" tabindex="-1">
                   <td><strong>Перегрузка входа</strong> телевизора или приёмника основным сигналом</td>
                   <td>Мощный КВ-сигнал «забивает» входные цепи бытового приёмника</td>
                   <td>Установить <strong>фильтр верхних частот (ФВЧ / HPF)</strong> на антенном входе телевизора (пропускает ТВ, режет КВ)</td>
                 </tr>
-                <tr>
+                <tr id="direct-detection" tabindex="-1">
                   <td><strong>Прямое детектирование</strong> в колонках, телефонах, усилителях</td>
                   <td>Наводка ВЧ-тока на длинные провода и выпрямление на p-n переходах микросхем</td>
                   <td>Намотать провода питания и аудиокабели на <strong>ферритовые кольца / защёлки</strong> (синфазный дроссель) у самого прибора</td>
                 </tr>
-                <tr>
+                <tr id="ssb-splatter" tabindex="-1">
                   <td><strong>«Сплеттеры» (широкие брызги)</strong> в соседних каналах SSB</td>
                   <td>Перемодуляция, завышенный уровень микрофона / ALC, ограничение пиков в УМ</td>
                   <td>Снизить усиление микрофона и раскачку УМ, контролировать ток сетки и показания ALC, проверять линейность по осциллографу</td>
@@ -3009,6 +3136,27 @@
                 </tr>
               </tbody>
             </table>
+          </div>
+
+          <div class="practical-panel" data-practical-section="8">
+            <div class="practical-header">
+              <h3 id="practical-heading-8">Практические мини-сценарии</h3>
+              <small class="practical-progress" role="status"></small>
+            </div>
+            <div class="practical-catalog" role="group" aria-labelledby="practical-heading-8"></div>
+            <article class="practical-exercise" id="practical-exercise-8" aria-labelledby="practical-title-8" hidden>
+              <h4 class="practical-title" id="practical-title-8" tabindex="-1"></h4>
+              <p class="practical-prompt" id="practical-prompt-8"></p>
+              <div class="practical-answers"></div>
+              <div class="practical-feedback" tabindex="-1" hidden></div>
+              <div class="practical-status" role="status"></div>
+              <div class="practical-actions">
+                <button type="button" class="button practical-check">Проверить</button>
+                <button type="button" class="button button--secondary practical-retry" hidden>Пройти заново</button>
+                <a class="button button--secondary practical-theory" hidden>К теории</a>
+              </div>
+              <a class="practical-back" href="#practical-heading-8">К списку заданий</a>
+            </article>
           </div>
 
           <div class="quiz-block" id="quiz-sec-8">
@@ -3262,7 +3410,7 @@
 
   <dialog id="reset-progress-dialog" class="exam-timeout-dialog" aria-labelledby="reset-progress-title" aria-describedby="reset-progress-copy">
     <h2 id="reset-progress-title">Сбросить весь прогресс?</h2>
-    <p id="reset-progress-copy">Удалятся ответы в учебных темах и блоке вопросов, очередь повторения, история, результаты и текущие попытки экзамена для всех категорий.</p>
+    <p id="reset-progress-copy">Удалятся ответы в учебных темах и блоке вопросов, отметки мини-сценариев, очередь повторения, история, результаты и текущие попытки экзамена для всех категорий.</p>
     <form method="dialog">
       <button class="button" value="cancel" autofocus>Отмена</button>
       <button class="button reset-progress-confirm" value="reset">Сбросить прогресс</button>
@@ -3781,6 +3929,185 @@
 "407":[427,539,"data:image/png;base64,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"]
   }</script>
   <api-shim></api-shim>
+  <script type="application/json" id="practical-study-data">
+{
+  "3": [
+    {
+      "id": "assemble-qso",
+      "theory": "operating-procedures",
+      "title": "Соберите учебный радиообмен",
+      "prompt": "Частоту уже прослушали, она свободна. Расставьте реплики короткой учебной связи от общего вызова до завершения. Используйте стрелки у каждой реплики.",
+      "items": [
+        "Всем, здесь станция А. Прием.",
+        "Станция А, здесь станция Б. Прием.",
+        "Станция Б, здесь станция А. Ваш рапорт 59. Прием.",
+        "Станция А, спасибо за связь, 73! Станция Б заканчивает связь."
+      ],
+      "initial": [
+        2,
+        0,
+        3,
+        1
+      ],
+      "explanation": "Общий вызов приглашает корреспондентов. Станция Б откликается, станция А передает рапорт, после чего станция Б завершает этот учебный обмен. Станции А и Б обозначают участников упражнения."
+    },
+    {
+      "id": "busy-frequency",
+      "theory": "listen-before-transmitting",
+      "title": "Частота уже занята",
+      "prompt": "Вы слышите, как две станции обмениваются рапортами. Вы хотите дать общий вызов. Что сделаете?",
+      "items": [
+        "Дам короткий вызов на той же частоте.",
+        "Найду другую подходящую частоту и прослушаю ее перед вызовом.",
+        "Попрошу станции освободить частоту."
+      ],
+      "correct": 1,
+      "explanation": "На частоте уже идет радиообмен. Перед вызовом найдите подходящую свободную частоту и убедитесь, что передача не создаст помех."
+    },
+    {
+      "id": "change-frequency",
+      "theory": "calling-frequencies",
+      "title": "С вызывной частоты на рабочую",
+      "prompt": "Корреспондент ответил на вызывной частоте. Расставьте действия для этой учебной связи. Подходящую рабочую частоту вы уже подобрали.",
+      "items": [
+        "Согласовать переход на рабочую частоту.",
+        "Перестроиться на согласованную частоту и прослушать ее.",
+        "Убедиться, что частота свободна, вызвать корреспондента и дождаться ответа.",
+        "Обменяться рапортами на рабочей частоте."
+      ],
+      "initial": [
+        2,
+        0,
+        3,
+        1
+      ],
+      "explanation": "Согласуйте переход, прослушайте рабочую частоту и восстановите связь. Только затем продолжайте обмен."
+    },
+    {
+      "id": "log-time",
+      "theory": "station-log",
+      "title": "Проверьте запись в журнале",
+      "prompt": "Стационарная связь прошла в 18:20 по Москве (15:20 UTC), на 20 м в SSB. В журнале указано «15 ноября · 18:20 UTC · 20 м · SSB · позывной корреспондента». Что исправить?",
+      "items": [
+        "Заменить 18:20 UTC на 15:20 UTC.",
+        "Заменить SSB на позывной своей станции.",
+        "Убрать диапазон, оставив только вид работы."
+      ],
+      "correct": 0,
+      "explanation": "В запись попало местное время с пометкой UTC. Для этого сеанса нужно указать 15:20 UTC."
+    }
+  ],
+  "6": [
+    {
+      "id": "read-swr",
+      "theory": "swr-meter-placement",
+      "title": "Разберите показания КСВ-метра",
+      "prompt": "КСВ-метр установлен между трансивером и тюнером. После настройки прибор показывает 1,1. Какой вывод следует из этого показания?",
+      "items": [
+        "Антенна согласована по всей длине фидера.",
+        "В точке измерения со стороны трансивера согласование хорошее.",
+        "Передатчик работает без побочных излучений."
+      ],
+      "correct": 1,
+      "explanation": "КСВ 1,1 указывает на хорошее согласование в точке измерения. Прибор стоит перед тюнером и показывает, какую нагрузку видит трансивер. По этому показанию нельзя определить КСВ после тюнера или оценить спектр сигнала."
+    },
+    {
+      "id": "place-swr-meter",
+      "theory": "swr-meter-placement",
+      "title": "Куда подключить КСВ-метр",
+      "prompt": "Тюнер стоит рядом с трансивером. Нужно измерить КСВ на входе фидера, который идет от тюнера к антенне. Где поставить прибор в учебной схеме?",
+      "items": [
+        "Между трансивером и тюнером.",
+        "На выходе тюнера перед фидером.",
+        "В цепи питания трансивера."
+      ],
+      "correct": 1,
+      "explanation": "КСВ-метр ставят в разрыв линии в точке измерения. Здесь эта точка находится на выходе тюнера перед фидером."
+    },
+    {
+      "id": "compare-loads",
+      "theory": "dummy-load",
+      "title": "Антенна и эквивалент нагрузки",
+      "prompt": "При одинаковой частоте и в одной точке прибор показал КСВ 1,0 с эквивалентом 50 Ом и 2,5 с антенной линией. Как интерпретировать сравнение?",
+      "items": [
+        "Эквивалент излучает лучше антенны.",
+        "В сигнале передатчика много гармоник.",
+        "В точке измерения с антенной линией согласование хуже, чем с эквивалентом."
+      ],
+      "correct": 2,
+      "explanation": "КСВ ближе к единице соответствует лучшему согласованию в точке измерения. По этим значениям нельзя судить об эффективности излучения или спектре."
+    },
+    {
+      "id": "measure-harmonics",
+      "theory": "spectrum-analyzer",
+      "title": "Чем проверить побочные излучения",
+      "prompt": "На учебном стенде нужно выяснить, есть ли у сигнала передатчика составляющая на удвоенной частоте. Какой прибор ее покажет?",
+      "items": [
+        "Анализатор спектра.",
+        "КСВ-метр.",
+        "Омметр."
+      ],
+      "correct": 0,
+      "explanation": "Вторая гармоника находится на удвоенной частоте. Анализатор спектра отображает составляющие сигнала по частоте."
+    }
+  ],
+  "8": [
+    {
+      "id": "receiver-overload",
+      "theory": "receiver-overload",
+      "title": "Определите причину радиопомех",
+      "prompt": "В учебной ситуации ТВ-приемник теряет изображение при работе КВ-передатчика. По результатам проверки причина уже известна: основной КВ-сигнал перегружает антенный вход ТВ-приемника. Какое действие подходит?",
+      "items": [
+        "Установить на антенный вход ТВ-приемника фильтр, который ослабляет КВ и пропускает ТВ-каналы.",
+        "Заменить фильтр нижних частот на выходе передатчика для подавления гармоник.",
+        "Уменьшить уровень микрофона, чтобы устранить перемодуляцию SSB."
+      ],
+      "correct": 0,
+      "explanation": "При подтвержденной перегрузке входа нужно ослабить основной КВ-сигнал до входных цепей ТВ-приемника и сохранить проход ТВ-каналов. Два других действия относятся к другим причинам помех."
+    },
+    {
+      "id": "identify-harmonic",
+      "theory": "harmonic-interference",
+      "title": "Гармоника или перегрузка входа",
+      "prompt": "На выходе КВ-передатчика измерили составляющую на удвоенной частоте. Что подтверждает это измерение?",
+      "items": [
+        "Вторая гармоника присутствует в сигнале передатчика.",
+        "Составляющую создает вход бытового приемника.",
+        "Передатчик согласован с антенной во всем диапазоне."
+      ],
+      "correct": 0,
+      "explanation": "Измерение сделано на выходе передатчика. Составляющая на удвоенной частоте подтверждает наличие второй гармоники в его сигнале."
+    },
+    {
+      "id": "audio-interference",
+      "theory": "direct-detection",
+      "title": "Голос слышен в активных колонках",
+      "prompt": "Колонки без радиоприемника воспроизводят фрагменты речи во время передачи. Феррит на длинном аудиокабеле у входа колонок заметно уменьшил помеху. Какое объяснение соответствует наблюдению?",
+      "items": [
+        "Гармоника попадает в телевизионный канал.",
+        "ВЧ-ток наводится на кабель, а цепи усилителя детектируют сигнал.",
+        "КСВ колонок меняет частоту передатчика."
+      ],
+      "correct": 1,
+      "explanation": "Кабель может подводить ВЧ-сигнал к усилителю, где нелинейные элементы детектируют его. Уменьшение помехи после установки феррита у входа согласуется с этим механизмом."
+    },
+    {
+      "id": "ssb-overmodulation",
+      "theory": "ssb-splatter",
+      "title": "Сигнал SSB мешает соседним каналам",
+      "prompt": "При громкой речи спектр сигнала SSB расширяется. После уменьшения уровня микрофона спектр возвращается к нормальной ширине. Что следует проверить в первую очередь?",
+      "items": [
+        "Только показания КСВ-метра.",
+        "Только сопротивление фидера.",
+        "Уровень микрофона и признаки перегрузки тракта передачи."
+      ],
+      "correct": 2,
+      "explanation": "При завышенном уровне микрофона тракт может перегружаться и расширять спектр. Изменение спектра при снижении уровня указывает на эту причину."
+    }
+  ]
+}
+  </script>
+
   <script>
     // =========================================================================
     // Учебные вопросы по восьми разделам
@@ -4512,6 +4839,7 @@
         bankAnswers: appState.bankAnswers,
         spacedReview: {version: 1, entries: appState.spacedReviews},
         reading: readingTools.state(),
+        practicalCompleted: practicalStudy.state(),
         examBankRevision: EXAM_BANK_REVISION,
         examHistory: {version: 1, categories: examHistory},
         category,
@@ -4932,6 +5260,7 @@
 
     function handleResetProgress() {
       spacedStudy.close();
+      practicalStudy.reset();
       examHistory = {};
       appState = { quizAnswers: {}, bankAnswers: {}, examRecord: null, spacedReviews: {} };
       for (const key of Object.keys(examsByCategory)) delete examsByCategory[key];
@@ -6777,9 +7106,228 @@ ${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="co
     // =========================================================================
     // ИНИЦИАЛИЗАЦИЯ ПРИ ЗАГРУЗКЕ
     // =========================================================================
+    const practicalStudy = (() => {
+      const definitions = JSON.parse(document.getElementById('practical-study-data').textContent);
+      const known = new Set();
+      const completed = new Set();
+      const panels = [];
+
+      function element(tag, className, text) {
+        const node = document.createElement(tag);
+        if (className) node.className = className;
+        if (text) node.textContent = text;
+        return node;
+      }
+
+      function action(text, className = 'button button--secondary') {
+        const button = element('button', className, text);
+        button.type = 'button';
+        return button;
+      }
+
+      function register(lesson) {
+        const {id, title, prompt, items, theory, initial, correct, explanation} = lesson;
+        const validText = value => typeof value === 'string' && value.trim().length > 0;
+        if (!Array.isArray(items) || items.length < 2 || !items.every(validText)) throw new Error('Invalid practical scenario options');
+        const validIndex = index => Number.isInteger(index) && index >= 0 && index < items.length;
+        const validAnswer = Array.isArray(initial)
+          ? correct === undefined && initial.length === items.length && new Set(initial).size === items.length
+            && initial.every(validIndex) && initial.some((item, index) => item !== index)
+          : initial === undefined && validIndex(correct);
+        if (!/^[a-z0-9-]+$/.test(id) || known.has(id) || !validText(title) || !validText(prompt)
+          || !validAnswer
+          || !validText(explanation) || !document.getElementById(theory)) {
+          throw new Error('Invalid practical scenario');
+        }
+        known.add(id);
+      }
+
+      function mount(panel) {
+        const {practicalSection} = panel.dataset;
+        const lessons = definitions[practicalSection];
+        if (!Array.isArray(lessons) || lessons.length !== 4) throw new Error('Invalid practical scenario section');
+        lessons.forEach(register);
+        const catalog = panel.querySelector('.practical-catalog');
+        const progress = panel.querySelector('.practical-progress');
+        const exercise = panel.querySelector('.practical-exercise');
+        const title = panel.querySelector('.practical-title');
+        const prompt = panel.querySelector('.practical-prompt');
+        const answers = panel.querySelector('.practical-answers');
+        const feedback = panel.querySelector('.practical-feedback');
+        const check = panel.querySelector('.practical-check');
+        const retry = panel.querySelector('.practical-retry');
+        const theoryLink = panel.querySelector('.practical-theory');
+        const back = panel.querySelector('.practical-back');
+        const status = panel.querySelector('.practical-status');
+        let lesson, order, selected, checked;
+
+        const entries = lessons.map((item, index) => {
+          const button = action();
+          const type = item.initial ? 'Последовательность' : 'Один ответ';
+          const badge = element('span', 'practical-badge', 'Выполнено');
+          button.setAttribute('aria-controls', exercise.id);
+          button.append(element('span', '', item.title), element('small', '', (index + 1) + ' · ' + type), badge);
+          button.addEventListener('click', () => {
+            if (lesson === item) revealBelowTopbar(title);
+            else start(item);
+          });
+          catalog.append(button);
+          return {item, button, badge};
+        });
+
+        function updateCatalog() {
+          const count = lessons.filter(item => completed.has(item.id)).length;
+          progress.textContent = 'Выполнено ' + count + ' из ' + lessons.length;
+          for (const {item, button, badge} of entries) {
+            button.setAttribute('aria-pressed', String(item === lesson));
+            badge.hidden = !completed.has(item.id);
+          }
+        }
+
+        function renderOrder() {
+          const list = element('ol', 'practical-order');
+          order.forEach((item, index) => {
+            const row = element('li', 'practical-item');
+            const number = element('span', 'practical-number', String(index + 1));
+            number.setAttribute('aria-hidden', 'true');
+            const moves = element('span', 'practical-moves');
+            for (const [delta, symbol, direction] of [[-1, '↑', 'вверх'], [1, '↓', 'вниз']]) {
+              const move = action(symbol, 'practical-move');
+              move.dataset.item = String(item);
+              move.dataset.delta = String(delta);
+              move.setAttribute('aria-label', 'Переместить реплику ' + (index + 1) + ' ' + direction);
+              const next = index + delta;
+              move.disabled = checked || next < 0 || next >= order.length;
+              move.addEventListener('click', () => {
+                [order[index], order[next]] = [order[next], order[index]];
+                renderOrder();
+                const replacement = answers.querySelector('[data-item="' + item + '"][data-delta="' + delta + '"]');
+                const focus = replacement.disabled
+                  ? answers.querySelector('[data-item="' + item + '"]:not(:disabled)') : replacement;
+                focus.focus({preventScroll: true});
+              });
+              moves.append(move);
+            }
+            row.append(number, element('span', '', lesson.items[item]), moves);
+            list.append(row);
+          });
+          answers.textContent = '';
+          answers.append(list);
+        }
+
+        function renderChoices() {
+          const choices = element('div', 'practical-choices');
+          choices.setAttribute('role', 'radiogroup');
+          choices.setAttribute('aria-labelledby', prompt.id);
+          lesson.items.forEach((text, index) => {
+            const label = element('label', 'practical-item');
+            const input = element('input');
+            input.type = 'radio';
+            input.name = exercise.id + '-answer';
+            input.checked = selected === index;
+            input.disabled = checked;
+            input.addEventListener('change', () => {
+              selected = index;
+              status.textContent = '';
+            });
+            label.append(input, document.createTextNode(text));
+            choices.append(label);
+          });
+          answers.textContent = '';
+          answers.append(choices);
+        }
+
+        function start(item) {
+          lesson = item;
+          order = lesson.initial?.slice();
+          selected = -1;
+          checked = false;
+          title.textContent = lesson.title;
+          prompt.textContent = lesson.prompt;
+          theoryLink.setAttribute('href', '#' + lesson.theory);
+          exercise.hidden = false;
+          feedback.hidden = retry.hidden = theoryLink.hidden = true;
+          check.hidden = false;
+          status.textContent = '';
+          if (order) renderOrder();
+          else renderChoices();
+          updateCatalog();
+          revealBelowTopbar(title);
+        }
+
+        check.addEventListener('click', () => {
+          if (checked || !lesson) return;
+          if (!order && selected < 0) {
+            status.textContent = 'Сначала выберите ответ.';
+            answers.querySelector('input').focus({preventScroll: true});
+            return;
+          }
+          checked = true;
+          const isCorrect = order ? order.every((item, index) => item === index) : selected === lesson.correct;
+          const result = isCorrect ? 'Верно' : order ? 'Порядок отличается' : 'Ответ неверный';
+          feedback.dataset.wrong = String(!isCorrect);
+          feedback.textContent = '';
+          feedback.append(element('h5', '', result), element('p', '', lesson.explanation));
+          if (order) {
+            const solution = element('ol');
+            for (const item of lesson.items) solution.append(element('li', '', item));
+            feedback.append(solution);
+            renderOrder();
+          } else {
+            for (const input of answers.querySelectorAll('input')) input.disabled = true;
+          }
+          const submitted = lesson;
+          completed.add(submitted.id);
+          updateCatalog();
+          check.hidden = true;
+          feedback.hidden = retry.hidden = theoryLink.hidden = false;
+          revealBelowTopbar(feedback);
+          persistState().then(saved => {
+            if (!saved && lesson === submitted && checked && completed.has(submitted.id)) {
+              status.textContent = 'Не удалось сохранить отметку выполнения.';
+            }
+          });
+        });
+
+        retry.addEventListener('click', () => start(lesson));
+        back.addEventListener('click', event => {
+          event.preventDefault();
+          revealBelowTopbar(catalog.querySelector('[aria-pressed="true"]'));
+        });
+        theoryLink.addEventListener('click', event => {
+          event.preventDefault();
+          revealBelowTopbar(document.getElementById(lesson.theory));
+        });
+
+        updateCatalog();
+        return () => {
+          lesson = null;
+          exercise.hidden = true;
+          updateCatalog();
+        };
+      }
+
+      return {
+        init(saved) {
+          // Register trusted scenario IDs before accepting saved marks.
+          for (const panel of document.querySelectorAll('[data-practical-section]')) panels.push(mount(panel));
+          if (Array.isArray(saved)) {
+            for (const id of saved) if (known.has(id)) completed.add(id);
+            for (const resetPanel of panels) resetPanel();
+          }
+        },
+        state() { return [...completed]; },
+        reset() {
+          completed.clear();
+          for (const resetPanel of panels) resetPanel();
+        }
+      };
+    })();
+
     async function initApp() {
       const saved = await loadState();
       readingTools.restore(saved?.reading);
+      practicalStudy.init(saved?.practicalCompleted);
       if (saved && typeof saved === 'object') {
         appState.quizAnswers = saved.quizAnswers ?? {};
         appState.bankAnswers = saved.bankAnswers ?? {};
