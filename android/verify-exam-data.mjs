@@ -44,6 +44,34 @@ function verifyCategoryRanges(html, questions) {
   }
 }
 
+function verifyExamTheoryNotes(html, questions) {
+  const notes = jsonBlock(html, 'exam-theory-notes');
+  assert.ok(Array.isArray(notes) && notes.length > 0, 'Expected exam theory notes');
+
+  const bankTopics = html.match(/const BANK_TOPICS = \[([\s\S]*?)\n\s*\];/);
+  assert.ok(bankTopics, 'Missing question topic definitions');
+  const starts = [...bankTopics[1].matchAll(/^\s*\[(\d+), /gm)].map(([, start]) => Number(start));
+  assert.equal(starts.length, 8, 'Expected eight question topics');
+
+  const markup = html.split('<script type="application/json" id="pdf-bank-data">')[0];
+  const sections = new Map([...markup.matchAll(/<section\b[^>]*\bid="sec-([1-8])"[^>]*>[\s\S]*?<\/section>/g)]
+    .map(match => [Number(match[1]), match[0]]));
+  assert.equal(sections.size, 8, 'Expected eight study sections');
+
+  const numbers = new Map(questions.map(question => [question.id, question.no]));
+  const seen = new Set();
+  for (const {id, anchor, text} of notes) {
+    assert.ok(numbers.has(id) && !seen.has(id), `Unknown or repeated theory note ID: ${id}`);
+    seen.add(id);
+    assert.ok(typeof text === 'string' && text.trim(), `Missing theory explanation for ${id}`);
+    assert.match(anchor, /^[a-z0-9-]+$/, `Invalid theory anchor for ${id}`);
+    const target = `id="${anchor}"`;
+    assert.equal(markup.split(target).length - 1, 1, `Missing or repeated theory anchor for ${id}`);
+    const topic = starts.filter(start => start <= numbers.get(id)).length;
+    assert.ok(sections.get(topic)?.includes(target), `Theory anchor belongs to a different topic for ${id}`);
+  }
+}
+
 export function verifyExamData(html) {
   const questions = jsonBlock(html, 'pdf-bank-data');
   const figures = jsonBlock(html, 'pdf-bank-figures');
@@ -67,6 +95,7 @@ export function verifyExamData(html) {
   }
   assert.deepEqual([...usedFigures].sort(), Object.keys(figures).sort(), 'Unexpected unused exam figures');
   verifyCategoryRanges(html, questions);
+  verifyExamTheoryNotes(html, questions);
   assert.equal(digest(questions.map(({ no, page, stem, options, correct, figure }) =>
     [no, page, stem, options, correct, figure ?? null])), QUESTION_DIGEST,
   'Exam questions, answer key or figure references differ from the verified source');
