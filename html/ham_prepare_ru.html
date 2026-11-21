@@ -1989,6 +1989,8 @@
     .reading-resume small, .saved-meta { color:var(--on-surface-variant); font-size:.84em; font-weight:400; }
     .saved-icon { width:20px; height:20px; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; fill:none; flex:none; }
     .saved-toggle, .saved-remove { display:inline-grid; place-items:center; width:44px; height:44px; flex:none; border:0; border-radius:12px; background:var(--secondary-container); color:var(--on-secondary-container); cursor:pointer; }
+    .saved-toggle { -webkit-tap-highlight-color: transparent; }
+    .saved-toggle:focus-visible { filter: none; }
     .saved-toggle[aria-pressed="true"] svg { fill:currentColor; }
     .saved-target-heading, .saved-question-meta { display:flex; align-items:center; justify-content:space-between; gap:12px; }
     .saved-target-heading > h3 { margin:0; }
@@ -2011,7 +2013,7 @@
       <div class="appearance-row">
         <div class="version-group">
           <button class="about-button toolbar-icon" id="about-button" type="button" title="О приложении" aria-label="О приложении" aria-haspopup="dialog"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M10 9a10 10 0 0 0 0 14m12-14a10 10 0 0 1 0 14M6.5 6a14 14 0 0 0 0 20m19-20a14 14 0 0 1 0 20" fill="none" stroke="#4785c5" stroke-width="1.9" stroke-linecap="round"/><circle cx="16" cy="12" r="1.75" fill="#edac2d"/><path d="M16 16v7" stroke="#4785c5" stroke-width="2.8" stroke-linecap="round"/></svg></button>
-          <span class="app-version">Версия <span id="app-version">0.13.0</span></span>
+          <span class="app-version">Версия <span id="app-version">0.13.1</span></span>
         </div>
         <div class="appearance-actions">
           <button class="find-toggle" id="find-toggle" type="button" aria-label="Поиск по материалам" aria-expanded="false" aria-controls="find-panel" title="Поиск по материалам">
@@ -5819,9 +5821,14 @@
         [section, ...section.querySelectorAll('[data-reading-heading]')].map(target => [target.id, {target, section}])));
       const materials = new Map([
         ['db-reference-title', 'Таблица · Раздел 06'],
-        ['decibel-formula', 'Формула · Раздел 06'],
-        ['sec-7', 'Раздел 07']
+        ['decibel-formula', 'Формула · Раздел 06']
       ]);
+      for (const id of docs.keys()) {
+        const number = id.slice('sec-'.length);
+        const sectionLabel = 'Раздел ' + number.padStart(2, '0');
+        materials.set(id, sectionLabel);
+        materials.set('self-check-' + number, 'Самопроверка · ' + sectionLabel);
+      }
       const questions = new Map(ALL_PDF_QUESTIONS.map(question => [question.id, question]));
       const places = new Map();
       const bookmarks = new Set();
