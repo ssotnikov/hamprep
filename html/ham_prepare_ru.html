@@ -1662,6 +1662,14 @@
     .exam-timeout-dialog h2 { margin: 0 0 10px; font-size: 1.35rem; }
     .exam-timeout-dialog p { margin: 0 0 18px; }
     .exam-timeout-dialog .button { width: 100%; }
+    .quick-entry { margin: 10px 0 16px; }
+    .quick-entry .button { width: 100%; text-align: left; }
+    .quick-entry small { display: block; margin: 6px 2px; color: var(--on-surface-variant); }
+    #quick-study-dialog { max-width: 410px; overflow-y: auto; overscroll-behavior: contain; }
+    #quick-study-dialog .button { width: 100%; margin: 8px 0 0; }
+    #quick-study-dialog h2 { margin: 0 0 6px; }
+    #quick-study-dialog .quick-topic { color: var(--on-surface-variant); font-size: .88rem; margin: 0 0 12px; }
+    .quick-score { padding: 10px; border-left: var(--inset-rule); }
     #exam-action-dialog [hidden] { display: none; }
     #exam-action-dialog .button + .button { margin-top: var(--space-sm); }
     #exam-action-dialog .exam-nav-grid { margin-bottom: var(--space-md); }
@@ -1973,7 +1981,7 @@
       <div class="appearance-row">
         <div class="version-group">
           <button class="about-button toolbar-icon" id="about-button" type="button" title="О приложении" aria-label="О приложении" aria-haspopup="dialog"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M10 9a10 10 0 0 0 0 14m12-14a10 10 0 0 1 0 14M6.5 6a14 14 0 0 0 0 20m19-20a14 14 0 0 1 0 20" fill="none" stroke="#4785c5" stroke-width="1.9" stroke-linecap="round"/><circle cx="16" cy="12" r="1.75" fill="#edac2d"/><path d="M16 16v7" stroke="#4785c5" stroke-width="2.8" stroke-linecap="round"/></svg></button>
-          <span class="app-version">Версия <span id="app-version">0.10.0</span></span>
+          <span class="app-version">Версия <span id="app-version">0.11.0</span></span>
         </div>
         <div class="appearance-actions">
           <button class="find-toggle" id="find-toggle" type="button" aria-label="Поиск по материалам" aria-expanded="false" aria-controls="find-panel" title="Поиск по материалам">
@@ -2037,6 +2045,10 @@
         <a href="#mock-exam" id="progress-exam-link" class="button button--secondary">Пробный экзамен</a>
       </nav>
 
+      <div class="quick-entry">
+        <button type="button" class="button button--secondary" id="quick-study-open">5 вопросов на сегодня</button>
+        <small>Короткая тренировка по слабой теме</small>
+      </div>
       <dl class="home-exam-facts" aria-label="Условия пробного экзамена">
         <div><dt>Вопросов</dt><dd id="category-kpi-total">30</dd></div>
         <div><dt>Для зачета</dt><dd id="category-kpi-pass">25 из 30</dd></div>
@@ -3077,6 +3089,12 @@
       <span id="find-count" role="status" aria-live="polite"></span>
     </div>
   </section>
+
+  <dialog class="exam-timeout-dialog" id="quick-study-dialog" aria-labelledby="quick-study-title">
+    <h2 id="quick-study-title" tabindex="-1">Короткая тренировка</h2>
+    <div id="quick-study-body"></div>
+    <form method="dialog"><button class="button button--secondary" value="close">Закрыть</button></form>
+  </dialog>
 
 <dialog id="reminder-dialog" class="exam-timeout-dialog" aria-labelledby="reminder-title">
   <h2 id="reminder-title">Напоминания об обучении</h2>
@@ -4472,6 +4490,20 @@
       </div>`;
     }
 
+    function renderBankOptions(question, chosen, locked = false) {
+      return question.options.map((option, index) => {
+        let state = '';
+        if (chosen !== undefined) {
+          if (index === question.correct) state = ' is-correct';
+          else if (index === chosen) state = ' is-wrong';
+        }
+        return `<button type="button" class="option-btn${state}" data-bank-id="${question.id}" data-option="${index}" aria-pressed="${chosen === index}"${locked ? ' disabled' : ''}>
+          <span class="option-letter">${PDF_LETTERS[index]}</span>
+          <span>${escapeQuestionText(option)}</span>
+        </button>`;
+      }).join('');
+    }
+
     function bankTopicIndex(number) {
       return BANK_TOPICS.findIndex((_topic, index) => number < (BANK_TOPICS[index + 1]?.[0] ?? Infinity));
     }
@@ -4515,17 +4547,7 @@
       document.getElementById('bank-results').innerHTML = visible.map(question => {
         const showFeedback = !mistakesOnly || bankRetryFeedback.has(question.id);
         const chosen = showFeedback ? appState.bankAnswers[question.id] : undefined;
-        const options = question.options.map((option, index) => {
-          let state = '';
-          if (chosen !== undefined) {
-            if (index === question.correct) state = ' is-correct';
-            else if (index === chosen) state = ' is-wrong';
-          }
-          return `<button type="button" class="option-btn${state}" data-bank-id="${question.id}" data-option="${index}" aria-pressed="${chosen === index}">
-            <span class="option-letter">${PDF_LETTERS[index]}</span>
-            <span>${escapeQuestionText(option)}</span>
-          </button>`;
-        }).join('');
+        const options = renderBankOptions(question, chosen);
         return `<article class="question-card">
           <div class="question-meta">№ ${question.no} · ${bankPageLabel(question)}</div>
           ${renderPdfPrompt(question)}
@@ -4574,7 +4596,6 @@
         const { bankId, option } = button.dataset;
         const selected = Number(option);
         const question = PDF_BANK.find(item => item.id === bankId);
-        appState.bankAnswers[bankId] = selected;
         retryStatus.textContent = '';
         if (mistakes.checked) {
           if (selected === question.correct) {
@@ -4584,14 +4605,19 @@
             bankRetryFeedback.add(bankId);
           }
         }
-        renderQuestionBank();
-        updateProgressSummaries();
+        recordBankAnswer(question, selected);
         const nextFocus = results.querySelector(`[data-bank-id="${bankId}"][data-option="${option}"]`)
           || results.querySelector('button[data-bank-id]') || mistakes;
         nextFocus.focus({ preventScroll: true });
-        persistState();
-        reminderControls.studied();
       });
+    }
+
+    function recordBankAnswer(question, selected) {
+      appState.bankAnswers[question.id] = selected;
+      renderQuestionBank();
+      updateProgressSummaries();
+      persistState();
+      reminderControls.studied();
     }
 
     function renderBankKey() {
@@ -4601,6 +4627,7 @@
     }
 
     function setCategory(next) {
+      quickStudy.close();
       stopExamTimer();
       category = next;
       qualification = CATEGORIES[category];
@@ -5275,6 +5302,7 @@
           ${explanation ? `<p>${explanation}</p>` : ''}
           ${theory ? `<button type="button" class="button button--secondary" data-review-dest="theory" data-topic="${topic}" data-index="${index}">${theory.label}</button>` : ''}
           ${practice?.target ? `<button type="button" class="button button--secondary" data-review-dest="practice" data-topic="${topic}" data-index="${index}">Потренировать тему</button>` : ''}
+          ${PDF_BANK.some(item => bankTopicIndex(item.no) === topic) ? `<button type="button" class="button" data-review-dest="short-practice" data-topic="${topic}" data-index="${index}">Короткая тренировка</button>` : ''}
         </div>
       </details>`;
     }
@@ -5325,33 +5353,220 @@
         const {index, topic, reviewDest} = action.dataset;
         const question = examSession.questions[Number(index)];
         if (!question) return;
+        if (reviewDest === 'short-practice') {
+          quickStudy.open(action, Number(topic), {attempt: examSession, index});
+          return;
+        }
         const destination = getExamReviewDestination(Number(topic), question, reviewDest);
         if (!destination?.target) return;
 
-        clearExamReviewReturn();
         if (destination.bankStart !== undefined) {
-          document.getElementById('bank-mistakes').checked = false;
-          bankRetryFeedback.clear();
-          setBankTopic(destination.bankStart);
+          resetBankTopic(destination.bankStart);
         }
-        const {target} = destination;
-        for (let details = target.closest('details'); details; details = details.parentElement.closest('details')) {
-          details.open = true;
-        }
-        const button = document.createElement('button');
-        button.type = 'button';
-        button.className = 'button button--secondary review-return';
-        button.textContent = 'К разбору экзамена';
-        reviewReturn = {attempt: examSession, button};
-        button.addEventListener('click', () => {
-          if (reviewReturn?.attempt !== examSession) return;
-          clearExamReviewReturn();
-          openExamReviewCard(document.getElementById('review-card-' + index));
-        });
-        target.before(button);
-        revealBelowTopbar(button);
+        navigateFromExamReview(destination.target, {attempt: examSession, index});
       });
     }
+
+    function resetBankTopic(start) {
+      document.getElementById('bank-mistakes').checked = false;
+      bankRetryFeedback.clear();
+      setBankTopic(start);
+    }
+
+    function navigateFromExamReview(target, context) {
+      clearExamReviewReturn();
+      for (let details = target.closest('details'); details; details = details.parentElement.closest('details')) {
+        details.open = true;
+      }
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'button button--secondary review-return';
+      button.textContent = 'К разбору экзамена';
+      reviewReturn = {attempt: context.attempt, button};
+      button.addEventListener('click', () => {
+        if (reviewReturn?.attempt !== examSession) return;
+        clearExamReviewReturn();
+        openExamReviewCard(document.getElementById('review-card-' + context.index));
+      });
+      target.before(button);
+      revealBelowTopbar(button);
+    }
+
+    function selectShortPractice(bank, bankAnswers, attempt, requestedTopic) {
+      const recentErrors = new Set(attempt.finished && attempt.source === 'pdf'
+        ? attempt.questions.filter(question => attempt.answers[question.id] !== undefined
+          && attempt.answers[question.id] !== question.correct).map(question => question.id)
+        : []);
+      const topics = BANK_TOPICS.map((_topic, index) => ({
+        index, total: 0, answered: 0, recent: [], mistakes: [], unanswered: []
+      }));
+      for (const question of bank) {
+        const topic = topics[bankTopicIndex(question.no)];
+        if (!topic) continue;
+        const answer = bankAnswers[question.id];
+        const answered = Number.isInteger(answer) && answer >= 0 && answer < question.options.length;
+        topic.total++;
+        if (answered) topic.answered++;
+        if (answer === question.correct) continue;
+        if (recentErrors.has(question.id)) topic.recent.push(question);
+        else if (answered) topic.mistakes.push(question);
+        else topic.unanswered.push(question);
+      }
+      const available = topics.filter(topic => topic.recent.length || topic.mistakes.length || topic.unanswered.length);
+      available.sort((a, b) => b.recent.length - a.recent.length
+        || (!a.recent.length && !b.recent.length ? b.mistakes.length - a.mistakes.length : 0)
+        || a.answered * b.total - b.answered * a.total
+        || a.index - b.index);
+      const recommended = available[0];
+      const topic = requestedTopic === undefined ? recommended : topics[requestedTopic];
+      return {
+        topic: topic?.index,
+        questions: topic ? [...topic.recent, ...topic.mistakes, ...topic.unanswered].slice(0, 5) : [],
+        alternative: recommended?.index
+      };
+    }
+
+    const quickStudy = (() => {
+      const dialog = document.getElementById('quick-study-dialog');
+      const body = document.getElementById('quick-study-body');
+      const title = document.getElementById('quick-study-title');
+      const entry = document.getElementById('quick-study-open');
+      let session;
+
+      function action(name, label, secondary = false, disabled = false) {
+        return `<button type="button" class="button${secondary ? ' button--secondary' : ''}" data-quick="${name}"${disabled ? ' disabled' : ''}>${label}</button>`;
+      }
+
+      function topicLabel() {
+        return `<p class="quick-topic">${BANK_TOPICS[session.topic][1]}</p>`;
+      }
+
+      function showIntro() {
+        const count = session.questions.length;
+        title.textContent = count === 5 ? '5 вопросов на сегодня' : 'Короткая тренировка';
+        if (count) {
+          const description = count === 5
+            ? 'Начнем с ошибок по теме, затем разберем вопросы, на которые вы еще не отвечали.'
+            : `В этой теме осталось ${count} ${count === 1 ? 'вопрос' : 'вопроса'} для тренировки.`;
+          body.innerHTML = topicLabel() + `<p>${description}</p>` + action('begin', 'Начать тренировку');
+        } else if (session.alternative !== undefined) {
+          body.innerHTML = topicLabel() + '<p>Все вопросы этой темы уже пройдены.</p>'
+            + action('alternative', 'Выбрать другую тему') + action('bank', 'Блок вопросов', true);
+        } else {
+          body.innerHTML = '<p>Все доступные вопросы уже пройдены. Можно вернуться к блоку вопросов или пройти пробный экзамен.</p>'
+            + action('bank', 'Блок вопросов') + action('exam', 'Пробный экзамен', true);
+        }
+      }
+
+      function showQuestion() {
+        const {questions, index} = session;
+        title.textContent = `Вопрос ${index + 1} из ${questions.length}`;
+        const question = questions[index];
+        body.innerHTML = topicLabel() + renderPdfPrompt(question)
+          + `<div class="options-list">${renderBankOptions(question)}</div><div id="quick-feedback"></div>`
+          + action('next', index + 1 === questions.length ? 'Посмотреть итог' : 'Следующий вопрос', false, true);
+        dialog.scrollTop = 0;
+        title.focus({preventScroll: true});
+      }
+
+      function showResult() {
+        title.textContent = 'Тренировка завершена';
+        body.innerHTML = topicLabel() + `<p class="quick-score">Верно <strong>${session.score} из ${session.questions.length}</strong></p>`
+          + action('theory', 'Открыть теорию темы')
+          + (session.review ? action('close', 'К разбору экзамена', true) : '');
+        dialog.scrollTop = 0;
+        title.focus({preventScroll: true});
+      }
+
+      function open(opener, topic, review) {
+        session = {...selectShortPractice(PDF_BANK, appState.bankAnswers, examSession, topic),
+          index: 0, score: 0, opener, review};
+        showIntro();
+        dialog.showModal();
+        dialog.scrollTop = 0;
+        title.focus({preventScroll: true});
+      }
+
+      function answer(button) {
+        const question = session.questions[session.index];
+        const next = body.querySelector('[data-quick="next"]');
+        if (!next.disabled || button.dataset.bankId !== question.id) return;
+        const selected = Number(button.dataset.option);
+        session.score += Number(selected === question.correct);
+        recordBankAnswer(question, selected);
+        body.querySelector('.options-list').innerHTML = renderBankOptions(question, selected, true);
+        const feedback = body.querySelector('#quick-feedback');
+        feedback.innerHTML = renderPdfAnswer(question, selected);
+        const note = EXAM_THEORY_NOTES.get(question.id);
+        if (note) {
+          const explanation = document.createElement('p');
+          explanation.textContent = note.text;
+          feedback.firstElementChild.append(explanation);
+        }
+        next.disabled = false;
+        next.focus();
+      }
+
+      entry.addEventListener('click', () => open(entry));
+      dialog.addEventListener('click', event => {
+        if (!session) return;
+        const option = event.target.closest('[data-bank-id]');
+        if (option) {
+          answer(option);
+          return;
+        }
+        const command = event.target.closest('[data-quick]')?.dataset.quick;
+        if (!command) return;
+        switch (command) {
+          case 'begin':
+            showQuestion();
+            break;
+          case 'next':
+            if (event.target.closest('button').disabled) break;
+            session.index++;
+            if (session.index === session.questions.length) showResult();
+            else showQuestion();
+            break;
+          case 'alternative':
+            Object.assign(session, selectShortPractice(PDF_BANK, appState.bankAnswers, examSession, session.alternative));
+            showIntro();
+            title.focus({preventScroll: true});
+            break;
+          case 'close':
+            dialog.close();
+            break;
+          case 'theory':
+          case 'bank':
+          case 'exam': {
+            const {topic, review} = session;
+            const id = command === 'theory' ? 'sec-' + (topic + 1) : command === 'bank' ? 'study-practice' : 'mock-exam';
+            session = undefined;
+            dialog.close();
+            const target = document.getElementById(id);
+            if (command === 'bank') resetBankTopic(BANK_TOPICS[topic]?.[0] ?? '');
+            if (review?.attempt === examSession) navigateFromExamReview(target, review);
+            else {
+              target.tabIndex = -1;
+              revealBelowTopbar(target);
+            }
+            break;
+          }
+        }
+      });
+      dialog.addEventListener('close', () => {
+        if (dialog.open) return;
+        const {opener, review} = session ?? {};
+        session = undefined;
+        if (opener?.isConnected) opener.focus({preventScroll: true});
+        else if (review && review.attempt === examSession) {
+          openExamReviewCard(document.getElementById('review-card-' + review.index));
+        }
+      });
+      return {open, close: () => {
+        session = undefined;
+        if (dialog.open) dialog.close();
+      }};
+    })();
 
     function renderMockExam() {
       const ws = document.getElementById('exam-workspace');
