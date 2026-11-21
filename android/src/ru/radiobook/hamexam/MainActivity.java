@@ -51,6 +51,7 @@ public final class MainActivity extends AppActivity {
     private FrameLayout contentRoot;
     private View startupCover;
     private StudyReminders reminders;
+    private ExamHtmlExport examExport;
     private boolean requestingPermission;
     private boolean openStudyWhenReady;
     private boolean firstFrameRequested;
@@ -83,6 +84,7 @@ public final class MainActivity extends AppActivity {
         settings.setUseWideViewPort(true);
         webView.setWebChromeClient(new WebChromeClient());
         webView.setWebViewClient(new HandbookClient());
+        examExport = new ExamHtmlExport(this, webView, () -> isHandbook(webView.getUrl()), state);
         String mode = getSharedPreferences(STARTUP_PREFERENCES, MODE_PRIVATE)
                 .getString(STARTUP_APPEARANCE, "system");
         int background = backgroundFor(mode);
@@ -109,6 +111,7 @@ public final class MainActivity extends AppActivity {
         super.onSaveInstanceState(state);
         state.putBoolean("requestingReminderPermission", requestingPermission);
         webView.saveState(state);
+        examExport.saveState(state);
     }
 
     @Override
@@ -133,6 +136,12 @@ public final class MainActivity extends AppActivity {
             openStudyWhenReady = true;
             if (!waitingForFirstFrame()) openStudySection();
         }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == ExamHtmlExport.CREATE_DOCUMENT_REQUEST) examExport.deliverResult(resultCode, data);
     }
 
     @Override
@@ -316,6 +325,7 @@ public final class MainActivity extends AppActivity {
             if (!isHandbook(url)) return;
             updateSystemPalette(url, getResources().getConfiguration());
             publishReminderState();
+            examExport.publishProfile();
             if (waitingForFirstFrame()) {
                 view.removeCallbacks(checkStartup);
                 checkStartupState();
@@ -354,6 +364,14 @@ public final class MainActivity extends AppActivity {
             }
             if (isLocal(url)) {
                 String path = url.getEncodedPath();
+                if (ExamHtmlExport.SAVE_PATH.equals(path) || ExamHtmlExport.FORGET_PATH.equals(path)) {
+                    if (isHandbook(view.getUrl()) && request.hasGesture() && "GET".equals(request.getMethod())
+                            && url.getEncodedQuery() == null && url.getEncodedFragment() == null && !request.isRedirect()) {
+                        if (ExamHtmlExport.SAVE_PATH.equals(path)) examExport.requestSave();
+                        else examExport.forgetProfile();
+                    }
+                    return true;
+                }
                 if (path != null && path.startsWith(REMINDER_PATH) && isHandbook(view.getUrl())
                         && "GET".equals(request.getMethod()) && url.getEncodedQuery() == null
                         && url.getEncodedFragment() == null && !request.isRedirect()) {

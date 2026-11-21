@@ -2,8 +2,10 @@
 <data-extraction-rules>
     <cloud-backup>
         <exclude domain="sharedpref" path="study_reminders.xml" />
+        <exclude domain="sharedpref" path="exam_export_profile.xml" />
     </cloud-backup>
     <device-transfer>
         <exclude domain="sharedpref" path="study_reminders.xml" />
+        <exclude domain="sharedpref" path="exam_export_profile.xml" />
     </device-transfer>
 </data-extraction-rules>

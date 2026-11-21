@@ -2012,6 +2012,18 @@
     .review-body .button { display: block; width: 100%; min-height: 44px; margin: 7px 0 0; }
     .review-return { margin: 8px 0 12px; }
 
+    .export-entry { width: 100%; margin-top: 8px; }
+    #exam-export-dialog { max-width: 410px; overflow: auto; overscroll-behavior: contain; }
+    #exam-export-dialog h2 { margin-bottom: 8px; }
+    #exam-export-dialog .export-meta { margin: 0 0 14px; color: var(--on-surface-variant); font-size: .89rem; }
+    .export-field { display: grid; gap: 4px; margin: 10px 0; font-weight: 650; }
+    .export-field input { min-width: 0; width: 100%; min-height: 46px; border: 1px solid var(--outline-variant); border-radius: 12px; background: var(--background); color: var(--on-surface); font: inherit; padding: 9px 12px; }
+    .export-field input[aria-invalid="true"] { border-color: var(--error); }
+    #exam-export-dialog .export-error { color: var(--error); font-size: .84rem; margin: 0; }
+    #exam-export-dialog .button { margin-top: 8px; }
+    .export-forget { display: block; margin-top: 8px; min-height: 40px; color: var(--on-surface-variant); background: none; border: 0; font: inherit; padding: 0 2px; cursor: pointer; }
+    #exam-export-dialog [hidden] { display: none; }
+    .export-message:not(:empty) { display: block; margin-top: 6px; }
     .reading-tools { display:grid; gap:8px; margin: 10px 0 16px; }
     .reading-tools .button { width:100%; justify-content:flex-start; text-align:left; }
     .reading-tools .button[hidden] { display:none; }
@@ -2043,7 +2055,7 @@
       <div class="appearance-row">
         <div class="version-group">
           <button class="about-button toolbar-icon" id="about-button" type="button" title="О приложении" aria-label="О приложении" aria-haspopup="dialog"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M10 9a10 10 0 0 0 0 14m12-14a10 10 0 0 1 0 14M6.5 6a14 14 0 0 0 0 20m19-20a14 14 0 0 1 0 20" fill="none" stroke="#4785c5" stroke-width="1.9" stroke-linecap="round"/><circle cx="16" cy="12" r="1.75" fill="#edac2d"/><path d="M16 16v7" stroke="#4785c5" stroke-width="2.8" stroke-linecap="round"/></svg></button>
-          <span class="app-version">Версия <span id="app-version">0.14.0</span></span>
+          <span class="app-version">Версия <span id="app-version">0.15.0</span></span>
         </div>
         <div class="appearance-actions">
           <button class="find-toggle" id="find-toggle" type="button" aria-label="Поиск по материалам" aria-expanded="false" aria-controls="find-panel" title="Поиск по материалам">
@@ -3163,6 +3175,28 @@
       <span id="find-count" role="status" aria-live="polite"></span>
     </div>
   </section>
+
+  <dialog class="exam-timeout-dialog" id="exam-export-dialog" aria-labelledby="exam-export-title">
+    <h2 id="exam-export-title">Экспорт результата</h2>
+    <p class="export-meta" id="exam-export-attempt"></p>
+    <form id="exam-export-form" novalidate>
+      <div class="export-field">
+        <label for="exam-export-first-name">Имя</label>
+        <input id="exam-export-first-name" type="text" autocomplete="off" required aria-describedby="exam-export-first-error">
+        <span class="export-error" id="exam-export-first-error" hidden></span>
+      </div>
+      <div class="export-field">
+        <label for="exam-export-last-name">Фамилия</label>
+        <input id="exam-export-last-name" type="text" autocomplete="off" required aria-describedby="exam-export-last-error">
+        <span class="export-error" id="exam-export-last-error" hidden></span>
+      </div>
+      <p class="export-meta">Имя и фамилия войдут в отчет и будут подставлены при следующем экспорте.</p>
+      <button class="button" id="exam-export-save" type="submit">Экспорт в HTML</button>
+      <button class="button button--secondary" id="exam-export-cancel" type="button">Отмена</button>
+      <button class="export-forget" id="exam-export-forget" type="button" hidden>Забыть данные</button>
+      <small class="export-message caption" id="exam-export-message" role="status"></small>
+    </form>
+  </dialog>
 
   <dialog class="exam-timeout-dialog" id="history-dialog" aria-labelledby="history-title">
     <div class="history-head">
@@ -5546,6 +5580,7 @@
           <span class="history-caption">${date}${row.source === null ? ' · Источник неизвестен' : ''}</span>
           ${row.wrong === undefined ? '' : `<span class="history-caption">Неверно: ${row.wrong} · Пропущено: ${row.skipped}</span>`}
           ${row.id === reviewId ? '<button type="button" class="button button--secondary" id="history-review">Открыть разбор</button>' : ''}
+          <button type="button" class="button button--secondary export-entry" data-exam-export="${row.id}">Экспорт в HTML</button>
         </article>`;
       }
 
@@ -5616,6 +5651,293 @@
         dialog.close();
         revealBelowTopbar(document.getElementById('exam-result-summary'));
       });
+    })();
+
+
+    function captureExamExport(attemptId, categoryId) {
+      if (!Object.prototype.hasOwnProperty.call(CATEGORIES, categoryId)) return null;
+      const current = attemptId === 'current';
+      if (current && !examSession.finished) return null;
+      const id = current ? examSession.id : attemptId;
+      let record = (examHistory[categoryId] ?? []).find(row => row.id === id);
+      if (!record && current) {
+        const total = examSession.questions.length;
+        const score = examSession.questions.filter(q => examSession.answers[q.id] === q.correct).length;
+        record = {total, score, source: examSession.source, passed: score >= qualification.pass,
+          finishedAt: null, ...getExamHistoryStats(examSession)};
+      }
+      if (!validExamSummary(record)) return null;
+
+      const snapshot = categoryId === category ? examSession
+        : decodeExamAttempt(examsByCategory[categoryId]?.examAttempt, categoryId, questionsForCategory(categoryId));
+      const questions = snapshot?.finished && snapshot.id === id && snapshot.source === record.source
+        ? snapshot.questions.map(q => ({
+          no: q.no,
+          result: snapshot.answers[q.id] === undefined ? 'Пропущен'
+            : snapshot.answers[q.id] === q.correct ? 'Верно' : 'Неверно'
+        })) : [];
+      return {record, categoryId, questions};
+    }
+
+    function renderExamExport(report, names, exportedAt, version) {
+      const {record, categoryId, questions} = report;
+      const safe = value => escapeQuestionText(String(value));
+      const date = new Intl.DateTimeFormat('ru-RU', {day: 'numeric', month: 'long', year: 'numeric'});
+      const status = typeof record.passed !== 'boolean' ? 'Неизвестен' : record.passed ? 'Теория зачтена' : 'Теория не зачтена';
+      const source = record.source === 'pdf' ? 'Блок вопросов' : record.source === 'study' ? 'Учебные вопросы' : 'Неизвестно';
+      const topics = (record.topics ?? []).map(([index, wrong, skipped]) =>
+        `<tr><th scope="row">${safe(BANK_TOPICS[index]?.[1] ?? 'Без темы')}</th><td>${wrong}</td><td>${skipped}</td></tr>`).join('');
+      const details = questions.map(({no, result}, index) =>
+        `<tr><th scope="row">${index + 1}</th><td>${no ?? '—'}</td><td>${result}</td></tr>`).join('');
+      return `<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+<title>Результат пробного экзамена</title>
+<style>
+* { box-sizing: border-box; }
+body { margin: 0; color: #1b2734; background: #f0f4f8; font: 16px/1.5 system-ui, sans-serif; }
+main { max-width: 760px; margin: auto; padding: 22px 18px; background: #fff; min-height: 100vh; }
+h1 { font-size: 1.8rem; line-height: 1.15; margin: 0 0 9px; }
+h2 { font-size: 1.12rem; margin: 21px 0 8px; }
+.program { margin: 0 0 4px; color: #435869; }
+.name { margin: 0 0 15px; font-weight: 650; overflow-wrap: anywhere; }
+.score { display: grid; gap: 1px; padding: 12px 15px; margin: 0 0 14px; background: #eaf0f9; border-left: 4px solid #234d79; }
+.score strong { font-size: 1.35rem; }
+dl { display: grid; grid-template-columns: minmax(98px, .7fr) 1.3fr; gap: 6px 12px; margin: 0; }
+dt { color: #435869; }
+dd { margin: 0; overflow-wrap: anywhere; }
+table { width: 100%; border-collapse: collapse; font-size: .9rem; }
+th, td { padding: 7px 5px; border-bottom: 1px solid #d8e1e8; text-align: left; vertical-align: top; }
+tbody th { font-weight: 500; }
+footer { font-size: .85rem; color: #435869; margin-top: 20px; border-top: 1px solid #d8e1e8; padding-top: 12px; }
+@media print { body, main { background: #fff; } main { padding: 0; } tr { break-inside: avoid; } }
+</style>
+</head>
+<body><main>
+<h1>Результат пробного экзамена</h1>
+<p class="program">Программа: Радиоэкзамен (ССР РФ)</p>
+<p class="name">Кандидат: <bdi>${safe(names.first)} ${safe(names.last)}</bdi></p>
+<div class="score"><strong>${record.score} из ${record.total}</strong><span>${status}</span></div>
+<dl><dt>Категория</dt><dd>${categoryId}-я</dd><dt>Источник</dt><dd>${source}</dd>
+<dt>Дата попытки</dt><dd>${typeof record.finishedAt === 'number' ? date.format(record.finishedAt) : 'Неизвестно'}</dd>
+${record.wrong === undefined ? '' : `<dt>Неверно</dt><dd>${record.wrong}</dd><dt>Пропущено</dt><dd>${record.skipped}</dd>`}</dl>
+${topics ? `<h2>По темам</h2><table><thead><tr><th scope="col">Тема</th><th scope="col">Неверно</th><th scope="col">Пропущено</th></tr></thead><tbody>${topics}</tbody></table>` : ''}
+${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="col">В билете</th><th scope="col">В перечне</th><th scope="col">Исход</th></tr></thead><tbody>${details}</tbody></table>` : ''}
+<footer>Учебная попытка. Квалификацию не подтверждает.<br>Экспортировано ${date.format(exportedAt)} · Версия приложения ${safe(version)}</footer>
+</main></body>
+</html>`;
+    }
+
+    (() => {
+      const profileKey = 'ham-prepare-ru:exam-export-profile';
+      const androidHost = location.origin === 'https://appassets.androidplatform.net'
+        && location.pathname === '/ham_prepare_ru.html' && !location.search;
+      const dialog = document.getElementById('exam-export-dialog');
+      const form = document.getElementById('exam-export-form');
+      const first = document.getElementById('exam-export-first-name');
+      const last = document.getElementById('exam-export-last-name');
+      const save = document.getElementById('exam-export-save');
+      const cancel = document.getElementById('exam-export-cancel');
+      const forget = document.getElementById('exam-export-forget');
+      const message = document.getElementById('exam-export-message');
+      const controls = [first, last, save, cancel, forget];
+      const date = new Intl.DateTimeFormat('ru-RU', {day: 'numeric', month: 'long', year: 'numeric'});
+      let profile;
+      let opener;
+      let report;
+      let draft;
+      let operation;
+      let notice;
+
+      function validName(value) {
+        return typeof value === 'string' && value === value.trim() && value.length > 0
+          && Array.from(value).length <= 80 && !/[\u0000-\u001f\u007f-\u009f\u2028-\u202e\u2066-\u2069]/u.test(value);
+      }
+
+      function setProfile(value) {
+        profile = validName(value?.first) && validName(value?.last) ? {first: value.first, last: value.last} : undefined;
+        forget.hidden = !profile;
+      }
+
+      function readBrowserProfile() {
+        try { setProfile(JSON.parse(localStorage.getItem(profileKey))); }
+        catch (error) { setProfile(undefined); }
+      }
+
+      function nameError(field, text) {
+        const feedback = document.getElementById(field.getAttribute('aria-describedby'));
+        if (text) field.setAttribute('aria-invalid', 'true');
+        else field.removeAttribute('aria-invalid');
+        feedback.textContent = text;
+        feedback.hidden = !text;
+      }
+
+      function setOperation(next) {
+        operation = next;
+        for (const control of controls) control.disabled = Boolean(operation);
+      }
+
+      function rejectName(field, label) {
+        const value = field.value.trim();
+        const error = !value ? 'Введите ' + label : validName(value) ? '' : 'Допустимо до 80 символов без управляющих знаков.';
+        nameError(field, error);
+        return Boolean(error);
+      }
+
+      function complete(text) {
+        notice?.remove();
+        if (opener?.isConnected) {
+          notice = document.createElement('small');
+          notice.className = 'export-message caption';
+          notice.setAttribute('role', 'status');
+          opener.after(notice);
+          notice.textContent = text;
+        }
+        dialog.close();
+      }
+
+      function filename(report, timestamp) {
+        const ymd = [timestamp.getFullYear(), timestamp.getMonth() + 1, timestamp.getDate()]
+          .map(part => String(part).padStart(2, '0')).join('-');
+        return `radioexam-category-${report.categoryId}-${ymd}.html`;
+      }
+
+      function downloadInBrowser(file) {
+        const url = URL.createObjectURL(new Blob([file.html], {type: 'text/html;charset=utf-8'}));
+        try {
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = file.filename;
+          dialog.append(link);
+          try { link.click(); }
+          finally { link.remove(); }
+        } finally {
+          setTimeout(() => URL.revokeObjectURL(url), 60000);
+        }
+      }
+
+      function sendAndroid(command) {
+        location.href = location.origin + '/__exam-export/' + command;
+      }
+
+      // The Android host reads this once from the bundled page after a save command.
+      window.takePendingExamHtmlExport = () => {
+        if (!androidHost || operation !== 'save') return null;
+        const pending = draft;
+        draft = undefined;
+        return pending ?? null;
+      };
+
+      document.addEventListener('click', event => {
+        const button = event.target.closest('[data-exam-export]');
+        if (!button || dialog.open) return;
+        const key = button.dataset.examExport;
+        const categoryId = key === 'current' ? category : document.getElementById('history-category').value;
+        report = captureExamExport(key, categoryId);
+        if (!report) return;
+        if (!androidHost) readBrowserProfile();
+        opener = button;
+        first.value = profile?.first ?? '';
+        last.value = profile?.last ?? '';
+        nameError(first, '');
+        nameError(last, '');
+        message.textContent = '';
+        const {record} = report;
+        document.getElementById('exam-export-attempt').textContent = categoryId + '-я категория · '
+          + record.score + ' из ' + record.total + ' · '
+          + (typeof record.finishedAt === 'number' ? date.format(record.finishedAt) : 'Дата попытки неизвестна');
+        dialog.showModal();
+        first.focus({preventScroll: true});
+      });
+
+      form.addEventListener('submit', event => {
+        event.preventDefault();
+        if (operation || !report) return;
+        const firstBad = rejectName(first, 'имя');
+        const lastBad = rejectName(last, 'фамилию');
+        if (firstBad || lastBad) {
+          (firstBad ? first : last).focus();
+          return;
+        }
+
+        const names = {first: first.value.trim(), last: last.value.trim()};
+        const exportedAt = new Date();
+        const version = document.getElementById('app-version').textContent.trim();
+        const file = {...names, filename: filename(report, exportedAt),
+          html: renderExamExport(report, names, exportedAt, version)};
+        if (androidHost) {
+          draft = file;
+          setOperation('save');
+          message.textContent = 'Подготовка файла…';
+          sendAndroid('save');
+          return;
+        }
+        try { downloadInBrowser(file); }
+        catch (error) {
+          message.textContent = 'Не удалось передать HTML для скачивания. Попробуйте еще раз.';
+          return;
+        }
+        try {
+          localStorage.setItem(profileKey, JSON.stringify(names));
+          setProfile(names);
+          complete('HTML передан для скачивания.');
+        } catch (error) {
+          complete('HTML передан для скачивания. Имя и фамилию сохранить не удалось.');
+        }
+      });
+
+      forget.addEventListener('click', () => {
+        if (operation) return;
+        if (androidHost) {
+          setOperation('forget');
+          sendAndroid('forget');
+        } else {
+          try {
+            localStorage.removeItem(profileKey);
+            clearNames();
+          } catch (error) {
+            message.textContent = 'Не удалось удалить сохраненные данные.';
+          }
+        }
+      });
+
+      function clearNames() {
+        setProfile(undefined);
+        first.value = last.value = '';
+        nameError(first, '');
+        nameError(last, '');
+        message.textContent = 'Сохраненные имя и фамилия удалены.';
+        first.focus({preventScroll: true});
+      }
+
+      window.addEventListener('radioexam-export-result', event => {
+        if (!androidHost) return;
+        const state = event.detail;
+        setProfile(state?.profile);
+        if (!state || state.status === 'profile') return;
+        draft = undefined;
+        setOperation(undefined);
+        if (state.status === 'forgot') clearNames();
+        else if (state.status === 'saved') complete('HTML-файл сохранен.');
+        else if (state.status === 'saved-profile-error') complete('HTML-файл сохранен. Имя и фамилию запомнить не удалось.');
+        else if (state.status === 'cancelled') message.textContent = 'Выбор места отменен.';
+        else if (state.status === 'forget-error') message.textContent = 'Не удалось удалить сохраненные данные.';
+        else message.textContent = 'Не удалось сохранить HTML-файл. Попробуйте еще раз.';
+      });
+
+      cancel.addEventListener('click', () => { if (!operation) dialog.close(); });
+      dialog.addEventListener('cancel', event => { if (operation) event.preventDefault(); });
+      dialog.addEventListener('close', () => {
+        if (dialog.open) return;
+        opener?.focus({preventScroll: true});
+        report = undefined;
+        draft = undefined;
+      });
+      first.addEventListener('input', () => nameError(first, ''));
+      last.addEventListener('input', () => nameError(last, ''));
     })();
 
     function getExamReviewDestination(topic, question, destination) {
@@ -6391,6 +6713,7 @@
             <p>Правильных ответов: <strong>${score} из ${total}</strong> (требуется не менее ${qualification.pass}). Нажмите на любой номер вопроса ниже, чтобы разобрать ответ.</p>
             <p>Верно: ${score} · Неверно: ${answeredCount - score} · Пропущено: ${total - answeredCount}</p>
             ${actions ? `<div class="action-row exam-result-actions">${actions}</div>` : ''}
+            <button type="button" class="button button--secondary export-entry" data-exam-export="current">Экспорт в HTML</button>
           </div>
         `;
         html += `<div class="caption exam-result-legend" aria-label="Обозначения результатов">
