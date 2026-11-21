@@ -1896,7 +1896,60 @@
     .chip-btn:not(.is-active) { background: var(--ui-tone); }
     .chip-btn:not(.is-active):hover { background: var(--ui-focus); }
     .chip-btn:focus-visible { text-decoration: underline; }
-  </style>
+      .reminder-entry {
+      display: flex; align-items: center; gap: 12px;
+      width: 100%; min-height: 52px; padding: 10px 14px; margin: 12px 0;
+      text-align: left; border: 1px solid var(--outline-variant);
+      border-radius: 12px; background: var(--ui-tone); color: var(--on-surface);
+      cursor: pointer;
+    }
+    .reminder-entry span { flex: 1; font-weight: 650; }
+    .reminder-entry small { display: block; font-weight: 400; color: var(--on-surface-variant); }
+    .reminder-entry svg { width: 20px; height: 20px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.7; }
+    .reminder-entry[hidden], .reminder-info[hidden] { display: none; }
+    .reminder-switch {
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+      width: 100%; text-align: left; min-height: 52px; padding: 8px 12px;
+      border: 1px solid var(--outline-variant); border-radius: 12px; background: var(--ui-tone);
+      color: var(--on-surface); font-size: 1rem; font-weight: 650; cursor: pointer;
+    }
+    .reminder-track {
+      position: relative; flex: none; width: 44px; height: 26px;
+      border: 1px solid var(--outline-variant); border-radius: 20px; background: var(--surface-container);
+    }
+    .reminder-track::after {
+      content: ""; position: absolute; width: 18px; height: 18px; inset: 3px auto auto 3px;
+      border-radius: 50%; background: var(--on-surface-variant);
+    }
+    .reminder-switch[aria-checked="true"] .reminder-track { background: var(--primary); border-color: var(--primary); }
+    .reminder-switch[aria-checked="true"] .reminder-track::after { left: 21px; background: var(--on-primary); }
+    .reminder-copy { margin: 8px 0 12px; color: var(--on-surface-variant); font-size: .88rem; }
+    #reminder-dialog { width: min(430px, calc(100% - 20px)); box-sizing: border-box; }
+    #reminder-dialog .button { min-height: 44px; }
+    .reminder-example {
+      border-left: 3px solid var(--tertiary); margin-top: 14px; padding: 9px 12px;
+      background: var(--surface-container-low); border-radius: 0 8px 8px 0;
+    }
+    .reminder-example summary { cursor: pointer; font-weight: 650; }
+    .reminder-example p { margin: 4px 0; }
+
+    .reminder-schedule {
+      display: grid; grid-template-columns: minmax(0, 1fr) minmax(105px, .58fr);
+      gap: 8px; margin: 14px 0 4px;
+    }
+    .reminder-schedule .field-label { font-size: .85rem; }
+    .reminder-schedule .ui-dropdown { margin: 0; }
+    .reminder-schedule .ui-dropdown summary { min-height: 48px; }
+    .reminder-time {
+      display: flex; flex-direction: column; gap: 2px; min-height: 48px;
+      justify-content: center; padding: 4px 9px;
+      border: 1px solid var(--outline-variant); border-radius: 12px; color: var(--on-surface);
+    }
+    .reminder-time input { color: inherit; background: transparent; border: 0; font-size: 1rem; max-width: 100%; }
+    #reminder-dialog { overflow-y: auto; }
+    .reminder-schedule-note { margin-top: 6px; }
+    .reminder-close { margin-top: 14px; }
+</style>
 </head>
 <body>
   <div class="pinned-topbar">
@@ -1904,7 +1957,7 @@
       <div class="appearance-row">
         <div class="version-group">
           <button class="about-button toolbar-icon" id="about-button" type="button" title="О приложении" aria-label="О приложении" aria-haspopup="dialog"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M10 9a10 10 0 0 0 0 14m12-14a10 10 0 0 1 0 14M6.5 6a14 14 0 0 0 0 20m19-20a14 14 0 0 1 0 20" fill="none" stroke="#4785c5" stroke-width="1.9" stroke-linecap="round"/><circle cx="16" cy="12" r="1.75" fill="#edac2d"/><path d="M16 16v7" stroke="#4785c5" stroke-width="2.8" stroke-linecap="round"/></svg></button>
-          <span class="app-version">Версия <span id="app-version">0.8.3</span></span>
+          <span class="app-version">Версия <span id="app-version">0.9.0</span></span>
         </div>
         <div class="appearance-actions">
           <button class="find-toggle" id="find-toggle" type="button" aria-label="Поиск по материалам" aria-expanded="false" aria-controls="find-panel" title="Поиск по материалам">
@@ -1998,6 +2051,7 @@
         </div>
         <p id="study-progress-text" class="caption"></p>
       </div>
+      <button type="button" class="reminder-entry" id="reminder-open" hidden><svg viewBox="0 0 24 24" aria-hidden="true" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 8-3 8-3 10h18c0-2-3-2-3-10m-8 13h4"/></svg><span>Напоминания об обучении<small class="reminder-status">Выключены</small></span><b aria-hidden="true">›</b></button>
       <button type="button" class="home-reset" id="reset-progress-btn">Сбросить весь прогресс</button>
     </header>
 
@@ -3007,6 +3061,40 @@
       <span id="find-count" role="status" aria-live="polite"></span>
     </div>
   </section>
+
+<dialog id="reminder-dialog" class="exam-timeout-dialog" aria-labelledby="reminder-title">
+  <h2 id="reminder-title">Напоминания об обучении</h2>
+  <button type="button" id="reminder-switch" class="reminder-switch" role="switch" aria-label="Напоминания об обучении" aria-checked="false">
+    <span id="reminder-switch-text">Выключены</span><span class="reminder-track" aria-hidden="true"></span>
+  </button>
+  <p id="reminder-state" class="reminder-copy" role="status">Расписание можно настроить заранее.</p>
+  <div class="reminder-schedule">
+    <div>
+      <label class="field-label" for="reminder-period">Периодичность</label>
+      <select id="reminder-period" class="select">
+        <option value="1">Каждый день</option>
+        <option value="2" selected>Каждые 2 дня</option>
+        <option value="3">Каждые 3 дня</option>
+        <option value="7">Раз в неделю</option>
+      </select>
+    </div>
+    <label class="reminder-time" for="reminder-time">
+      <span class="field-label">Время</span>
+      <input id="reminder-time" type="time" value="19:00" required>
+    </label>
+  </div>
+  <p class="reminder-copy reminder-schedule-note">После занятия отсчет начинается заново.</p>
+
+  <button type="button" class="button button--secondary reminder-info" id="reminder-system" hidden>Открыть настройки Android</button>
+  <details class="reminder-example">
+    <summary>Пример уведомления</summary>
+    <p><small>Радиоэкзамен</small></p>
+    <p><strong>Продолжим подготовку?</strong></p>
+    <p>Откройте материалы или ответьте на несколько вопросов.</p>
+    <form method="dialog"><button class="button button--secondary" value="continue">Продолжить</button></form>
+  </details>
+  <form class="reminder-close" method="dialog"><button class="button button--secondary" value="close">Закрыть</button></form>
+</dialog>
 
   <dialog id="reset-progress-dialog" class="exam-timeout-dialog" aria-labelledby="reset-progress-title" aria-describedby="reset-progress-copy">
     <h2 id="reset-progress-title">Сбросить весь прогресс?</h2>
@@ -4348,6 +4436,7 @@
       appState.quizAnswers[qid] = optIdx;
       renderAllSectionQuizzes();
       persistState();
+      reminderControls.studied();
     }
 
     function escapeQuestionText(value) {
@@ -4481,6 +4570,7 @@
           || results.querySelector('button[data-bank-id]') || mistakes;
         nextFocus.focus({ preventScroll: true });
         persistState();
+        reminderControls.studied();
       });
     }
 
@@ -5067,6 +5157,7 @@
       examSession.answers[qid] = optIdx;
       renderMockExam();
       persistState();
+      reminderControls.studied();
     }
 
     function finishMockExam(showResult = false) {
@@ -5604,6 +5695,71 @@
       });
     }
 
+
+    const reminderControls = (() => {
+      const button = document.getElementById('reminder-open');
+      const modal = document.getElementById('reminder-dialog');
+      const toggle = document.getElementById('reminder-switch');
+      const system = document.getElementById('reminder-system');
+      const status = document.getElementById('reminder-state');
+      const period = document.getElementById('reminder-period');
+      const time = document.getElementById('reminder-time');
+      const switchText = document.getElementById('reminder-switch-text');
+      const rowStatus = button.querySelector('.reminder-status');
+      let state;
+
+      function send(command) {
+        if (state) window.location.assign('/__study-reminders/' + command);
+      }
+
+      function setSchedule() {
+        if (!time.value) {
+          updateTime();
+          return;
+        }
+        const [hour, minute] = time.value.split(':').map(Number);
+        send('schedule/' + period.value + '/' + (hour * 60 + minute));
+      }
+
+      function updateTime() {
+        const hour = String(Math.floor(state.minutes / 60)).padStart(2, '0');
+        const minute = String(state.minutes % 60).padStart(2, '0');
+        time.value = hour + ':' + minute;
+      }
+
+      window.addEventListener('radioexam-reminders', event => {
+        state = event.detail;
+        button.hidden = false;
+        const label = state.enabled ? 'Включены' : 'Выключены';
+        switchText.textContent = label;
+        rowStatus.textContent = label;
+        toggle.setAttribute('aria-checked', String(state.enabled));
+        toggle.disabled = state.pending;
+        period.value = String(state.days);
+        updateTime();
+        system.hidden = !state.blocked;
+        const cadence = period.selectedOptions[0].textContent.toLowerCase();
+        status.textContent = state.pending ? 'Подтвердите разрешение Android.'
+          : state.enabled ? 'Уведомление ' + cadence + ' без занятий, около ' + time.value + '.'
+          : state.blocked ? 'Android блокирует уведомления. Напоминания выключены.'
+          : 'Расписание можно настроить заранее.';
+      });
+
+      button.addEventListener('click', () => {
+        modal.returnValue = '';
+        modal.showModal();
+      });
+      toggle.addEventListener('click', () => send(state.enabled ? 'off' : 'on'));
+      system.addEventListener('click', () => send('settings'));
+      period.addEventListener('change', setSchedule);
+      time.addEventListener('change', setSchedule);
+      modal.addEventListener('close', () => {
+        if (modal.returnValue === 'continue') revealBelowTopbar(document.getElementById('sec-1'));
+        else button.focus({ preventScroll: true });
+      });
+      return { studied: () => { if (state?.enabled) send('studied'); } };
+    })();
+
     const resetDialog = document.getElementById('reset-progress-dialog');
     document.getElementById('reset-progress-btn').addEventListener('click', () => {
       resetDialog.returnValue = '';
@@ -5736,6 +5892,7 @@
       }
       const syncAll = () => dropdowns.forEach(item => item.sync());
       document.addEventListener('change', syncAll);
+      window.addEventListener('radioexam-reminders', syncAll);
       document.addEventListener('click', event => {
         for (const item of dropdowns) {
           if (!item.dropdown.contains(event.target)) item.dropdown.open = false;

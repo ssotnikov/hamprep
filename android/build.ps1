@@ -49,6 +49,7 @@ $previousJavaHome = $env:JAVA_HOME
 $previousSigningPassword = $env:HAM_EXAM_SIGNING_PASSWORD
 try {
     $env:JAVA_HOME = $JdkRoot
+    $generated = [IO.Directory]::CreateDirectory((Join-Path $work 'generated')).FullName
     $assets = [IO.Directory]::CreateDirectory((Join-Path $work 'assets')).FullName
     $classes = [IO.Directory]::CreateDirectory((Join-Path $work 'classes')).FullName
     $dex = [IO.Directory]::CreateDirectory((Join-Path $work 'dex')).FullName
@@ -71,9 +72,9 @@ try {
     $signed = Join-Path $work 'signed.apk'
     Invoke-BuildTool "$tools\aapt2.exe" @('compile', '--dir', (Join-Path $work 'res'), '-o', $resources)
     Invoke-BuildTool "$tools\aapt2.exe" @('link', '-I', $platform, '--manifest', $manifest,
-        '-A', $assets, '-o', $unsigned, $resources)
+        '-A', $assets, '--java', $generated, '-o', $unsigned, $resources)
 
-    $sources = Get-ChildItem -LiteralPath (Join-Path $work 'src') -Recurse -Filter '*.java' -File
+    $sources = Get-ChildItem -LiteralPath (Join-Path $work 'src'), $generated -Recurse -Filter '*.java' -File
     Invoke-BuildTool "$JdkRoot\bin\javac.exe" (@('--release', '8', '-encoding', 'UTF-8',
         '-classpath', $platform, '-d', $classes) + $sources.FullName)
     $classJar = Join-Path $work 'classes.jar'
