@@ -11,6 +11,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.util.Log;
+import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceRequest;
@@ -18,6 +19,7 @@ import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.FrameLayout;
 import android.widget.Toast;
 import android.window.OnBackInvokedDispatcher;
 
@@ -37,10 +39,29 @@ public final class MainActivity extends AppActivity {
     private static final Pattern REMINDER_SCHEDULE = Pattern.compile("schedule/([1237])/([0-9]{1,4})");
     private static final int NOTIFICATION_PERMISSION = 31;
 
+    private static final String STARTUP_PREFERENCES = "handbook_appearance";
+    private static final String STARTUP_APPEARANCE = "mode";
+    private static final String READ_APPEARANCE = "(function(){var selected = "
+            + "document.querySelector('input[name=appearance]:checked');"
+            + "return selected ? selected.value : null;})()";
+    private static final long STARTUP_TIMEOUT_MS = 15000;
+    private static final long STARTUP_CHECK_MS = 60;
+
     private WebView webView;
+    private FrameLayout contentRoot;
+    private View startupCover;
     private StudyReminders reminders;
     private boolean requestingPermission;
     private boolean openStudyWhenReady;
+    private boolean firstFrameRequested;
+    private final Runnable checkStartup = this::checkStartupState;
+    private final Runnable startupTimeout = () -> {
+        if (waitingForFirstFrame()) {
+            Log.w("HamExam", "Timed out waiting for handbook first frame");
+            Toast.makeText(this, "Не удалось вовремя подготовить экран справочника", Toast.LENGTH_SHORT).show();
+            showHandbook();
+        }
+    };
 
     @Override
     protected void onCreate(Bundle state) {
@@ -51,6 +72,7 @@ public final class MainActivity extends AppActivity {
         WebView.setWebContentsDebuggingEnabled(
                 (getApplicationInfo().flags & ApplicationInfo.FLAG_DEBUGGABLE) != 0);
         webView = new WebView(this);
+        webView.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS);
         WebSettings settings = webView.getSettings();
         settings.setJavaScriptEnabled(true);
         settings.setDomStorageEnabled(true);
@@ -61,7 +83,17 @@ public final class MainActivity extends AppActivity {
         settings.setUseWideViewPort(true);
         webView.setWebChromeClient(new WebChromeClient());
         webView.setWebViewClient(new HandbookClient());
-        setAppContent(webView);
+        String mode = getSharedPreferences(STARTUP_PREFERENCES, MODE_PRIVATE)
+                .getString(STARTUP_APPEARANCE, "system");
+        int background = backgroundFor(mode);
+        contentRoot = setAppContent(webView, background);
+        startupCover = new View(this);
+        startupCover.setBackgroundColor(background);
+        startupCover.setClickable(true);
+        startupCover.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
+        contentRoot.addView(startupCover, new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        webView.postDelayed(startupTimeout, STARTUP_TIMEOUT_MS);
 
         if (state == null || webView.restoreState(state) == null) {
             webView.loadUrl(PAGE_URL);
@@ -87,11 +119,19 @@ public final class MainActivity extends AppActivity {
     }
 
     @Override
+    protected void onPause() {
+        if (isHandbook(webView.getUrl()) && !waitingForFirstFrame()) {
+            webView.evaluateJavascript(READ_APPEARANCE, this::rememberAppearance);
+        }
+        super.onPause();
+    }
+
+    @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
         if (StudyReminders.OPEN_STUDY.equals(intent.getAction())) {
             openStudyWhenReady = true;
-            openStudySection();
+            if (!waitingForFirstFrame()) openStudySection();
         }
     }
 
@@ -163,6 +203,62 @@ public final class MainActivity extends AppActivity {
         updateSystemPalette(webView.getUrl(), configuration);
     }
 
+    private int backgroundFor(String mode) {
+        if ("dark".equals(mode)) return getColor(R.color.handbook_background_dark);
+        if ("light".equals(mode)) return getColor(R.color.handbook_background_light);
+        return getColor(R.color.handbook_startup_background);
+    }
+
+    private String rememberAppearance(String result) {
+        String mode;
+        if ("\"dark\"".equals(result)) mode = "dark";
+        else if ("\"light\"".equals(result)) mode = "light";
+        else if ("\"system\"".equals(result)) mode = "system";
+        else return null;
+        getSharedPreferences(STARTUP_PREFERENCES, MODE_PRIVATE).edit()
+                .putString(STARTUP_APPEARANCE, mode).apply();
+        return mode;
+    }
+
+    private boolean waitingForFirstFrame() {
+        return !isDestroyed() && !isFinishing() && startupCover != null;
+    }
+
+    private void checkStartupState() {
+        if (!waitingForFirstFrame() || firstFrameRequested || !isHandbook(webView.getUrl())) return;
+        webView.evaluateJavascript("document.documentElement.dataset.handbookReady === 'true' && "
+                + READ_APPEARANCE, result -> {
+            if (!waitingForFirstFrame() || firstFrameRequested || !isHandbook(webView.getUrl())) return;
+            String mode = rememberAppearance(result);
+            if (mode == null) {
+                webView.postDelayed(checkStartup, STARTUP_CHECK_MS);
+                return;
+            }
+
+            firstFrameRequested = true;
+            int background = backgroundFor(mode);
+            contentRoot.setBackgroundColor(background);
+            startupCover.setBackgroundColor(background);
+            openStudySection();
+            webView.postVisualStateCallback(0, new WebView.VisualStateCallback() {
+                @Override
+                public void onComplete(long requestId) {
+                    showHandbook();
+                }
+            });
+        });
+    }
+
+    private void showHandbook() {
+        if (!waitingForFirstFrame()) return;
+        webView.removeCallbacks(startupTimeout);
+        webView.removeCallbacks(checkStartup);
+        contentRoot.removeView(startupCover);
+        startupCover = null;
+        webView.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_AUTO);
+        openStudySection();
+    }
+
     private void updateSystemPalette(String url, Configuration configuration) {
         if (url == null) return;
         Uri page = Uri.parse(url);
@@ -197,6 +293,8 @@ public final class MainActivity extends AppActivity {
 
     @Override
     protected void onDestroy() {
+        webView.removeCallbacks(startupTimeout);
+        webView.removeCallbacks(checkStartup);
         ((ViewGroup) webView.getParent()).removeView(webView);
         webView.destroy();
         super.onDestroy();
@@ -215,9 +313,15 @@ public final class MainActivity extends AppActivity {
     private final class HandbookClient extends WebViewClient {
         @Override
         public void onPageFinished(WebView view, String url) {
+            if (!isHandbook(url)) return;
             updateSystemPalette(url, getResources().getConfiguration());
             publishReminderState();
-            openStudySection();
+            if (waitingForFirstFrame()) {
+                view.removeCallbacks(checkStartup);
+                checkStartupState();
+            } else {
+                openStudySection();
+            }
         }
 
         @Override

@@ -1,7 +1,6 @@
 package ru.radiobook.hamexam;
 
 import android.app.Activity;
-import android.graphics.Color;
 import android.graphics.Insets;
 import android.os.Build;
 import android.view.View;
@@ -10,9 +9,9 @@ import android.widget.FrameLayout;
 
 abstract class AppActivity extends Activity {
     @SuppressWarnings("deprecation")
-    void setAppContent(View content) {
+    FrameLayout setAppContent(View content, int backgroundColor) {
         FrameLayout root = new FrameLayout(this);
-        root.setBackgroundColor(Color.WHITE);
+        root.setBackgroundColor(backgroundColor);
         root.addView(content, new FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
         if (Build.VERSION.SDK_INT >= 35) {
@@ -29,5 +28,6 @@ abstract class AppActivity extends Activity {
             View decor = getWindow().getDecorView();
             decor.setSystemUiVisibility(decor.getSystemUiVisibility() | View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR);
         }
+        return root;
     }
 }
