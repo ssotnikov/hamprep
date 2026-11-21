@@ -1669,6 +1669,14 @@
     #quick-study-dialog .button { width: 100%; margin: 8px 0 0; }
     #quick-study-dialog h2 { margin: 0 0 6px; }
     #quick-study-dialog .quick-topic { color: var(--on-surface-variant); font-size: .88rem; margin: 0 0 12px; }
+    .spaced-entry { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; margin: 16px 0 22px; }
+    .spaced-entry small { flex: 1 1 160px; color: var(--on-surface-variant); }
+    .spaced-save-status:not(:empty) { display: block; margin: 8px 0; color: var(--on-surface-variant); }
+    #spaced-dialog { max-width: 410px; overflow-y: auto; overscroll-behavior: contain; }
+    #spaced-dialog .button { margin-top: 8px; width: 100%; }
+    #spaced-dialog .spaced-topic { color: var(--on-surface-variant); margin-bottom: 10px; font-size: .88rem; }
+    .spaced-next-date { margin-top: 12px; font-weight: 650; }
+    @media (max-width: 500px) { .spaced-entry .button { width: 100%; } }
     .quick-score { padding: 10px; border-left: var(--inset-rule); }
     #exam-action-dialog [hidden] { display: none; }
     #exam-action-dialog .button + .button { margin-top: var(--space-sm); }
@@ -1981,7 +1989,7 @@
       <div class="appearance-row">
         <div class="version-group">
           <button class="about-button toolbar-icon" id="about-button" type="button" title="О приложении" aria-label="О приложении" aria-haspopup="dialog"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M10 9a10 10 0 0 0 0 14m12-14a10 10 0 0 1 0 14M6.5 6a14 14 0 0 0 0 20m19-20a14 14 0 0 1 0 20" fill="none" stroke="#4785c5" stroke-width="1.9" stroke-linecap="round"/><circle cx="16" cy="12" r="1.75" fill="#edac2d"/><path d="M16 16v7" stroke="#4785c5" stroke-width="2.8" stroke-linecap="round"/></svg></button>
-          <span class="app-version">Версия <span id="app-version">0.11.0</span></span>
+          <span class="app-version">Версия <span id="app-version">0.12.0</span></span>
         </div>
         <div class="appearance-actions">
           <button class="find-toggle" id="find-toggle" type="button" aria-label="Поиск по материалам" aria-expanded="false" aria-controls="find-panel" title="Поиск по материалам">
@@ -2997,6 +3005,11 @@
         <section class="study-section" id="study-practice">
           <h2 id="bank-heading">Блок вопросов для 2-й категории</h2>
           <p><span id="bank-category-summary">405 вопросов по перечню СРР.</span> Выберите вариант для проверки. Для нормативных вопросов сверяйтесь с документами в конце пособия.</p>
+          <div class="spaced-entry">
+            <button class="button button--secondary" type="button" id="spaced-open" aria-describedby="spaced-summary">Повторить сегодня</button>
+            <small id="spaced-summary" aria-live="polite"></small>
+          </div>
+          <small class="spaced-save-status" id="spaced-save-status" role="status"></small>
           <p class="caption">Источник — <a href="https://r9c.srr.ru/wp-content/uploads/2026/02/exam-voprosy2023.pdf">Перечень экзаменационных вопросов по приказу от 01.10.2015 № 224</a>.</p>
           <div class="field-group bank-toolbar">
             <label class="field-label" for="bank-search">Поиск в блоке вопросов</label>
@@ -3090,6 +3103,12 @@
     </div>
   </section>
 
+  <dialog class="exam-timeout-dialog" id="spaced-dialog" aria-labelledby="spaced-title">
+    <h2 id="spaced-title" tabindex="-1">Повторить сегодня</h2>
+    <div id="spaced-body"></div>
+    <small class="spaced-save-status" id="spaced-dialog-save-status" role="status"></small>
+    <form method="dialog"><button class="button button--secondary">Закрыть</button></form>
+  </dialog>
   <dialog class="exam-timeout-dialog" id="quick-study-dialog" aria-labelledby="quick-study-title">
     <h2 id="quick-study-title" tabindex="-1">Короткая тренировка</h2>
     <div id="quick-study-body"></div>
@@ -3125,7 +3144,7 @@
 
   <dialog id="reset-progress-dialog" class="exam-timeout-dialog" aria-labelledby="reset-progress-title" aria-describedby="reset-progress-copy">
     <h2 id="reset-progress-title">Сбросить весь прогресс?</h2>
-    <p id="reset-progress-copy">Удалятся ответы в учебных темах и блоке вопросов, результаты и текущие попытки экзамена для всех категорий.</p>
+    <p id="reset-progress-copy">Удалятся ответы в учебных темах и блоке вопросов, очередь повторения, результаты и текущие попытки экзамена для всех категорий.</p>
     <form method="dialog">
       <button class="button" value="cancel" autofocus>Отмена</button>
       <button class="button reset-progress-confirm" value="reset">Сбросить прогресс</button>
@@ -4332,7 +4351,8 @@
     let appState = {
       quizAnswers: {},
       bankAnswers: {},
-      examRecord: null
+      examRecord: null,
+      spacedReviews: {}
     };
     const examsByCategory = {};
 
@@ -4369,20 +4389,24 @@
       const data = JSON.stringify({
         quizAnswers: appState.quizAnswers,
         bankAnswers: appState.bankAnswers,
+        spacedReview: {version: 1, entries: appState.spacedReviews},
         examBankRevision: EXAM_BANK_REVISION,
         category,
         examsByCategory,
         ...examsByCategory['2']
       });
+      let savedLocally = false;
       try {
         window.localStorage.setItem(STORAGE_KEY, data);
+        savedLocally = true;
       } catch (e) {
         // Хост может сохранить состояние при недоступном локальном хранилище.
       }
       const host = window.notebookAppApi;
-      if (typeof host?.setAppState === 'function') {
-        hostSave = hostSave.then(() => host.setAppState(JSON.parse(data))).catch(() => {});
-      }
+      if (typeof host?.setAppState !== 'function') return Promise.resolve(savedLocally);
+      hostSave = hostSave.then(() => host.setAppState(JSON.parse(data)))
+        .then(() => true, () => savedLocally);
+      return hostSave;
     }
 
     function migrateLegacyBankAnswers(answers) {
@@ -4517,6 +4541,7 @@
     }
 
     function renderQuestionBank() {
+      spacedStudy.update();
       const search = document.getElementById('bank-search');
       const query = normalizeQuestionSearchText(search.value.trim());
       const number = query.match(/^№?\s*(\d+)$/);
@@ -4612,12 +4637,14 @@
       });
     }
 
-    function recordBankAnswer(question, selected) {
+    function recordBankAnswer(question, selected, fromReview = false) {
       appState.bankAnswers[question.id] = selected;
+      const review = updateSpacedReview(question, selected === question.correct, fromReview);
       renderQuestionBank();
       updateProgressSummaries();
-      persistState();
+      saveSpacedProgress();
       reminderControls.studied();
+      return review;
     }
 
     function renderBankKey() {
@@ -4628,6 +4655,7 @@
 
     function setCategory(next) {
       quickStudy.close();
+      spacedStudy.close();
       stopExamTimer();
       category = next;
       qualification = CATEGORIES[category];
@@ -4777,7 +4805,8 @@
     }
 
     function handleResetProgress() {
-      appState = { quizAnswers: {}, bankAnswers: {}, examRecord: null };
+      spacedStudy.close();
+      appState = { quizAnswers: {}, bankAnswers: {}, examRecord: null, spacedReviews: {} };
       for (const key of Object.keys(examsByCategory)) delete examsByCategory[key];
       stopExamTimer();
       examSession = newExamSession();
@@ -4787,7 +4816,7 @@
       document.getElementById('bank-retry-status').textContent = '';
       renderAllSectionQuizzes();
       renderQuestionBank();
-      persistState();
+      saveSpacedProgress();
     }
 
     // =========================================================================
@@ -5568,6 +5597,175 @@
       }};
     })();
 
+
+    // День хранится как номер календарной даты, полученной в локальном часовом поясе.
+    // UTC используется для арифметики дат без переходов на летнее время.
+    const DAY_MS = 86400000;
+    const REVIEW_INTERVALS = [3, 7, 14];
+    const reviewDateFormat = new Intl.DateTimeFormat('ru-RU', {day: 'numeric', month: 'long', timeZone: 'UTC'});
+    const reviewDateWithYear = new Intl.DateTimeFormat('ru-RU', {day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC'});
+
+    function localReviewDay(now = new Date()) {
+      return Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()) / DAY_MS;
+    }
+
+    function formatReviewDay(day, today = localReviewDay()) {
+      const date = new Date(day * DAY_MS);
+      const current = new Date(today * DAY_MS);
+      return (date.getUTCFullYear() === current.getUTCFullYear() ? reviewDateFormat : reviewDateWithYear).format(date);
+    }
+
+    function restoreSpacedReviews(saved, bankAnswers, migrate) {
+      const reviews = {};
+      const today = localReviewDay();
+      for (const {id, correct, options} of ALL_PDF_QUESTIONS) {
+        if (migrate) {
+          const answer = bankAnswers[id];
+          if (Number.isInteger(answer) && answer >= 0 && answer < options.length && answer !== correct) {
+            reviews[id] = {step: 0, due: today};
+          }
+          continue;
+        }
+        const entry = saved?.version === 1 ? saved.entries?.[id] : undefined;
+        if (Number.isInteger(entry?.step) && entry.step >= 0 && entry.step <= REVIEW_INTERVALS.length
+          && Number.isInteger(entry.due) && Math.abs(entry.due) <= 100000000) {
+          reviews[id] = {step: entry.step, due: entry.due};
+        }
+      }
+      return reviews;
+    }
+
+    function nextSpacedReview(review, correct, fromReview, today) {
+      if (!correct) {
+        const due = !fromReview && review ? Math.min(today + 1, review.due) : today + 1;
+        return {step: 0, due};
+      }
+      if (!fromReview || !review) return review;
+      const interval = REVIEW_INTERVALS[review.step];
+      return interval === undefined ? undefined : {step: review.step + 1, due: today + interval};
+    }
+
+    function updateSpacedReview(question, correct, fromReview) {
+      const reviews = appState.spacedReviews;
+      const next = nextSpacedReview(reviews[question.id], correct, fromReview, localReviewDay());
+      if (next) reviews[question.id] = next;
+      else delete reviews[question.id];
+      return next;
+    }
+
+    function saveSpacedProgress() {
+      persistState().then(saved => {
+        const message = saved ? '' : 'Не удалось сохранить прогресс и расписание на устройстве.';
+        document.getElementById('spaced-save-status').textContent = message;
+        document.getElementById('spaced-dialog-save-status').textContent = message;
+      });
+    }
+
+    const spacedStudy = (() => {
+      const button = document.getElementById('spaced-open');
+      const summary = document.getElementById('spaced-summary');
+      const dialog = document.getElementById('spaced-dialog');
+      const title = document.getElementById('spaced-title');
+      const body = document.getElementById('spaced-body');
+      let session;
+      let refreshTimer;
+
+      function update() {
+        const today = localReviewDay();
+        const reviews = appState.spacedReviews;
+        const sorted = PDF_BANK.filter(question => reviews[question.id]).sort((a, b) =>
+          reviews[a.id].due - reviews[b.id].due || a.no - b.no);
+        const due = sorted.filter(question => reviews[question.id].due <= today);
+        const next = sorted.length ? reviews[sorted[0].id].due : undefined;
+        button.textContent = due.length ? 'Повторить сегодня · ' + due.length : 'Повторить сегодня';
+        summary.textContent = due.length ? 'Вопросов к повторению: ' + due.length
+          : next === undefined ? 'Очередь пока пуста' : 'Ближайший повтор · ' + formatReviewDay(next, today);
+        return {due, next};
+      }
+
+      function refreshToday() {
+        update();
+        clearTimeout(refreshTimer);
+        const now = new Date();
+        const midnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+        refreshTimer = setTimeout(refreshToday, Math.max(20, midnight - now + 20));
+      }
+
+      function showQuestion() {
+        const {questions, index} = session;
+        const question = questions[index];
+        const topic = BANK_TOPICS[bankTopicIndex(question.no)][1];
+        title.textContent = `Вопрос ${index + 1} из ${questions.length}`;
+        body.innerHTML = `<p class="spaced-topic">${topic}</p>` + renderPdfPrompt(question)
+          + `<div class="options-list">${renderBankOptions(question)}</div><div id="spaced-feedback"></div>`
+          + `<button class="button" type="button" data-spaced-next disabled>${index + 1 === questions.length ? 'Посмотреть итог' : 'Следующий вопрос'}</button>`;
+        dialog.scrollTop = 0;
+        title.focus({preventScroll: true});
+      }
+
+      function showResult() {
+        title.textContent = 'Повторение завершено';
+        const {due, next} = update();
+        body.innerHTML = `<p class="quick-score">Верно <strong>${session.score} из ${session.questions.length}</strong></p>
+          <p>Осталось на сегодня: ${due.length}.</p>`
+          + (!due.length && next !== undefined ? `<p>Ближайший повтор · ${formatReviewDay(next)}</p>` : '');
+        dialog.scrollTop = 0;
+        title.focus({preventScroll: true});
+      }
+
+      button.addEventListener('click', () => {
+        const {due, next} = update();
+        dialog.showModal();
+        if (due.length) {
+          session = {questions: due, index: 0, score: 0};
+          showQuestion();
+          return;
+        }
+        title.textContent = 'На сегодня повторов нет';
+        body.innerHTML = next === undefined
+          ? '<p>Когда вы ошибетесь в блоке вопросов или в короткой тренировке, вопрос появится здесь на следующий день.</p>'
+          : `<p>Ближайший повтор <strong>${formatReviewDay(next)}</strong>.</p>`;
+        title.focus();
+      });
+
+      dialog.addEventListener('click', event => {
+        if (!session) return;
+        const question = session.questions[session.index];
+        const next = body.querySelector('[data-spaced-next]');
+        const option = event.target.closest('[data-bank-id]');
+        if (option && question?.id === option.dataset.bankId && next?.disabled) {
+          const selected = Number(option.dataset.option);
+          session.score += Number(selected === question.correct);
+          const review = recordBankAnswer(question, selected, true);
+          body.querySelector('.options-list').innerHTML = renderBankOptions(question, selected, true);
+          const feedback = body.querySelector('#spaced-feedback');
+          feedback.innerHTML = renderPdfAnswer(question, selected);
+          const date = document.createElement('p');
+          date.className = 'spaced-next-date';
+          date.setAttribute('role', 'status');
+          date.textContent = review ? 'Следующий повтор · ' + formatReviewDay(review.due) : 'Повторение этого вопроса завершено.';
+          feedback.append(date);
+          next.disabled = false;
+          next.focus();
+        } else if (next && !next.disabled && event.target.closest('[data-spaced-next]') === next) {
+          session.index++;
+          if (session.index < session.questions.length) showQuestion();
+          else showResult();
+        }
+      });
+      dialog.addEventListener('close', () => {
+        if (dialog.open) return;
+        session = undefined;
+        button.focus({preventScroll: true});
+      });
+      window.addEventListener('focus', refreshToday);
+      document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) refreshToday();
+      });
+      refreshToday();
+      return {update, close: () => { if (dialog.open) dialog.close(); }};
+    })();
+
     function renderMockExam() {
       const ws = document.getElementById('exam-workspace');
       const timerEl = document.getElementById('exam-timer-display');
@@ -5689,6 +5887,8 @@
         }
       }
 
+      const needsReviewMigration = Boolean(saved) && !Object.prototype.hasOwnProperty.call(saved, 'spacedReview');
+      appState.spacedReviews = restoreSpacedReviews(saved?.spacedReview, appState.bankAnswers, needsReviewMigration);
       updatePhoneticLab();
       updateEmissionLab();
       updateRfLab();
@@ -5697,6 +5897,7 @@
       const savedCategory = String(saved?.category ?? '2');
       setCategory(Object.hasOwnProperty.call(CATEGORIES, savedCategory) ? savedCategory : '2');
       renderAllSectionQuizzes();
+      if (needsReviewMigration) saveSpacedProgress();
       document.getElementById('qualification-category').addEventListener('change', event => {
         saveCategoryExam();
         setCategory(event.target.value);
