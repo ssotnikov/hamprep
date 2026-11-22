@@ -2141,7 +2141,14 @@
     #saved-dialog { max-width:410px; overflow-y:auto; overscroll-behavior:contain; }
     #saved-dialog > form .button { margin-top:12px; }
     #saved-dialog h3 { margin:14px 0 6px; font-size:1rem; }
-    .saved-row { display:grid; grid-template-columns:minmax(0,1fr) 44px; align-items:start; gap:8px; margin:0 0 8px; }
+    .saved-row {
+      display:grid; grid-template-columns:minmax(0,1fr) 44px; align-items:start; gap:8px; margin:0 0 8px;
+      background:var(--ui-tone); border-radius:11px;
+    }
+    .saved-row .button.button--secondary.saved-destination,
+    .saved-row .saved-remove { background:transparent; }
+    .saved-row .saved-remove { -webkit-tap-highlight-color:transparent; }
+    .saved-row .saved-remove:focus-visible { color:var(--primary); }
     .saved-row .saved-destination { display:grid; gap:2px; text-align:left; justify-content:stretch; justify-items:start; line-height:1.35; }
     .saved-row .saved-destination:disabled { opacity: 1; }
     .saved-destination span { overflow-wrap:anywhere; }
@@ -2184,14 +2191,12 @@
       background: var(--surface-container-low);
       border-radius: 12px;
     }
-    .voice-actions { justify-content: space-between; }
-    .voice-actions select {
-      width: auto;
-      padding-inline: 12px;
-      border: 0;
-      border-radius: 11px;
-      background: var(--ui-tone);
-      color: var(--on-surface);
+    .voice-actions { justify-content:space-between; align-items:flex-start; gap:12px; }
+    .voice-actions .voice-play { min-height:52px; }
+    .voice-actions .ui-dropdown { flex:0 1 148px; min-width:124px; }
+    .voice-actions .ui-dropdown > summary { padding-block:5px; }
+    @media (max-width:360px) {
+      .voice-actions .voice-play, .voice-actions .ui-dropdown { flex:1 1 100%; }
     }
     .voice-seek { display: block; width: 100%; margin: 0; min-height: 30px; accent-color: var(--primary); }
     .voice-progress {
@@ -4224,11 +4229,13 @@
           <audio preload="none"></audio>
           <div class="voice-actions">
             <button class="button voice-play" type="button">▶ Слушать</button>
-            <select aria-label="Скорость воспроизведения">
-              <option value="0.75">0,75×</option>
-              <option value="1" selected>1×</option>
-              <option value="1.25">1,25×</option>
-            </select>
+            <label>Скорость
+              <select aria-label="Скорость воспроизведения">
+                <option value="0.75">0,75×</option>
+                <option value="1" selected>1×</option>
+                <option value="1.25">1,25×</option>
+              </select>
+            </label>
           </div>
           <input class="voice-seek" aria-label="Позиция записи" type="range" value="0" min="0" step="0.1">
           <div class="voice-progress"><span>0:00</span><span>0:00</span></div>
