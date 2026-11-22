@@ -4,10 +4,11 @@
 
 <p>
   <img src="android/res/drawable-nodpi/handbook_startup_icon.png" alt="Иконка приложения «Радиоэкзамен»" width="63" height="63">
-  <a href="https://www.rustore.ru/catalog/app/ru.radiobook.hamexam"><img src="android/assets/rustore-badge-light.svg" alt="Скачайте из RuStore" width="188"></a>
 </p>
 
 # Приложение Радиоэкзамен (ССР РФ) для Android
+
+<a href="https://www.rustore.ru/catalog/app/ru.radiobook.hamexam"><img src="android/assets/rustore-badge-light.svg" alt="Скачайте из RuStore" width="188"></a>
 
 Приложение помогает самостоятельно подготовиться к квалификационному экзамену радиолюбителя на 1–4-ю категории. Выберите свою категорию, изучайте теорию, отвечайте на вопросы и проверяйте готовность на пробном экзамене с таймером. Учебные материалы, задания и аудио доступны без интернета.
 
