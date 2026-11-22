@@ -1044,6 +1044,55 @@
       padding-inline-start: 0;
       font-family: var(--font-mono);
     }
+    .bank-key-details {
+      --key-button: #f4df9f;
+      --key-ink: #392a09;
+      --key-border: #d6b966;
+      --key-focus: #ecd189;
+      --key-panel: #fffaec;
+      --key-panel-border: #d9c99d;
+    }
+    :root[data-palette="dark"] .bank-key-details {
+      --key-button: #5b451f;
+      --key-ink: #fff0bc;
+      --key-border: #9b773c;
+      --key-focus: #6e5528;
+      --key-panel: #26231d;
+      --key-panel-border: #655538;
+    }
+    .bank-key-toggle {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 14px;
+      min-height: 48px;
+      border: 1px solid var(--key-border);
+      border-radius: 12px;
+      background: var(--key-button);
+      color: var(--key-ink);
+      font-weight: 650;
+      cursor: pointer;
+      list-style: none;
+    }
+    .bank-key-toggle::-webkit-details-marker { display: none; }
+    .bank-key-toggle:focus-visible, .bank-key-toggle:hover { background: var(--key-focus); }
+    .bank-key-toggle .bank-page-arrow { transform: scaleX(-1); }
+    .bank-key-details[open] .bank-page-arrow { transform: rotate(-90deg); }
+    .bank-key-details .bank-key-grid {
+      grid-template-columns: repeat(auto-fill,minmax(4.75rem,1fr));
+      gap: 2px 10px;
+      padding: 10px 12px;
+      border: 1px solid var(--key-panel-border);
+      border-radius: 12px;
+      background: var(--key-panel);
+    }
+    .bank-key-grid li { white-space: nowrap; }
+    .bank-key-link {
+      display: inline-flex;
+      align-items: center;
+      min-height: 42px;
+      font-weight: 600;
+    }
     .exam-source { max-width: 26rem; }
 
     /* Mock Exam Simulator */
@@ -3365,8 +3414,8 @@
             <span id="bank-page-label"></span>
             <button class="button button--secondary" type="button" id="bank-next">Далее <svg class="bank-page-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5.8c0-.7-.8-1.1-1.3-.7l-8.1 6.2a.9.9 0 0 0 0 1.4l8.1 6.2c.5.4 1.3 0 1.3-.7z" transform="translate(24 0) scale(-1 1)"/></svg></button>
           </div>
-          <details>
-            <summary id="bank-key-summary">Ключ к вопросам выбранной категории</summary>
+          <details class="bank-key-details">
+            <summary class="bank-key-toggle"><svg class="bank-page-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5.8c0-.7-.8-1.1-1.3-.7l-8.1 6.2a.9.9 0 0 0 0 1.4l8.1 6.2c.5.4 1.3 0 1.3-.7z"/></svg><span id="bank-key-summary">Ключ к вопросам выбранной категории</span></summary>
             <p class="caption">Порядок вариантов и ключ соответствуют перечню. <a href="https://r9c.srr.ru/wp-content/uploads/2026/02/exam-voprosy2023.pdf#page=105">Ключ ответов в перечне</a>.</p>
             <ul class="bank-key-grid" id="bank-key"></ul>
           </details>
@@ -5240,6 +5289,16 @@
         applyFilters();
       });
       const results = document.getElementById('bank-results');
+      document.getElementById('bank-key').addEventListener('click', event => {
+        const link = event.target.closest('[data-question-number]');
+        if (!link) return;
+        event.preventDefault();
+        resetBankTopic('', link.dataset.questionNumber);
+        const question = results.querySelector('.question-card');
+        if (!question) return;
+        question.tabIndex = -1;
+        revealBelowTopbar(question);
+      });
       for (const [id, direction] of [['bank-prev', -1], ['bank-next', 1]]) {
         document.getElementById(id).addEventListener('click', () => {
           bankPage += direction;
@@ -5281,7 +5340,7 @@
 
     function renderBankKey() {
       document.getElementById('bank-key').innerHTML = PDF_BANK.map(question =>
-        `<li>№ ${question.no} · ${PDF_LETTERS[question.correct]}</li>`
+        `<li><a class="bank-key-link" href="#bank-results" data-question-number="${question.no}">№ ${question.no}</a> · ${PDF_LETTERS[question.correct]}</li>`
       ).join('');
     }
 
