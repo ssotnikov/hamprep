@@ -1,3 +1,14 @@
-﻿android/releases/
+/docs/
+/openspec/
+android/releases/
 .private/
-/sherpa/
+
+/AGENTS.md
+/SEMVER.md
+/SECURITY.md
+/REFACTORING.md
+
+sherpa/
+radio_tts_kit/
+rustore/
+/.codex-attachments/
