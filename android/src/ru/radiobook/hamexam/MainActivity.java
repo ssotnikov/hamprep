@@ -1,6 +1,7 @@
 package ru.radiobook.hamexam;
 
 import android.Manifest;
+import android.app.UiModeManager;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
@@ -39,6 +40,7 @@ public final class MainActivity extends AppActivity {
     private static final Pattern REMINDER_SCHEDULE = Pattern.compile("schedule/([1237])/([0-9]{1,4})");
     private static final int NOTIFICATION_PERMISSION = 31;
 
+    private static final String APPEARANCE_PATH = "/__appearance/";
     private static final String STARTUP_PREFERENCES = "handbook_appearance";
     private static final String STARTUP_APPEARANCE = "mode";
     private static final String READ_APPEARANCE = "(function(){var selected = "
@@ -55,6 +57,8 @@ public final class MainActivity extends AppActivity {
     private boolean requestingPermission;
     private boolean openStudyWhenReady;
     private boolean firstFrameRequested;
+    private String appearanceMode;
+    private String platformAppearanceMode;
     private final Runnable checkStartup = this::checkStartupState;
     private final Runnable startupTimeout = () -> {
         if (waitingForFirstFrame()) {
@@ -85,13 +89,14 @@ public final class MainActivity extends AppActivity {
         webView.setWebChromeClient(new WebChromeClient());
         webView.setWebViewClient(new HandbookClient());
         examExport = new ExamHtmlExport(this, webView, () -> isHandbook(webView.getUrl()), state);
-        String mode = getSharedPreferences(STARTUP_PREFERENCES, MODE_PRIVATE)
+        appearanceMode = getSharedPreferences(STARTUP_PREFERENCES, MODE_PRIVATE)
                 .getString(STARTUP_APPEARANCE, "system");
-        int background = backgroundFor(mode);
+        int background = backgroundFor(appearanceMode);
         contentRoot = setAppContent(webView, background);
         startupCover = new StartupCover(this, background);
         contentRoot.addView(startupCover, new FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        applyWindowPalette();
         webView.postDelayed(startupTimeout, STARTUP_TIMEOUT_MS);
 
         if (state == null || webView.restoreState(state) == null) {
@@ -116,14 +121,6 @@ public final class MainActivity extends AppActivity {
         super.onResume();
         reminders.refresh();
         publishReminderState();
-    }
-
-    @Override
-    protected void onPause() {
-        if (isHandbook(webView.getUrl()) && !waitingForFirstFrame()) {
-            webView.evaluateJavascript(READ_APPEARANCE, this::rememberAppearance);
-        }
-        super.onPause();
     }
 
     @Override
@@ -206,6 +203,7 @@ public final class MainActivity extends AppActivity {
     @Override
     public void onConfigurationChanged(Configuration configuration) {
         super.onConfigurationChanged(configuration);
+        applyWindowPalette();
         updateSystemPalette(webView.getUrl(), configuration);
     }
 
@@ -215,15 +213,32 @@ public final class MainActivity extends AppActivity {
         return getColor(R.color.handbook_startup_background);
     }
 
-    private String rememberAppearance(String result) {
-        String mode;
-        if ("\"dark\"".equals(result)) mode = "dark";
-        else if ("\"light\"".equals(result)) mode = "light";
-        else if ("\"system\"".equals(result)) mode = "system";
-        else return null;
+    private void applyWindowPalette() {
+        if (contentRoot == null) return;
+        int background = backgroundFor(appearanceMode);
+        contentRoot.setBackgroundColor(background);
+        webView.setBackgroundColor(background);
+        if (startupCover != null) startupCover.setPalette(background);
+        setSystemBarPalette(background, background == getColor(R.color.handbook_background_light));
+    }
+
+    private boolean selectAppearance(String mode) {
+        int platformMode;
+        switch (mode) {
+            case "dark": platformMode = UiModeManager.MODE_NIGHT_YES; break;
+            case "light": platformMode = UiModeManager.MODE_NIGHT_NO; break;
+            case "system": platformMode = UiModeManager.MODE_NIGHT_AUTO; break;
+            default: return false;
+        }
+        appearanceMode = mode;
         getSharedPreferences(STARTUP_PREFERENCES, MODE_PRIVATE).edit()
                 .putString(STARTUP_APPEARANCE, mode).apply();
-        return mode;
+        if (Build.VERSION.SDK_INT >= 31 && !mode.equals(platformAppearanceMode)) {
+            platformAppearanceMode = mode;
+            getSystemService(UiModeManager.class).setApplicationNightMode(platformMode);
+        }
+        applyWindowPalette();
+        return true;
     }
 
     private boolean waitingForFirstFrame() {
@@ -235,16 +250,13 @@ public final class MainActivity extends AppActivity {
         webView.evaluateJavascript("document.documentElement.dataset.handbookReady === 'true' && "
                 + READ_APPEARANCE, result -> {
             if (!waitingForFirstFrame() || firstFrameRequested || !isHandbook(webView.getUrl())) return;
-            String mode = rememberAppearance(result);
-            if (mode == null) {
+            if (result == null || result.length() < 2 || result.charAt(0) != '"'
+                    || !selectAppearance(result.substring(1, result.length() - 1))) {
                 webView.postDelayed(checkStartup, STARTUP_CHECK_MS);
                 return;
             }
 
             firstFrameRequested = true;
-            int background = backgroundFor(mode);
-            contentRoot.setBackgroundColor(background);
-            startupCover.setPalette(background);
             openStudySection();
             webView.postVisualStateCallback(0, new WebView.VisualStateCallback() {
                 @Override
@@ -366,6 +378,13 @@ public final class MainActivity extends AppActivity {
                             && url.getEncodedQuery() == null && url.getEncodedFragment() == null && !request.isRedirect()) {
                         if (ExamHtmlExport.SAVE_PATH.equals(path)) examExport.requestSave();
                         else examExport.forgetProfile();
+                    }
+                    return true;
+                }
+                if (path != null && path.startsWith(APPEARANCE_PATH)) {
+                    if (isHandbook(view.getUrl()) && "GET".equals(request.getMethod())
+                            && url.getEncodedQuery() == null && url.getEncodedFragment() == null && !request.isRedirect()) {
+                        selectAppearance(path.substring(APPEARANCE_PATH.length()));
                     }
                     return true;
                 }

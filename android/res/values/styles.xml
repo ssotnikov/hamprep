@@ -1,11 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="AppTheme" parent="android:style/Theme.Material.Light.NoActionBar">
+    <style name="AppTheme.Base" parent="android:style/Theme.Material.Light.NoActionBar">
         <item name="android:windowBackground">@color/handbook_startup_background</item>
-        <item name="android:statusBarColor">#FFFFFF</item>
-        <item name="android:navigationBarColor">#FFFFFF</item>
-        <item name="android:windowLightStatusBar">true</item>
-        <item name="android:windowLightNavigationBar">true</item>
+        <item name="android:statusBarColor">@color/handbook_startup_background</item>
+        <item name="android:navigationBarColor">@color/handbook_startup_background</item>
+        <item name="android:windowLightStatusBar">@bool/handbook_startup_light_bars</item>
+        <item name="android:windowLightNavigationBar">@bool/handbook_startup_light_bars</item>
         <item name="android:colorAccent">#162E51</item>
+    </style>
+    <style name="AppTheme" parent="AppTheme.Base">
+        <item name="android:windowDisablePreview">true</item>
     </style>
 </resources>

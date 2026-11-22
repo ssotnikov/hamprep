@@ -17,6 +17,8 @@
       const media = window.matchMedia('(prefers-color-scheme: dark)');
       let choice = 'system';
       let androidTheme;
+      let paletteFrame;
+      const androidHost = location.origin === 'https://appassets.androidplatform.net';
 
       try {
         const saved = localStorage.getItem(storageKey);
@@ -27,7 +29,18 @@
 
       const applyTheme = () => {
         const systemTheme = androidTheme || (media.matches ? 'dark' : 'light');
-        document.documentElement.dataset.palette = choice === 'system' ? systemTheme : choice;
+        const root = document.documentElement;
+        const palette = choice === 'system' ? systemTheme : choice;
+        if (root.dataset.palette === palette) return;
+        if (root.dataset.palette) {
+          root.setAttribute('data-palette-switch', '');
+          cancelAnimationFrame(paletteFrame);
+          // Keep the transition disabled through the frame that applies the new palette.
+          paletteFrame = requestAnimationFrame(() => {
+            paletteFrame = requestAnimationFrame(() => root.removeAttribute('data-palette-switch'));
+          });
+        }
+        root.dataset.palette = palette;
       };
       applyTheme();
       if (media.addEventListener) media.addEventListener('change', applyTheme);
@@ -51,6 +64,7 @@
             } catch (error) {
               // The selected palette still applies for this session.
             }
+            if (androidHost) location.assign('/__appearance/' + choice);
           });
         });
       });
@@ -452,6 +466,7 @@
       text-decoration: none;
       transition: background-color var(--dur-micro) var(--ease-out), transform var(--dur-micro) var(--ease-out);
     }
+    :root[data-palette-switch] .button { transition-property: transform; }
     .button:hover { background: var(--tertiary); }
     .button:active { transform: translateY(2px); box-shadow: none; }
     .button:disabled {
@@ -901,6 +916,7 @@
       line-height: 1.45;
       transition: background-color var(--dur-micro) var(--ease-out);
     }
+    :root[data-palette-switch] .option-btn { transition-property: none; }
     .option-btn:hover:not(:disabled) {
       background: var(--surface-container-low);
       border-color: var(--outline);

@@ -3,4 +3,5 @@
     <color name="handbook_background_light">#FFFFFF</color>
     <color name="handbook_background_dark">#171A1F</color>
     <color name="handbook_startup_background">@color/handbook_background_light</color>
+    <bool name="handbook_startup_light_bars">true</bool>
 </resources>

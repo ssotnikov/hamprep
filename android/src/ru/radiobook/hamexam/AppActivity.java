@@ -5,6 +5,7 @@ import android.graphics.Insets;
 import android.os.Build;
 import android.view.View;
 import android.view.WindowInsets;
+import android.view.WindowInsetsController;
 import android.widget.FrameLayout;
 
 abstract class AppActivity extends Activity {
@@ -24,10 +25,25 @@ abstract class AppActivity extends Activity {
             });
         }
         setContentView(root);
-        if (Build.VERSION.SDK_INT == 26) {
-            View decor = getWindow().getDecorView();
-            decor.setSystemUiVisibility(decor.getSystemUiVisibility() | View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR);
-        }
         return root;
+    }
+
+    @SuppressWarnings("deprecation")
+    void setSystemBarPalette(int background, boolean light) {
+        if (Build.VERSION.SDK_INT < 35) {
+            getWindow().setStatusBarColor(background);
+            getWindow().setNavigationBarColor(background);
+        }
+        if (Build.VERSION.SDK_INT >= 29) getWindow().setNavigationBarContrastEnforced(false);
+        if (Build.VERSION.SDK_INT >= 30) {
+            WindowInsetsController controller = getWindow().getInsetsController();
+            int mask = WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS
+                    | WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS;
+            if (controller != null) controller.setSystemBarsAppearance(light ? mask : 0, mask);
+        } else {
+            View decor = getWindow().getDecorView();
+            int mask = View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR | View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
+            decor.setSystemUiVisibility((decor.getSystemUiVisibility() & ~mask) | (light ? mask : 0));
+        }
     }
 }
