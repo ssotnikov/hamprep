@@ -1,5 +1,5 @@
 ![Android](https://img.shields.io/badge/Android-8.0%2B-3DDC84?style=flat&labelColor=365563)
-![Languages](https://img.shields.io/badge/Languages-RU%20%7C%?style=flat&labelColor=365563)
+![Languages: RU](https://img.shields.io/badge/Languages-RU-3DDC84?style=flat&labelColor=365563)
 ![License](https://img.shields.io/badge/License-MIT-blue?style=flat&labelColor=365563)
 
 <p>
