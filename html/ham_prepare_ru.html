@@ -996,12 +996,26 @@
     }
     .bank-retry-status:empty { display: none; }
     .bank-pagination {
+      --bank-pagination-background: rgba(255, 255, 255, .8);
+      position: fixed;
+      z-index: 10;
+      bottom: calc(var(--pinned-bottom-height) + var(--bottom-control-gap) + 8px);
+      left: 50%;
+      transform: translateX(-50%);
       display: grid;
       grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
       align-items: center;
       gap: 8px;
-      margin-block: var(--space-md);
+      width: min(29rem, calc(100% - 24px));
+      padding: 5px;
+      border: 1px solid var(--scheme-border);
+      border-radius: 13px;
+      background: var(--bank-pagination-background);
+      box-shadow: 0 4px 16px #0003;
+      visibility: hidden;
     }
+    :root[data-palette="dark"] .bank-pagination { --bank-pagination-background: rgba(23, 26, 31, .8); }
+    .bank-pagination[data-docked] { visibility: visible; }
     .bank-pagination .button {
       width: 100%;
       padding-inline: 8px;
@@ -7705,6 +7719,9 @@ ${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="co
       const root = document.documentElement;
       const topBar = document.querySelector('.pinned-topbar');
       const bottomPanel = document.querySelector('.sections-panel');
+      const bankResults = document.getElementById('bank-results');
+      const bankPagination = document.getElementById('bank-pagination');
+      const bankSearch = document.getElementById('bank-search');
       const sections = [
         ['#sec-1', '#mock-exam'],
         ['#mock-exam', '#study-practice'],
@@ -7728,6 +7745,11 @@ ${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="co
         framePending = false;
         topButton.hidden = window.scrollY < 240;
         const visibleTop = topBar.getBoundingClientRect().bottom + 10;
+        const resultsBounds = bankResults.getBoundingClientRect();
+        bankPagination.toggleAttribute('data-docked',
+          !bankPagination.hidden && document.activeElement !== bankSearch
+          && resultsBounds.bottom > visibleTop + 14
+          && resultsBounds.top < bankPagination.getBoundingClientRect().top);
         const current = sections.find(({ start, end }) =>
           start.getBoundingClientRect().top <= visibleTop && end.getBoundingClientRect().top > visibleTop);
         if (current === currentSection) return;
@@ -7755,6 +7777,9 @@ ${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="co
         scheduleNavigationUpdate();
       });
       window.addEventListener('scroll', scheduleNavigationUpdate, { passive: true });
+      bankSearch.addEventListener('focus', scheduleNavigationUpdate);
+      bankSearch.addEventListener('blur', scheduleNavigationUpdate);
+      new MutationObserver(scheduleNavigationUpdate).observe(bankResults, { childList: true });
       // Older WebView versions can ignore scroll-padding for fragment navigation.
       function updateAfterAnchor() {
         requestAnimationFrame(() => {
