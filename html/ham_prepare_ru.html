@@ -1400,6 +1400,14 @@
       background: var(--sections-tile-background);
     }
     .section-tile + .section-tile { margin-left: 4px; }
+    .section-voice-icon {
+      width:21px;
+      height:21px;
+      background:center / contain no-repeat url("data:image/png;base64,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");
+    }
+    :root[data-palette="dark"] .section-voice-icon {
+      background-image:url("data:image/png;base64,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");
+    }
     .section-tile:visited { color: var(--tertiary); }
     @media (hover: hover) and (pointer: fine) {
       .section-tile:hover { border-color: var(--tertiary); }
@@ -3396,6 +3404,9 @@
         <rect x="6.5" y="3" width="14.3" height="15.8" rx="2.5" fill="#f4c878" stroke="#805526" stroke-width="1"/>
         <path d="M11.6 8.2a2.1 2.1 0 0 1 4.2 0c0 1.6-2.1 1.7-2.1 3.1m0 3h.01" fill="none" stroke="#39270e" stroke-width="1.7"/>
       </svg>
+    </a>
+    <a class="section-tile" href="#voice-exchanges" aria-label="Голосовой радиообмен" title="Голосовой радиообмен">
+      <span class="section-voice-icon" aria-hidden="true"></span>
     </a>
   </nav>
 
@@ -7697,7 +7708,8 @@ ${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="co
       const sections = [
         ['#sec-1', '#mock-exam'],
         ['#mock-exam', '#study-practice'],
-        ['#study-practice', '.page-footer']
+        ['#study-practice', '#voice-exchanges'],
+        ['#voice-exchanges', '.page-footer']
       ].map(([start, end]) => ({
         start: document.querySelector(start),
         end: document.querySelector(end),
