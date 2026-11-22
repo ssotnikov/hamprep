@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A 104 dp rounded image centered on the 288 dp Android splash icon canvas. -->
+<inset xmlns:android="http://schemas.android.com/apk/res/android"
+    android:drawable="@drawable/handbook_startup_icon"
+    android:inset="31.944444%" />

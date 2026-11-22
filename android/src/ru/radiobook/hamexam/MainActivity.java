@@ -59,6 +59,7 @@ public final class MainActivity extends AppActivity {
     private boolean firstFrameRequested;
     private String appearanceMode;
     private String platformAppearanceMode;
+    private long paletteRequest;
     private final Runnable checkStartup = this::checkStartupState;
     private final Runnable startupTimeout = () -> {
         if (waitingForFirstFrame()) {
@@ -71,6 +72,12 @@ public final class MainActivity extends AppActivity {
     @Override
     protected void onCreate(Bundle state) {
         super.onCreate(state);
+        if (Build.VERSION.SDK_INT >= 31) {
+            getSplashScreen().setOnExitAnimationListener(splash -> {
+                if (waitingForFirstFrame()) startupCover.alignIcon(splash.getIconView());
+                splash.remove();
+            });
+        }
         reminders = new StudyReminders(this);
         requestingPermission = state != null && state.getBoolean("requestingReminderPermission");
         openStudyWhenReady = StudyReminders.OPEN_STUDY.equals(getIntent().getAction());
@@ -203,8 +210,7 @@ public final class MainActivity extends AppActivity {
     @Override
     public void onConfigurationChanged(Configuration configuration) {
         super.onConfigurationChanged(configuration);
-        applyWindowPalette();
-        updateSystemPalette(webView.getUrl(), configuration);
+        if ("system".equals(appearanceMode)) updateSystemPalette(webView.getUrl(), configuration);
     }
 
     private int backgroundFor(String mode) {
@@ -215,7 +221,10 @@ public final class MainActivity extends AppActivity {
 
     private void applyWindowPalette() {
         if (contentRoot == null) return;
-        int background = backgroundFor(appearanceMode);
+        applyWindowPalette(backgroundFor(appearanceMode));
+    }
+
+    private void applyWindowPalette(int background) {
         contentRoot.setBackgroundColor(background);
         webView.setBackgroundColor(background);
         if (startupCover != null) startupCover.setPalette(background);
@@ -233,12 +242,26 @@ public final class MainActivity extends AppActivity {
         appearanceMode = mode;
         getSharedPreferences(STARTUP_PREFERENCES, MODE_PRIVATE).edit()
                 .putString(STARTUP_APPEARANCE, mode).apply();
+        if (waitingForFirstFrame()) {
+            applyPlatformAppearance(mode, platformMode);
+            applyWindowPalette();
+        } else if ("system".equals(mode)) {
+            applyPlatformAppearance(mode, platformMode);
+            updateSystemPalette(webView.getUrl(), getResources().getConfiguration());
+        } else {
+            // Explicit choices already changed the page palette before dispatching the command.
+            // Persist Android's launch mode after the visual callback so it cannot recolor the bars early.
+            applyPaletteOnVisualState(++paletteRequest, backgroundFor(mode),
+                    () -> applyPlatformAppearance(mode, platformMode));
+        }
+        return true;
+    }
+
+    private void applyPlatformAppearance(String mode, int platformMode) {
         if (Build.VERSION.SDK_INT >= 31 && !mode.equals(platformAppearanceMode)) {
             platformAppearanceMode = mode;
             getSystemService(UiModeManager.class).setApplicationNightMode(platformMode);
         }
-        applyWindowPalette();
-        return true;
     }
 
     private boolean waitingForFirstFrame() {
@@ -278,14 +301,37 @@ public final class MainActivity extends AppActivity {
     }
 
     private void updateSystemPalette(String url, Configuration configuration) {
-        if (url == null) return;
-        Uri page = Uri.parse(url);
-        if (!isLocal(page) || !PAGE_PATH.equals(page.getEncodedPath())) return;
-
+        if (!isHandbook(url)) return;
         int nightMode = configuration.uiMode & Configuration.UI_MODE_NIGHT_MASK;
         String palette = nightMode == Configuration.UI_MODE_NIGHT_YES ? "dark" : "light";
-        webView.evaluateJavascript("window.dispatchEvent(new CustomEvent('radioexam-system-theme',"
-                + "{detail:'" + palette + "'}));", null);
+        synchronizeWindowPalette("window.dispatchEvent(new CustomEvent('radioexam-system-theme',"
+                + "{detail:'" + palette + "'}));");
+    }
+
+    private void synchronizeWindowPalette(String update) {
+        long request = ++paletteRequest;
+        webView.evaluateJavascript(update + "document.documentElement.dataset.palette", result -> {
+            if (!isCurrentPaletteRequest(request)) return;
+            boolean dark = "\"dark\"".equals(result);
+            if (!dark && !"\"light\"".equals(result)) return;
+            int background = getColor(dark ? R.color.handbook_background_dark : R.color.handbook_background_light);
+            applyPaletteOnVisualState(request, background, null);
+        });
+    }
+
+    private void applyPaletteOnVisualState(long request, int background, Runnable afterPalette) {
+        webView.postVisualStateCallback(request, new WebView.VisualStateCallback() {
+            @Override
+            public void onComplete(long requestId) {
+                if (!isCurrentPaletteRequest(requestId)) return;
+                applyWindowPalette(background);
+                if (afterPalette != null) afterPalette.run();
+            }
+        });
+    }
+
+    private boolean isCurrentPaletteRequest(long request) {
+        return request == paletteRequest && !isDestroyed() && !isFinishing() && isHandbook(webView.getUrl());
     }
 
     @Override

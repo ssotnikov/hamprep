@@ -2,9 +2,7 @@ package ru.radiobook.hamexam;
 
 import android.content.Context;
 import android.content.pm.PackageManager;
-import android.graphics.Color;
 import android.graphics.Typeface;
-import android.graphics.drawable.GradientDrawable;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
@@ -14,6 +12,10 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 final class StartupCover extends FrameLayout {
+    private static final int ICON_DP = 104;
+    // Android places the 288 dp drawable in a 192 dp icon view.
+    private static final float SYSTEM_ICON_FRACTION = ICON_DP / 192f;
+    private final LinearLayout identity;
     private final ImageView icon;
     private final TextView name;
     private final TextView version;
@@ -23,7 +25,7 @@ final class StartupCover extends FrameLayout {
         setClickable(true);
         setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
 
-        LinearLayout identity = new LinearLayout(context);
+        identity = new LinearLayout(context);
         identity.setOrientation(LinearLayout.VERTICAL);
         identity.setGravity(Gravity.CENTER_HORIZONTAL);
         identity.setPadding(dp(10), 0, dp(10), 0);
@@ -32,12 +34,8 @@ final class StartupCover extends FrameLayout {
         icon = new ImageView(context);
         icon.setImageResource(R.drawable.handbook_startup_icon);
         icon.setScaleType(ImageView.ScaleType.FIT_XY);
-        GradientDrawable mask = iconShape();
-        mask.setColor(0xff1249dc);
-        icon.setBackground(mask);
-        icon.setClipToOutline(true);
         icon.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
-        identity.addView(icon, new LinearLayout.LayoutParams(dp(104), dp(104)));
+        identity.addView(icon, new LinearLayout.LayoutParams(dp(ICON_DP), dp(ICON_DP)));
 
         name = addLabel(identity, 23, 18);
         name.setTypeface(Typeface.DEFAULT_BOLD);
@@ -65,16 +63,22 @@ final class StartupCover extends FrameLayout {
         setBackgroundColor(background);
         name.setTextColor(dark ? 0xffedf0f4 : 0xff101417);
         version.setTextColor(dark ? 0xffadb8c6 : 0xff49545e);
-        GradientDrawable outline = iconShape();
-        outline.setStroke(dp(1), dark ? 0xff7488a9 : Color.TRANSPARENT);
-        icon.setForeground(outline);
     }
 
-    private GradientDrawable iconShape() {
-        GradientDrawable shape = new GradientDrawable();
-        shape.setColor(Color.TRANSPARENT);
-        shape.setCornerRadius(dp(25));
-        return shape;
+    void alignIcon(View systemIcon) {
+        if (systemIcon == null || systemIcon.getWidth() == 0 || systemIcon.getHeight() == 0
+                || icon.getWidth() == 0 || icon.getHeight() == 0) return;
+        int[] systemPosition = new int[2];
+        int[] coverPosition = new int[2];
+        systemIcon.getLocationInWindow(systemPosition);
+        icon.getLocationInWindow(coverPosition);
+        float dx = systemPosition[0] + systemIcon.getWidth() / 2f - coverPosition[0] - icon.getWidth() / 2f;
+        float dy = systemPosition[1] + systemIcon.getHeight() / 2f - coverPosition[1] - icon.getHeight() / 2f;
+        float diameter = Math.min(systemIcon.getWidth(), systemIcon.getHeight()) * SYSTEM_ICON_FRACTION;
+        icon.setScaleX(diameter / icon.getWidth());
+        icon.setScaleY(diameter / icon.getHeight());
+        identity.setTranslationX(identity.getTranslationX() + dx);
+        identity.setTranslationY(identity.getTranslationY() + dy);
     }
 
     private TextView addLabel(LinearLayout identity, int size, int topMargin) {

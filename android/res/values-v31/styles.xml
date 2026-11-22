@@ -2,6 +2,6 @@
 <resources>
     <style name="AppTheme" parent="AppTheme.Base">
         <item name="android:windowSplashScreenBackground">@color/handbook_startup_background</item>
-        <item name="android:windowSplashScreenAnimatedIcon">@mipmap/ic_launcher</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/handbook_system_splash_icon</item>
     </style>
 </resources>
