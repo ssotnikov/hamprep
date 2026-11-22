@@ -1442,6 +1442,7 @@
     }
     .to-top {
       --to-top-diameter: calc(var(--pinned-bottom-height) * .7);
+      --to-top-inset-y: calc((var(--pinned-bottom-height) - var(--to-top-diameter)) / 2);
       -webkit-tap-highlight-color: transparent;
       position: fixed;
       z-index: 11;
@@ -1461,7 +1462,7 @@
       content: "";
       position: absolute;
       right: 0;
-      bottom: 0;
+      bottom: var(--to-top-inset-y);
       width: var(--to-top-diameter);
       height: var(--to-top-diameter);
       border-radius: 50%;
@@ -1472,7 +1473,7 @@
     .to-top svg {
       position: absolute;
       right: calc((var(--to-top-diameter) - 16.1px) / 2);
-      bottom: calc((var(--to-top-diameter) - 16.1px) / 2);
+      bottom: calc((var(--pinned-bottom-height) - 16.1px) / 2);
       width: 16.1px;
       height: 16.1px;
       fill: none;
