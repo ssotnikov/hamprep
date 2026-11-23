@@ -2298,6 +2298,8 @@
     }
     .voice-actions .ui-dropdown > summary { gap:4px; padding:5px 7px; }
     .voice-actions .ui-dropdown-arrow { margin-right:2px; }
+    .voice-actions .ui-dropdown > summary,
+    .voice-actions .ui-dropdown-option { -webkit-tap-highlight-color:transparent; }
     @media (max-width:360px) {
       .voice-actions .voice-play { padding-inline:6px; font-size:.82rem; }
     }
@@ -7865,6 +7867,13 @@ ${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="co
         }
       }
 
+      function finishWithNotice(message) {
+        dialog.close();
+        clearTimeout(resultTimer);
+        result.textContent = message;
+        resultTimer = setTimeout(() => { result.textContent = ''; }, 5000);
+      }
+
       function sendAndroid(command) {
         location.href = location.origin + '/__progress-backup/' + command;
       }
@@ -7880,7 +7889,7 @@ ${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="co
           pendingExport = undefined;
           setBusy(false);
           if (event.detail?.status === 'loaded') inspect(event.detail.json);
-          else if (event.detail?.status === 'saved') showStatus('Резервная копия сохранена.');
+          else if (event.detail?.status === 'saved') finishWithNotice('Резервная копия сохранена.');
           else if (event.detail?.status === 'save-error') showStatus('Не удалось сохранить копию.');
           else if (event.detail?.status === 'open-error') showStatus('Не удалось прочитать файл копии.');
         });
@@ -7919,7 +7928,7 @@ ${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="co
           link.download = 'radioexam-progress-' + new Date().toISOString().slice(0, 10) + '.json';
           link.click();
           setTimeout(() => URL.revokeObjectURL(url), 1000);
-          showStatus('Копия передана на скачивание.');
+          finishWithNotice('Копия передана на скачивание.');
         } catch (error) {
           pendingExport = undefined;
           setBusy(false);
@@ -7975,10 +7984,7 @@ ${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="co
           resetBankTopic('');
           renderAllSectionQuizzes();
           pendingImport = undefined;
-          dialog.close();
-          clearTimeout(resultTimer);
-          result.textContent = 'Прогресс восстановлен.';
-          resultTimer = setTimeout(() => { result.textContent = ''; }, 5000);
+          finishWithNotice('Прогресс восстановлен.');
         } finally {
           setBusy(false);
         }
