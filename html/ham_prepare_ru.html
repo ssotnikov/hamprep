@@ -1771,7 +1771,7 @@
     #history-dialog .history-head h2 { margin:0; }
     .history-head form { margin:0; }
     #history-dialog .history-close { width:44px; min-height:44px; padding:0; border:0; background:transparent; font-size:1.6rem; color:var(--on-surface); }
-    .history-filters { display:grid; gap:8px; grid-template-columns:minmax(0,1fr) minmax(0,1fr); }
+    .history-filters { display:grid; gap:8px; grid-template-columns:minmax(0,1fr); }
     .history-filters > [hidden] { display:none; }
     .history-filters .ui-dropdown { margin:0; }
     .history-filters .ui-dropdown-value { white-space:normal; }
@@ -1793,7 +1793,6 @@
     .history-topics { margin:14px 0 0; }
     .history-topics summary { cursor:pointer; font-weight:650; padding:9px 4px; }
     .history-topic { padding:8px 4px; border-top:1px solid var(--outline-variant); }
-    @media(max-width:400px) { .history-filters { grid-template-columns:minmax(0,1fr); } }
     .spaced-entry { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; margin: 16px 0 22px; }
     .spaced-entry small { flex: 1 1 160px; color: var(--on-surface-variant); }
     .spaced-save-status:not(:empty) { display: block; margin: 8px 0; color: var(--on-surface-variant); }
@@ -2194,6 +2193,13 @@
 
     .export-entry { width: 100%; margin-top: 8px; }
     .progress-backup-entry { margin: 8px 0 12px; }
+    #progress-backup-result:not(:empty) {
+      margin-top: 8px;
+      padding: 9px 12px;
+      border-radius: 10px;
+      color: var(--positive);
+      background: var(--positive-container);
+    }
     #progress-backup-dialog { max-width: 410px; overscroll-behavior: contain; }
     #progress-backup-dialog [hidden] { display: none; }
     #progress-backup-dialog .button + .button,
@@ -2436,6 +2442,7 @@
       <button type="button" class="reminder-entry" id="reminder-open" hidden><svg viewBox="0 0 24 24" aria-hidden="true" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 8-3 8-3 10h18c0-2-3-2-3-10m-8 13h4"/></svg><span>Напоминания об обучении<small class="reminder-status">Выключены</small></span><b aria-hidden="true">›</b></button>
       <div id="progress-backup-anchor" class="progress-backup-entry">
         <button type="button" class="button button--secondary" id="progress-backup-open">Резервная копия прогресса</button>
+        <div id="progress-backup-result" role="status"></div>
       </div>
       <button type="button" class="home-reset" id="reset-progress-btn">Сбросить весь прогресс</button>
     </header>
@@ -3590,6 +3597,7 @@
         <option value="3">3-я категория</option><option value="4">4-я категория</option>
       </select></div>
       <div id="history-source-group"><label for="history-source">Источник</label><select id="history-source">
+        <option value="all">Все источники</option>
         <option value="pdf">Блок вопросов</option><option value="study">Учебные вопросы</option>
       </select></div>
     </div>
@@ -6211,9 +6219,10 @@
         const status = row.passed === null ? '' : `<span class="history-status${row.passed ? ' is-passed' : ''}">
           ${row.passed ? 'Теория зачтена' : 'Теория не зачтена'}</span>`;
         const date = row.finishedAt === null ? 'Результат до появления истории' : fullDate.format(row.finishedAt);
+        const source = row.source === 'pdf' ? 'Блок вопросов' : row.source === 'study' ? 'Учебные вопросы' : 'Источник неизвестен';
         return `<article class="history-attempt">
           <div class="history-attempt-head"><strong>${row.score} из ${row.total}</strong>${status}</div>
-          <span class="history-caption">${date}${row.source === null ? ' · Источник неизвестен' : ''}</span>
+          <span class="history-caption">${date} · ${source}</span>
           ${row.wrong === undefined ? '' : `<span class="history-caption">Неверно: ${row.wrong} · Пропущено: ${row.skipped}</span>`}
           ${row.id === reviewId ? '<button type="button" class="button button--secondary" id="history-review">Открыть разбор</button>' : ''}
           <button type="button" class="button button--secondary export-entry" data-exam-export="${row.id}">Экспорт в HTML</button>
@@ -6242,13 +6251,14 @@
       function render() {
         const selected = categoryFilter.value;
         sourceGroup.hidden = selected !== '2';
-        if (sourceGroup.hidden) sourceFilter.value = 'pdf';
+        const source = sourceGroup.hidden ? 'pdf' : sourceFilter.value;
         const pool = selected === category ? PDF_BANK : questionsForCategory(selected);
         const answered = pool.filter(q => {
           const value = appState.bankAnswers[q.id];
           return Number.isInteger(value) && value >= 0 && value < q.options.length;
         }).length;
-        const rows = (examHistory[selected] ?? []).filter(row => row.source === sourceFilter.value);
+        const rows = (examHistory[selected] ?? []).filter(row => row.source !== null
+          && (source === 'all' || row.source === source));
         const legacy = (examHistory[selected] ?? []).find(row => row.source === null);
         const snapshot = selected === category ? examSession : examsByCategory[selected]?.examAttempt;
         reviewId = snapshot?.finished && rows.some(row => row.id === snapshot.id) ? snapshot.id : null;
@@ -6258,7 +6268,8 @@
           <div class="progress-track" aria-hidden="true"><div class="progress-fill" style="width:${100 * ratio}%"></div></div></div>`
           + chart(rows) + '<h3>Завершенные попытки</h3>'
           + (rows.length ? '<div class="history-rows">' + rows.map(attempt).join('') + '</div>'
-            : '<p class="history-caption">Завершенных попыток по выбранному источнику пока нет.</p>')
+            : '<p class="history-caption">Завершенных попыток'
+              + (source === 'all' || sourceGroup.hidden ? '' : ' по выбранному источнику') + ' пока нет.</p>')
           + (legacy ? '<h3>Старый результат без источника</h3>' + attempt(legacy) : '')
           + summary(rows);
       }
@@ -6266,13 +6277,16 @@
       launch.addEventListener('click', () => {
         openReview = false;
         categoryFilter.value = category;
-        sourceFilter.value = document.getElementById('exam-source').value;
+        sourceFilter.value = 'all';
         render();
         dialog.showModal();
         dialog.scrollTop = 0;
         title.focus({preventScroll: true});
       });
-      categoryFilter.addEventListener('change', render);
+      categoryFilter.addEventListener('change', () => {
+        sourceFilter.value = 'all';
+        render();
+      });
       sourceFilter.addEventListener('change', render);
       dialog.addEventListener('close', () => { if (!openReview && !dialog.open) launch.focus({preventScroll: true}); });
       body.addEventListener('click', event => {
@@ -7716,6 +7730,8 @@ ${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="co
       const close = document.getElementById('progress-backup-close');
       const status = document.getElementById('progress-backup-status');
       const inventory = document.getElementById('progress-backup-inventory');
+      const result = document.getElementById('progress-backup-result');
+      let resultTimer;
       let pendingExport;
       let pendingImport;
       let busy = false;
@@ -7872,6 +7888,8 @@ ${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="co
 
       opener.addEventListener('click', () => {
         readingTools.suspend();
+        clearTimeout(resultTimer);
+        result.textContent = '';
         pendingImport = undefined;
         showStatus('');
         dialog.showModal();
@@ -7957,8 +7975,10 @@ ${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="co
           resetBankTopic('');
           renderAllSectionQuizzes();
           pendingImport = undefined;
-          showReview();
-          showStatus('Прогресс восстановлен.');
+          dialog.close();
+          clearTimeout(resultTimer);
+          result.textContent = 'Прогресс восстановлен.';
+          resultTimer = setTimeout(() => { result.textContent = ''; }, 5000);
         } finally {
           setBusy(false);
         }
