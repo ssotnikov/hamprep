@@ -1008,7 +1008,11 @@
     .bank-pass-scope { display: flex; gap: 10px; align-items: start; padding: 10px; margin: 8px 0; border: 1px solid var(--outline-variant); border-radius: 11px; }
     .bank-pass-scope small { display: block; }
     .bank-pass-summary { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 12px 0; }
-    .bank-pass-summary div { background: var(--surface-container-low); padding: 8px; border-radius: 10px; }
+    .bank-pass-summary .button { min-width: 0; padding: 6px 2px; flex-direction: column; font-size: .78rem; }
+    .bank-pass-summary [aria-pressed="true"] { box-shadow: inset 0 -3px var(--primary); }
+    .bank-pass-review { margin-block: 12px; }
+    .bank-pass-review .exam-nav-grid { margin-block: 8px; }
+    #bank-pass-coverage { background: var(--surface-container-low); border-radius: 10px; padding: 10px; }
     .bank-pass-summary strong { display: block; }
     #bank-results-label { margin: var(--space-sm) 0 0; }
     #bank-results-label.bank-results-empty {
@@ -1946,6 +1950,11 @@
     #exam-action-dialog [hidden] { display: none; }
     #exam-action-dialog .button + .button { margin-top: var(--space-sm); }
     #exam-action-dialog .exam-nav-grid { margin-bottom: var(--space-md); }
+    #exam-action-dialog .exam-jump-actions { display: grid; gap: var(--space-sm); }
+    #exam-action-dialog .exam-jump-actions .button { margin: 0; }
+    .exam-review-mark { margin-block: 0 var(--space-sm); }
+    .exam-review-mark[aria-pressed="true"], .exam-flag { color: var(--warning); }
+    .exam-flag { font-size: .85em; }
     .exam-result-actions { margin-top: var(--space-md); }
     .home-heading { font-size: clamp(1.45rem, 1.2rem + 1.25vw, 2.5rem); margin: 16px 0 12px; }
     .home-category { border: 0; padding: 0; }
@@ -3468,6 +3477,7 @@
           <p>
             Пробный экзамен проверяет теорию для <strong id="exam-category">2-й категории</strong>. Для зачета
             нужно набрать <strong id="exam-pass-score">25 из 30</strong> за <strong id="exam-duration">60 минут</strong>.
+            Ответы можно менять до завершения.
           </p>
           <p id="exam-cw-note" hidden>Прием азбуки Морзе проверяют отдельно. <a href="https://srr.ru/radiooperatoram/kvalifikatsionnyj-ekzamen-2-2/">Образцы телеграфного текста на сайте СРР</a>.</p>
 
@@ -3564,14 +3574,23 @@
             <div id="bank-pass-run">
               <p id="bank-pass-position"></p>
               <progress id="bank-pass-meter" aria-label="Отвечено в этой попытке"></progress>
+              <div class="bank-pass-controls">
+                <button type="button" class="button button--secondary" id="bank-pass-first-empty">К первому пропуску</button>
+                <button type="button" class="button button--secondary" id="bank-pass-finish">Завершить попытку</button>
+              </div>
               <article id="bank-pass-question" class="question-card"></article>
               <div class="bank-pass-controls">
                 <button type="button" class="button button--secondary" id="bank-pass-prev">Предыдущий вопрос</button>
                 <button type="button" class="button" id="bank-pass-next">Следующий вопрос</button>
-                <button type="button" class="button button--secondary" id="bank-pass-finish">Завершить попытку</button>
               </div>
             </div>
             <div id="bank-pass-summary" class="bank-pass-summary" hidden></div>
+            <div id="bank-pass-review" class="bank-pass-review" hidden></div>
+            <p id="bank-pass-coverage" class="caption" hidden></p>
+            <div class="bank-pass-controls">
+              <button type="button" class="button" id="bank-pass-retry" hidden>Повторить ошибки этой попытки</button>
+              <button type="button" class="button button--secondary" id="bank-pass-previous-result" hidden>Предыдущий результат</button>
+            </div>
             <button type="button" class="button button--secondary" id="bank-pass-home" hidden>К блоку вопросов</button>
           </div>
           <h3>Практикум</h3>
@@ -3705,7 +3724,7 @@
 
 <dialog id="bank-pass-start-dialog" class="exam-timeout-dialog" aria-labelledby="bank-pass-start-title">
   <h2 id="bank-pass-start-title">Что повторить?</h2>
-  <p>В новой попытке варианты появятся без прежних отметок. Предыдущие результаты сохранятся.</p>
+  <p>Варианты появятся без прежних отметок. После проверки ответ фиксируется. Повторить вопрос можно в новой попытке.</p>
   <label class="bank-pass-scope"><input type="radio" name="bank-pass-scope" value="all" checked>
     <span>Весь блок вопросов<small id="bank-pass-all-count" class="caption"></small></span></label>
   <label class="bank-pass-scope"><input type="radio" name="bank-pass-scope" value="filtered" id="bank-pass-filtered">
@@ -3719,7 +3738,8 @@
   <h2 id="bank-pass-finish-title">Завершить попытку?</h2>
   <p id="bank-pass-remaining"></p>
   <form method="dialog" class="bank-pass-controls">
-    <button type="submit" class="button" value="finish">Завершить попытку</button>
+    <button type="submit" class="button" value="skip">К пропущенным</button>
+    <button type="submit" class="button button--secondary" value="finish">Завершить попытку</button>
     <button type="submit" class="button button--secondary" value="cancel">Продолжить</button>
   </form>
 </dialog>
@@ -3840,6 +3860,10 @@
     <p id="exam-action-copy" hidden></p>
     <div id="exam-action-grid" hidden></div>
     <form method="dialog">
+      <div class="exam-jump-actions">
+        <button type="button" class="button" id="exam-jump-empty" hidden></button>
+        <button type="button" class="button button--secondary" id="exam-jump-marked" hidden></button>
+      </div>
       <button type="button" class="button" id="exam-action-confirm" value="confirm" hidden></button>
       <button type="submit" class="button button--secondary" value="cancel">Вернуться к билету</button>
     </form>
@@ -5320,6 +5344,7 @@
         source: 'pdf',
         questions: [],
         answers: {},
+        marked: [],
         currentIndex: 0,
         deadline: 0,
         secondsLeft: qualification.minutes * 60,
@@ -5328,11 +5353,11 @@
     }
 
     function saveCategoryExam() {
-      const { id, active, source, finished, questions, answers, currentIndex, deadline, secondsLeft } = examSession;
+      const { id, active, source, finished, questions, answers, marked, currentIndex, deadline, secondsLeft } = examSession;
       examsByCategory[category] = {
         examRecord: appState.examRecord,
         examAttempt: active ? { id, source, finished, ids: questions.map(question => question.id),
-          answers, currentIndex, deadline, secondsLeft } : null
+          answers, marked, currentIndex, deadline, secondsLeft } : null
       };
     }
 
@@ -5480,10 +5505,10 @@
       </div>`;
     }
 
-    function renderBankOptions(question, chosen, locked = false, showLabels = false) {
+    function renderBankOptions(question, chosen, locked = false, showLabels = false, showCorrect = chosen !== undefined) {
       return question.options.map((option, index) => {
         let state = '';
-        if (chosen !== undefined) {
+        if (showCorrect) {
           if (index === question.correct) state = ' is-correct';
           else if (index === chosen) state = ' is-wrong';
         }
@@ -5503,7 +5528,7 @@
       const correct = chosen === question.correct;
       const verdict = correct ? 'correct' : 'wrong';
       const reason = correct ? undefined : question.wrong?.[chosen];
-      const title = correct ? 'Верно' : reason ? 'Почему этот вариант неверен' : 'Неверно';
+      const title = correct ? 'Верно' : chosen === undefined ? 'Ответ не выбран' : reason ? 'Почему этот вариант неверен' : 'Неверно';
       return `<div class="feedback-box feedback-box--${verdict}" role="status">
         <div class="feedback-verdict-${verdict}">${title}</div>
         ${reason ? `<strong>${escapeQuestionText(reason[0])}</strong><p>${escapeQuestionText(reason[1])}</p>` : ''}
@@ -6248,6 +6273,7 @@
         questions,
         finished: saved.finished === true,
         answers,
+        marked: Array.isArray(saved.marked) ? saved.ids.filter(id => saved.marked.includes(id)) : [],
         currentIndex: Number.isInteger(saved.currentIndex) ? Math.max(0, Math.min(saved.currentIndex, ticket - 1)) : 0,
         deadline: saved.deadline,
         secondsLeft: saved.secondsLeft ?? 0
@@ -6316,12 +6342,30 @@
 
     function selectExamQuestionIndex(idx) {
       if (!examSession.questions[idx]) return;
+      if (!examSession.finished && !refreshExamTime()) {
+        finishMockExam();
+        return;
+      }
       const dialog = document.getElementById('exam-action-dialog');
       if (dialog.open) dialog.close();
       examSession.currentIndex = idx;
       renderMockExam();
       persistState();
       revealExamQuestion();
+    }
+
+    function toggleExamQuestionMark() {
+      if (!examSession.active || examSession.finished) return;
+      if (!refreshExamTime()) {
+        finishMockExam();
+        return;
+      }
+      const id = examSession.questions[examSession.currentIndex].id;
+      const marked = examSession.marked;
+      examSession.marked = marked.includes(id) ? marked.filter(value => value !== id) : [...marked, id];
+      renderMockExam();
+      document.getElementById('exam-review-mark').focus({preventScroll: true});
+      persistState();
     }
 
     function answerMockExamQuestion(qid, optIdx) {
@@ -6364,7 +6408,7 @@
     }
 
     function renderExamQuestionGrid() {
-      const { questions, answers, currentIndex, finished } = examSession;
+      const { questions, answers, marked, currentIndex, finished } = examSession;
       return `<div class="exam-nav-grid${finished ? ' exam-result-grid' : ''}" role="group"
         aria-label="${finished ? 'Результат по вопросам' : 'Номера вопросов'}">${questions.map((question, index) => {
         const answer = answers[question.id];
@@ -6374,11 +6418,12 @@
         const status = answer === undefined ? (finished ? 'пропущен' : 'без ответа') : !finished ? 'ответ дан'
           : answer === question.correct ? 'верно' : 'неверно';
         const mark = answer === undefined ? '–' : answer === question.correct ? '✓' : '×';
+        const flagged = !finished && marked.includes(question.id);
         const content = finished
           ? `<span class="exam-number">${index + 1}</span><span class="exam-outcome" aria-hidden="true">${mark}</span>`
-          : `${index + 1}${answer !== undefined ? ' ✓' : ''}`;
+          : `${index + 1}${answer !== undefined ? ' ✓' : ''}${flagged ? '<span class="exam-flag" aria-hidden="true"> ⚑</span>' : ''}`;
         return `<button type="button" class="exam-num-btn${state}${current ? ' is-current' : ''}"
-          ${current ? 'aria-current="step"' : ''} aria-label="Вопрос ${index + 1}, ${status}"
+          ${current ? 'aria-current="step"' : ''} aria-label="Вопрос ${index + 1}, ${status}${flagged ? ', отмечен' : ''}"
           onclick="selectExamQuestionIndex(${index})">${content}</button>`;
       }).join('')}</div>`;
     }
@@ -7708,6 +7753,11 @@ ${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="co
       const sourceLabel = q.no ? `№ ${q.no} · ${bankPageLabel(q)}` : `Раздел 0${q.sec}`;
       const letters = q.no ? PDF_LETTERS : LETTERS;
       html += `<div class="question-meta">${examSession.finished ? `Вопрос ${currentIndex + 1} из ${total} · ` : ''}${sourceLabel}</div>`;
+      if (!examSession.finished) {
+        const marked = examSession.marked.includes(q.id);
+        html += `<button type="button" class="button button--secondary exam-review-mark" id="exam-review-mark"
+          aria-pressed="${marked}" onclick="toggleExamQuestionMark()">${marked ? '⚑ Отмечен' : '⚐ Вернуться'}</button>`;
+      }
       html += q.no ? renderPdfPrompt(q) : `<div class="question-stem">${q.stem}</div>`;
       html += `<div class="options-list">`;
 
@@ -8039,7 +8089,7 @@ ${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="co
         if (!entry) continue;
         const questions = passQuestionMap(categoryId);
         const clean = run => {
-          if (!run || !['all', 'filtered'].includes(run.scope) || !Array.isArray(run.ids)
+          if (!run || !['all', 'filtered', 'retry'].includes(run.scope) || !Array.isArray(run.ids)
             || !run.ids.length || run.ids.length > questions.size || !Number.isInteger(run.index)
             || run.index < 0 || run.index >= run.ids.length || new Set(run.ids).size !== run.ids.length
             || run.ids.some(id => !questions.has(id))) return null;
@@ -8052,7 +8102,8 @@ ${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="co
         };
         const active = clean(entry.active);
         const last = clean(entry.last);
-        if (active || last) result[categoryId] = {active, last};
+        const previous = clean(entry.previous);
+        if (active || last) result[categoryId] = {active, last, previous};
       }
       return result;
     }
@@ -8067,8 +8118,11 @@ ${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="co
       const finishDialog = get('finish-dialog');
       let sourceQuestions;
       let displayedCategory;
+      let displayedResult;
+      let reviewGroups;
       let saveRevision = 0;
       const active = () => questionPasses[category]?.active;
+      const reviewLabels = {correct: 'Верно', wrong: 'Неверно', skipped: 'Без ответа'};
 
       function updateEntry() {
         const entry = questionPasses[category];
@@ -8103,16 +8157,30 @@ ${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="co
         workspace.hidden = false;
         runPanel.hidden = !isRun;
         summary.hidden = isRun;
+        get('review').hidden = true;
+        get('coverage').hidden = isRun;
+        get('retry').hidden = true;
+        get('previous-result').hidden = true;
         get('home').hidden = isRun;
         get('title').textContent = title;
         get('description').textContent = category + '-я категория · '
-          + (scope === 'all' ? 'Весь блок вопросов' : 'Текущая выборка');
+          + (scope === 'all' ? 'Весь блок вопросов' : scope === 'retry' ? 'Повтор ошибок' : 'Текущая выборка');
+      }
+
+      function questionMarkup(question, selected, review = false) {
+        const official = Boolean(question.no);
+        const label = official ? 'Экзаменационный перечень · № ' + question.no : 'Учебный вопрос';
+        const checked = review || selected !== undefined;
+        const feedback = !checked ? '' : official
+          ? renderPdfAnswer(question, selected) : renderStudyBankAnswer(question, selected);
+        return `<p class="caption">${label}</p>`
+          + (official ? renderPdfPrompt(question) : `<div class="question-stem">${question.stem}</div>`)
+          + `<div class="options-list">${renderBankOptions(question, selected, checked, true, checked)}</div>` + feedback;
       }
 
       function renderQuestion(reveal) {
         const run = active();
         const question = sourceQuestions.get(run.ids[run.index]);
-        const selected = run.answers[question.id];
         const length = run.ids.length;
         const answered = Object.keys(run.answers).length;
         get('position').textContent = 'Вопрос ' + (run.index + 1) + ' из ' + length + ' · отвечено ' + answered + ' из ' + length;
@@ -8120,34 +8188,83 @@ ${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="co
         get('meter').value = answered;
         get('prev').disabled = run.index === 0;
         get('next').hidden = run.index === length - 1;
-        const official = Boolean(question.no);
-        const label = official ? 'Экзаменационный перечень · № ' + question.no : 'Учебный вопрос';
-        const feedback = selected === undefined ? '' : official
-          ? renderPdfAnswer(question, selected) : renderStudyBankAnswer(question, selected);
-        const card = get('question');
-        card.innerHTML = `<p class="caption">${label}</p>`
-          + (official ? renderPdfPrompt(question) : `<div class="question-stem">${question.stem}</div>`)
-          + `<div class="options-list">${renderBankOptions(question, selected, selected !== undefined, true)}</div>` + feedback;
+        get('first-empty').disabled = answered === length;
+        get('question').innerHTML = questionMarkup(question, run.answers[question.id]);
         if (reveal) revealBelowTopbar(get('title'));
       }
 
       function showRun() {
         sourceQuestions = passQuestionMap(category);
         showWorkspace('Новая попытка', active().scope, true);
+        if (active().scope === 'retry' && questionPasses[category].last) {
+          get('previous-result').hidden = false;
+          get('previous-result').textContent = 'Предыдущий результат';
+        }
         renderQuestion(true);
       }
 
-      function showResult() {
-        const run = questionPasses[category].last;
-        const questions = passQuestionMap(category);
+      function showResult(previous = false) {
+        const {active, last, previous: older} = questionPasses[category];
+        const run = previous && !active ? older : last;
+        if (!run) return;
+        displayedResult = run;
+        sourceQuestions = passQuestionMap(category);
         const answered = Object.keys(run.answers).length;
-        const correct = run.ids.filter(id => run.answers[id] === questions.get(id).correct).length;
-        showWorkspace('Результат попытки', run.scope, false);
+        reviewGroups = {correct: [], wrong: [], skipped: []};
+        for (const id of run.ids) {
+          const answer = run.answers[id];
+          const outcome = answer === undefined ? 'skipped' : answer === sourceQuestions.get(id).correct ? 'correct' : 'wrong';
+          reviewGroups[outcome].push(id);
+        }
+        showWorkspace(previous ? 'Предыдущий результат' : 'Результат попытки', run.scope, false);
         get('description').textContent += ' · отвечено ' + answered + ' из ' + run.ids.length;
-        summary.innerHTML = [[correct, 'Верно'], [answered - correct, 'Неверно'], [run.ids.length - answered, 'Без ответа']]
-          .map(([value, label]) => `<div><strong>${value}</strong>${label}</div>`).join('');
+        summary.innerHTML = Object.entries(reviewLabels).map(([outcome, label]) => {
+          const count = reviewGroups[outcome].length;
+          return `<button type="button" class="button button--secondary" aria-pressed="false" data-pass-outcome="${outcome}" ${count ? '' : 'disabled'}>
+            <strong>${count}</strong>${label}</button>`;
+        }).join('');
+        const covered = PDF_BANK.filter(question => appState.bankAnswers[question.id] !== undefined);
+        const correct = covered.filter(question => appState.bankAnswers[question.id] === question.correct).length;
+        get('coverage').textContent = `Общий прогресс · Экзаменационный перечень · Охват ${covered.length} из ${PDF_BANK.length}`
+          + (covered.length ? ` · Верно ${correct} из ${covered.length} отвеченных` : '');
+        get('retry').hidden = previous || Boolean(active) || !reviewGroups.wrong.length;
+        get('previous-result').hidden = previous ? !active && !older : !older || Boolean(active);
+        get('previous-result').textContent = previous ? (active ? 'Продолжить прохождение' : 'К последнему результату') : 'Предыдущий результат';
+        get('previous-result').dataset.previous = String(!previous);
         revealBelowTopbar(get('title'));
       }
+
+      summary.addEventListener('click', event => {
+        const button = event.target.closest('[data-pass-outcome]');
+        if (!button || button.disabled || displayedCategory !== category) return;
+        const outcome = button.dataset.passOutcome;
+        summary.querySelectorAll('[data-pass-outcome]').forEach(item => item.setAttribute('aria-pressed', item === button));
+        const positions = new Map(displayedResult.ids.map((id, index) => [id, index + 1]));
+        get('review').innerHTML = `<h3>${reviewLabels[outcome]}</h3><p class="caption">Номера вопросов в этой попытке</p>
+          <div class="exam-nav-grid">${reviewGroups[outcome].map(id => {
+            const position = positions.get(id);
+            return `<button type="button" class="exam-num-btn" data-pass-position="${position}" aria-label="Вопрос ${position}">${position}</button>`;
+          }).join('')}</div><article class="question-card" tabindex="-1" hidden></article>`;
+        get('review').hidden = false;
+      });
+
+      get('review').addEventListener('click', event => {
+        const button = event.target.closest('[data-pass-position]');
+        if (!button || displayedCategory !== category) return;
+        const id = displayedResult.ids[Number(button.dataset.passPosition) - 1];
+        const card = get('review').querySelector('article');
+        card.innerHTML = questionMarkup(sourceQuestions.get(id), displayedResult.answers[id], true);
+        card.hidden = false;
+        revealBelowTopbar(card);
+      });
+
+      get('retry').addEventListener('click', () => {
+        const entry = questionPasses[category];
+        if (entry?.active || entry?.last !== displayedResult || !reviewGroups.wrong.length) return;
+        entry.active = {scope: 'retry', ids: reviewGroups.wrong.slice(), index: 0, answers: {}};
+        showRun();
+        save();
+      });
 
       get('open').addEventListener('click', () => {
         if (active()) { showRun(); return; }
@@ -8190,6 +8307,7 @@ ${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="co
       function finishRun() {
         const entry = questionPasses[category];
         if (!entry?.active) return;
+        entry.previous = entry.last;
         entry.last = entry.active;
         entry.active = null;
         showResult();
@@ -8201,28 +8319,45 @@ ${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="co
         if (!run) return;
         const unanswered = run.ids.length - Object.keys(run.answers).length;
         if (!unanswered) { finishRun(); return; }
-        get('remaining').textContent = 'Без ответа — ' + unanswered + ' из ' + run.ids.length + '.';
+        get('remaining').textContent = `Отвечено ${run.ids.length - unanswered} из ${run.ids.length} · Без ответа ${unanswered}.`;
         finishDialog.returnValue = '';
         finishDialog.showModal();
       }
 
       finishDialog.addEventListener('close', () => {
-        if (finishDialog.returnValue === 'finish' && displayedCategory === category) finishRun();
+        if (displayedCategory !== category) return;
+        if (finishDialog.returnValue === 'finish') finishRun();
+        if (finishDialog.returnValue === 'skip') firstEmpty();
       });
+
+      function goTo(index) {
+        const run = active();
+        if (!run || index < 0 || index >= run.ids.length) return;
+        run.index = index;
+        renderQuestion(true);
+        save();
+      }
+
+      function firstEmpty() {
+        const run = active();
+        if (run) goTo(run.ids.findIndex(id => run.answers[id] === undefined));
+      }
+
       for (const [kind, step] of [['prev', -1], ['next', 1]]) {
         get(kind).addEventListener('click', () => {
           const run = active();
-          if (!run) return;
-          const next = run.index + step;
-          if (next < 0 || next >= run.ids.length) return;
-          run.index = next;
-          renderQuestion(true);
-          save();
+          if (run) goTo(run.index + step);
         });
       }
+      get('first-empty').addEventListener('click', firstEmpty);
       get('finish').addEventListener('click', requestFinish);
       get('home').addEventListener('click', () => home(true));
-      get('last').addEventListener('click', showResult);
+      get('last').addEventListener('click', () => showResult());
+      get('previous-result').addEventListener('click', () => {
+        if (get('previous-result').dataset.previous === 'true' || !runPanel.hidden) showResult(true);
+        else if (active()) showRun();
+        else showResult();
+      });
       updateEntry();
       return {home, exit: () => {
         if (workspace.hidden) return false;
@@ -8426,7 +8561,7 @@ ${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="co
           ? decodeExamAttempt(saved, categoryId, questionsForCategory(categoryId)) : null;
         const examAttempt = attempt ? {
           id: attempt.id, source: attempt.source, finished: true,
-          ids: attempt.questions.map(question => question.id), answers: attempt.answers,
+          ids: attempt.questions.map(question => question.id), answers: attempt.answers, marked: attempt.marked,
           currentIndex: attempt.currentIndex, deadline: attempt.deadline,
           secondsLeft: Number.isInteger(attempt.secondsLeft)
             ? Math.max(0, Math.min(CATEGORIES[categoryId].minutes * 60, attempt.secondsLeft)) : 0
@@ -8928,20 +9063,37 @@ ${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="co
       const copy = document.getElementById('exam-action-copy');
       const grid = document.getElementById('exam-action-grid');
       const confirm = document.getElementById('exam-action-confirm');
+      const emptyJump = document.getElementById('exam-jump-empty');
+      const markedJump = document.getElementById('exam-jump-marked');
       let onConfirm;
 
-      function open(titleText, message, buttonLabel, action) {
+      function open(titleText, message, buttonLabel, action, showEmpty = false) {
+        if (!refreshExamTime()) {
+          finishMockExam();
+          return;
+        }
+        const { questions, answers, marked } = examSession;
+        const remaining = questions.filter(question => answers[question.id] === undefined).length;
         title.textContent = titleText;
         copy.textContent = message;
         copy.hidden = !action;
         confirm.textContent = buttonLabel;
         confirm.hidden = !action;
+        confirm.classList.toggle('button--secondary', showEmpty);
+        emptyJump.hidden = Boolean(action) ? !showEmpty : !remaining;
+        emptyJump.textContent = action ? 'К пропущенным' : `К пропущенным · ${remaining}`;
+        markedJump.hidden = Boolean(action) || !marked.length;
+        markedJump.textContent = `К отмеченным · ${marked.length}`;
         grid.hidden = Boolean(action);
-        if (!action) grid.innerHTML = renderExamQuestionGrid();
+        if (!action) grid.innerHTML = `<p class="caption">✓ Есть ответ · ⚑ Отмечен</p>` + renderExamQuestionGrid();
         onConfirm = action;
         dialog.showModal();
       }
 
+      emptyJump.addEventListener('click', () => selectExamQuestionIndex(examSession.questions
+        .findIndex(question => examSession.answers[question.id] === undefined)));
+      markedJump.addEventListener('click', () => selectExamQuestionIndex(examSession.questions
+        .findIndex(question => examSession.marked.includes(question.id))));
       confirm.addEventListener('click', () => {
         const action = onConfirm;
         onConfirm = null;
@@ -8968,8 +9120,8 @@ ${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="co
         const { questions, answers } = examSession;
         const remaining = questions.filter(question => answers[question.id] === undefined).length;
         if (remaining === 0) finishMockExam(true);
-        else open('Завершить экзамен?', `Без ответа: ${remaining} из ${questions.length}.`,
-          'Завершить и проверить', () => finishMockExam(true));
+        else open('Завершить экзамен?', `Отвечено ${questions.length - remaining} из ${questions.length} · Без ответа ${remaining}.`,
+          'Завершить и проверить', () => finishMockExam(true), true);
       });
     }
 
