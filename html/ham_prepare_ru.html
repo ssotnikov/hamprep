@@ -2192,6 +2192,31 @@
     .review-return { margin: 8px 0 12px; }
 
     .export-entry { width: 100%; margin-top: 8px; }
+    #topic-gap-open { width: 100%; margin-top: 10px; }
+    #topic-gap-dialog { max-width: 480px; max-height: calc(100% - 20px); overscroll-behavior: contain; }
+    #topic-gap-dialog [hidden] { display: none; }
+    #topic-gap-dialog p { margin: 0 0 8px; }
+    #topic-gap-dialog h3 { margin: 0 0 4px; font-size: 1rem; }
+    .topic-gap-overview { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin: 12px 0; }
+    .topic-gap-box { padding: 9px 11px; border: 1px solid var(--outline-variant); border-radius: 12px; background: var(--surface-container-low); }
+    .topic-gap-box strong { display: block; font-size: 1.2rem; }
+    .topic-gap-filter { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+    #topic-gap-dialog .topic-gap-filter .button { width: auto; min-height: 44px; padding: 6px 10px; font-size: .85rem; }
+    #topic-gap-dialog .topic-gap-filter .button[aria-pressed="true"] { background: var(--primary); color: var(--on-primary); }
+    .topic-gap-list { display: grid; gap: 7px; }
+    #topic-gap-dialog .topic-gap-row {
+      display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: start; gap: 8px;
+      padding: 10px; text-align: left; border: 1px solid var(--outline-variant); background: var(--surface-container-low);
+    }
+    .topic-gap-row strong { display: block; margin-bottom: 4px; }
+    .topic-gap-index, .topic-gap-state { display: inline-block; padding: 2px 6px; border-radius: 6px; font-size: .8rem; font-weight: 650; }
+    .topic-gap-index, .topic-gap-state { background: var(--secondary-container); color: var(--on-surface); }
+    .topic-gap-state[data-state="review"], .topic-gap-state[data-state="skipped"] { color: var(--warning); background: var(--warning-container); }
+    .topic-gap-state[data-state="clean"] { color: var(--positive); background: var(--positive-container); }
+    .topic-gap-rules { margin-top: 12px; padding-top: 8px; border-top: 1px solid var(--outline-variant); }
+    .topic-gap-rules summary { cursor: pointer; }
+    #topic-gap-dialog .topic-gap-rules p { margin-top: 7px; }
+    .topic-gap-details, .topic-gap-actions { display: grid; gap: 8px; margin-top: 10px; }
     .progress-backup-entry { margin: 8px 0 12px; }
     #progress-backup-result:not(:empty) {
       margin-top: 8px;
@@ -2442,6 +2467,7 @@
         <p id="study-progress-text" class="caption"></p>
       </div>
       <button type="button" class="reminder-entry" id="reminder-open" hidden><svg viewBox="0 0 24 24" aria-hidden="true" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 8-3 8-3 10h18c0-2-3-2-3-10m-8 13h4"/></svg><span>Напоминания об обучении<small class="reminder-status">Выключены</small></span><b aria-hidden="true">›</b></button>
+      <button type="button" class="button button--secondary" id="topic-gap-open">Карта пробелов по темам</button>
       <div id="progress-backup-anchor" class="progress-backup-entry">
         <button type="button" class="button button--secondary" id="progress-backup-open">Резервная копия прогресса</button>
         <div id="progress-backup-result" role="status"></div>
@@ -3547,6 +3573,44 @@
       <span id="find-count" role="status" aria-live="polite"></span>
     </div>
   </section>
+
+<dialog id="topic-gap-dialog" class="exam-timeout-dialog" aria-labelledby="topic-gap-title">
+  <div class="history-head">
+    <h2 id="topic-gap-title" tabindex="-1">Карта пробелов по темам</h2>
+    <form method="dialog"><button type="submit" class="history-close button button--secondary" aria-label="Закрыть">×</button></form>
+  </div>
+  <p id="topic-gap-category" class="history-caption"></p>
+  <div id="topic-gap-overview">
+    <div class="topic-gap-overview">
+      <div class="topic-gap-box"><strong id="topic-gap-review-count"></strong>К повторению</div>
+      <div class="topic-gap-box"><strong id="topic-gap-low-count"></strong>Мало или нет данных</div>
+    </div>
+    <p id="topic-gap-empty" class="topic-gap-box" hidden>Ответьте на вопросы или завершите пробный экзамен, чтобы увидеть первые пробелы.</p>
+    <div class="topic-gap-filter" role="group" aria-label="Фильтр тем">
+      <button type="button" class="button button--secondary" data-gap-filter="all" aria-pressed="true">Все темы</button>
+      <button type="button" class="button button--secondary" data-gap-filter="review" aria-pressed="false">К повторению</button>
+      <button type="button" class="button button--secondary" data-gap-filter="low" aria-pressed="false">Мало данных</button>
+    </div>
+    <div id="topic-gap-list" class="topic-gap-list" aria-live="polite"></div>
+    <details class="topic-gap-rules">
+      <summary>Как определяются приоритеты</summary>
+      <p>Сначала идут темы с ошибками в нескольких последних экзаменах. Затем учитываются текущие ошибки в блоке вопросов и пропуски в билетах.</p>
+      <p>«Мало данных» означает меньше пяти ответов в блоке без замеченных ошибок или пропусков. «Пока без ошибок» относится только к проверенным ответам.</p>
+    </details>
+  </div>
+  <div id="topic-gap-detail" hidden>
+    <span id="topic-gap-state" class="topic-gap-state"></span>
+    <div class="topic-gap-details">
+      <div class="topic-gap-box"><h3>Блок вопросов</h3><p id="topic-gap-practice"></p></div>
+      <div class="topic-gap-box"><h3>Пробные экзамены</h3><p id="topic-gap-exams"></p><small id="topic-gap-exam-source" class="history-caption"></small></div>
+    </div>
+    <div class="topic-gap-actions">
+      <button type="button" class="button" id="topic-gap-bank">Открыть вопросы темы</button>
+      <button type="button" class="button button--secondary" id="topic-gap-theory">Читать теорию</button>
+      <button type="button" class="button button--secondary" id="topic-gap-back">К карте тем</button>
+    </div>
+  </div>
+</dialog>
 
 <dialog id="progress-backup-dialog" class="exam-timeout-dialog" aria-labelledby="progress-backup-title">
   <h2 id="progress-backup-title" tabindex="-1">Резервная копия прогресса</h2>
@@ -7716,6 +7780,151 @@ ${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="co
       }
     }
 
+    function initTopicGapMap() {
+      const opener = document.getElementById('topic-gap-open');
+      const dialog = document.getElementById('topic-gap-dialog');
+      const title = document.getElementById('topic-gap-title');
+      const caption = document.getElementById('topic-gap-category');
+      const overview = document.getElementById('topic-gap-overview');
+      const details = document.getElementById('topic-gap-detail');
+      const list = document.getElementById('topic-gap-list');
+      const filters = [...overview.querySelectorAll('[data-gap-filter]')];
+      const bankButton = document.getElementById('topic-gap-bank');
+      const states = ['review', 'skipped', 'low', 'new', 'clean'];
+      const labels = {
+        review: 'Стоит повторить', skipped: 'Есть пропуски', low: 'Мало данных',
+        new: 'Нет данных', clean: 'Пока без ошибок'
+      };
+      let exams = [];
+      let topics = [];
+      let selected;
+      let filter = 'all';
+
+      function collectTopics() {
+        exams = (examHistory[category] ?? [])
+          .filter(row => row.source === 'pdf' && row.finishedAt !== null && Array.isArray(row.topics)).slice(0, 3);
+        topics = BANK_TOPICS.map(([start, name], index) => ({
+          start, name, index, available: 0, answered: 0, correct: 0, mistakes: 0,
+          failedExams: 0, examErrors: 0, skipped: 0
+        }));
+        for (const question of PDF_BANK) {
+          const topic = topics[bankTopicIndex(question.no)];
+          if (!topic) continue;
+          topic.available++;
+          const answer = appState.bankAnswers[question.id];
+          if (!Number.isInteger(answer) || answer < 0 || answer >= question.options.length) continue;
+          topic.answered++;
+          if (answer === question.correct) topic.correct++;
+          else topic.mistakes++;
+        }
+        for (const exam of exams) {
+          for (const [index, wrong, skipped] of exam.topics) {
+            const topic = topics[index];
+            if (!topic) continue;
+            topic.failedExams += Number(wrong > 0);
+            topic.examErrors += wrong;
+            topic.skipped += skipped;
+          }
+        }
+        for (const topic of topics) {
+          topic.status = topic.examErrors || topic.mistakes ? 'review'
+            : topic.skipped ? 'skipped' : !topic.answered ? 'new' : topic.answered < 5 ? 'low' : 'clean';
+        }
+      }
+
+      function evidence(topic) {
+        if (topic.failedExams) return 'Попыток с ошибками — ' + topic.failedExams + ' из ' + exams.length;
+        if (topic.mistakes) return 'Ошибок в блоке вопросов — ' + topic.mistakes;
+        if (topic.skipped) return 'Пропусков в пробных билетах — ' + topic.skipped;
+        if (!topic.answered) return 'По теме пока нет ответов в блоке вопросов';
+        return 'Верно ' + topic.correct + ' из ' + topic.answered + ' отвеченных в блоке';
+      }
+
+      function renderList() {
+        const review = topics.filter(row => row.status === 'review' || row.status === 'skipped');
+        const low = topics.filter(row => row.status === 'low' || row.status === 'new');
+        const visible = (filter === 'review' ? review : filter === 'low' ? low : [...topics]).sort((a, b) =>
+          states.indexOf(a.status) - states.indexOf(b.status) || b.failedExams - a.failedExams
+          || b.mistakes - a.mistakes || b.skipped - a.skipped || a.index - b.index);
+        document.getElementById('topic-gap-review-count').textContent = review.length;
+        document.getElementById('topic-gap-low-count').textContent = low.length;
+        document.getElementById('topic-gap-empty').hidden = Boolean(exams.length || topics.some(row => row.answered));
+        for (const button of filters) button.setAttribute('aria-pressed', String(filter === button.dataset.gapFilter));
+        list.innerHTML = visible.map(row => `<button type="button" class="button button--secondary topic-gap-row" data-topic-gap="${row.index}">
+          <span class="topic-gap-index">${String(row.index + 1).padStart(2, '0')}</span>
+          <span><strong>${row.name}</strong><span class="topic-gap-state" data-state="${row.status}">${labels[row.status]}</span>
+          <span class="history-caption">${evidence(row)}</span></span><span aria-hidden="true">›</span></button>`).join('')
+          || '<p class="topic-gap-box">Для этого фильтра пока нет тем.</p>';
+      }
+
+      function showOverview() {
+        title.textContent = 'Карта пробелов по темам';
+        caption.textContent = category + '-я категория · темы для повторения';
+        details.hidden = true;
+        overview.hidden = false;
+        renderList();
+      }
+
+      opener.addEventListener('click', () => {
+        collectTopics();
+        filter = 'all';
+        showOverview();
+        dialog.showModal();
+        dialog.scrollTop = 0;
+        title.focus({preventScroll: true});
+      });
+      for (const button of filters) button.addEventListener('click', () => {
+        filter = button.dataset.gapFilter;
+        renderList();
+      });
+      list.addEventListener('click', event => {
+        const row = event.target.closest('[data-topic-gap]');
+        if (!row) return;
+        selected = topics[Number(row.dataset.topicGap)];
+        title.textContent = selected.name;
+        caption.textContent = category + '-я категория · раздел ' + String(selected.index + 1).padStart(2, '0');
+        const state = document.getElementById('topic-gap-state');
+        state.textContent = labels[selected.status];
+        state.dataset.state = selected.status;
+        document.getElementById('topic-gap-practice').textContent = selected.answered
+          ? 'Верно ' + selected.correct + ' из ' + selected.answered + ' отвеченных · ошибок ' + selected.mistakes + '.'
+          : 'Ответов по этой теме пока нет.';
+        document.getElementById('topic-gap-exams').textContent = exams.length
+          ? 'Ошибки — ' + selected.examErrors + ' · пропуски — ' + selected.skipped
+            + ' · попыток с ошибками — ' + selected.failedExams + ' из ' + exams.length + '.'
+          : 'Пока нет завершенных попыток с разбивкой по темам.';
+        document.getElementById('topic-gap-exam-source').textContent = exams.length
+          ? 'Учтено последних попыток из блока вопросов — ' + exams.length + '.' : '';
+        bankButton.hidden = selected.available === 0;
+        bankButton.textContent = selected.mistakes ? 'Разобрать ошибки' : 'Открыть вопросы темы';
+        overview.hidden = true;
+        details.hidden = false;
+        dialog.scrollTop = 0;
+        title.focus({preventScroll: true});
+      });
+      document.getElementById('topic-gap-back').addEventListener('click', () => {
+        showOverview();
+        list.querySelector('[data-topic-gap="' + selected.index + '"]')?.focus();
+      });
+
+      bankButton.addEventListener('click', () => {
+        document.getElementById('bank-mistakes').checked = selected.mistakes > 0;
+        bankRetryFeedback.clear();
+        setBankTopic(selected.start);
+        dialog.close();
+        const heading = document.getElementById('bank-heading');
+        heading.tabIndex = -1;
+        revealBelowTopbar(heading);
+      });
+      document.getElementById('topic-gap-theory').addEventListener('click', () => {
+        dialog.close();
+        const heading = document.querySelector('#sec-' + (selected.index + 1) + ' h2');
+        if (!heading) return;
+        heading.tabIndex = -1;
+        revealBelowTopbar(heading);
+      });
+    }
+
     function initProgressBackup() {
       const format = 'radioexam-progress';
       const maxBytes = 256 * 1024;
@@ -8787,6 +8996,7 @@ ${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="co
 
     document.addEventListener('DOMContentLoaded', async () => {
       await initApp();
+      initTopicGapMap();
       initProgressBackup();
       initVoiceExchanges();
       initStyledSelects();
