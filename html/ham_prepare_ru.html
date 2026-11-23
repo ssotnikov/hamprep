@@ -981,18 +981,9 @@
       max-width: 68ch;
       font-size: 0.9375rem;
     }
-    #answer-explanations { margin: 20px 0 0; }
-    #answer-explanations [hidden] { display: none; }
-    .answer-explanations-tabs { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
-    .answer-explanations-tabs .button { padding-inline: 10px; font-size: .9rem; }
-    .answer-explanations-tabs .button[aria-pressed="true"] { background: var(--primary); color: var(--on-primary); }
-    .answer-explanations-choice span { display: block; }
-    .answer-explanations-choice small { display: block; margin-top: 3px; font-weight: 650; }
-    .answer-explanations-choice[aria-disabled="true"] { cursor: default; }
-    #answer-explanations-feedback p { margin: 0 0 6px; }
-    #answer-explanations-feedback p:last-child { margin-bottom: 0; }
-    #answer-explanations-repeat { width: 100%; margin-top: 8px; }
-
+    .bank-source-label { color: var(--on-surface-variant); }
+    .bank-answer-mark { display: block; margin-top: 3px; font-weight: 650; }
+    .bank-answer-retry { margin-top: 8px; }
     .feedback-box--correct {
       border-left: var(--inset-rule-positive);
     }
@@ -3508,13 +3499,18 @@
             <button class="button button--secondary" type="button" id="spaced-open" aria-describedby="spaced-summary">Повторить сегодня</button>
             <small id="spaced-summary" aria-live="polite"></small>
           </div>
-          <p><a href="#answer-explanations">Тренировка «Почему этот вариант неверен»</a></p>
           <small class="spaced-save-status" id="spaced-save-status" role="status"></small>
           <p class="caption">Источник — <a href="https://r9c.srr.ru/wp-content/uploads/2026/02/exam-voprosy2023.pdf">Перечень экзаменационных вопросов по приказу от 01.10.2015 № 224</a>.</p>
           <div class="field-group bank-toolbar">
             <label class="field-label" for="bank-search">Поиск в блоке вопросов</label>
-            <p class="caption bank-search-hint" id="bank-search-hint">По номеру или формулировке вопроса на всех страницах выбранной категории.</p>
+            <p class="caption bank-search-hint" id="bank-search-hint">По формулировке в обоих источниках или по номеру экзаменационного перечня.</p>
             <input class="input" type="search" id="bank-search" maxlength="32" aria-describedby="bank-search-hint" placeholder="Например, 407 или КСВ">
+            <label class="field-label" for="bank-source">Источник</label>
+            <select class="select" id="bank-source">
+              <option value="all">Все источники</option>
+              <option value="pdf">Экзаменационный перечень</option>
+              <option value="study">Учебные вопросы</option>
+            </select>
             <label class="field-label" for="bank-topic">Тема</label>
             <select class="select" id="bank-topic">
               <option value="">Все темы</option>
@@ -3540,21 +3536,6 @@
             <li><strong>Сравните нагрузки в тракте 50 Ом.</strong> Для активных нагрузок 50 и 100 Ом рассчитайте коэффициент отражения и КСВ. Проверьте результаты на откалиброванном анализаторе, если он есть. Для 100 Ом амплитудный коэффициент отражения равен 1/3, доля отражённой мощности — 1/9, КСВ — 2. При комплексной нагрузке считайте по формуле Γ = (Z<sub>L</sub> − Z<sub>0</sub>)/(Z<sub>L</sub> + Z<sub>0</sub>). Источники — Кубанов и соавторы, гл. 1, Косарев и Смирнов, ч. 1, гл. 6, и <cite>Методическое пособие по эксплуатации антенно-фидерных устройств</cite> (2023), гл. 6, с. 60 в PDF.</li>
             <li><strong>Разберите прохождение КВ.</strong> Для одной трассы сравните дневные и ночные условия. Укажите, как поглощение в области D влияет на нижнюю границу, а состояние ионосферы — на максимально применимую частоту. Отметьте, где возможна зона пропуска. Источники — «Введение к прохождению радиоволн на КВ», Андрусевич и соавторы, гл. 4 и 7, Аветисян и Никогосян, «Распространение радиоволн».</li>
           </ol>
-          <section id="answer-explanations" aria-labelledby="answer-explanations-title">
-            <h3 id="answer-explanations-title">Почему этот вариант неверен</h3>
-            <p class="caption">Выберите задачу и ответ, чтобы посмотреть пояснение.</p>
-            <div class="answer-explanations-tabs" role="group" aria-label="Учебная задача">
-              <button type="button" class="button button--secondary" data-answer-example="power" aria-pressed="true">Мощность</button>
-              <button type="button" class="button button--secondary" data-answer-example="db" aria-pressed="false">Децибелы</button>
-              <button type="button" class="button button--secondary" data-answer-example="condition" aria-pressed="false">Условие задачи</button>
-            </div>
-            <article class="question-card" aria-labelledby="answer-explanations-question">
-              <h4 class="question-stem" id="answer-explanations-question" tabindex="-1"></h4>
-              <div class="options-list" id="answer-explanations-options" role="group" aria-label="Варианты ответа"></div>
-              <div id="answer-explanations-feedback" role="status" aria-atomic="true"></div>
-              <button type="button" class="button button--secondary" id="answer-explanations-repeat" hidden>Попробовать другой ответ</button>
-            </article>
-          </section>
         </section>
 
 
@@ -5163,7 +5144,48 @@
     let qualification = CATEGORIES[category];
     let PDF_BANK = [];
     const PDF_FIGURES = JSON.parse(document.getElementById('pdf-bank-figures').textContent);
+    const PRACTICE_ANSWERS = {
+      power:{
+        text:'При передаче средняя мощность составляет 20 Вт, а пиковая мощность огибающей (PEP) — 80 Вт. Какое значение нужно использовать, если задан предел по PEP?',
+        answers:['20 Вт','80 Вт','60 Вт','100 Вт'],
+        correct:1,
+        rule:'Для сравнения с пределом по PEP нужна пиковая мощность огибающей, в этой задаче — 80 Вт.',
+        wrong:{
+          0:['Средняя мощность вместо пиковой','20 Вт — средняя мощность. Условие спрашивает мощность на пике огибающей.'],
+          2:['Разность вместо измеренного значения','60 Вт получится, если из пиковой мощности вычесть среднюю. Для сравнения с пределом используется сама пиковая мощность.'],
+          3:['Сложены две характеристики сигнала','100 Вт получится, если сложить среднюю и пиковую мощности. В условии это два измерения одного сигнала.']
+        }
+      },
+      db:{
+        text:'При неизменном сопротивлении напряжение на нагрузке увеличилось с 2 до 4 В. На сколько децибел вырос уровень напряжения?',
+        answers:['Примерно на 3 дБ','Примерно на 6 дБ','Примерно на 12 дБ','Уменьшился примерно на 6 дБ'],
+        correct:1,
+        rule:'Для отношения напряжений при одинаковом сопротивлении: 20 · lg(4 / 2) ≈ +6 дБ.',
+        wrong:{
+          0:['Формула для мощности применена к напряжению','3 дБ получится из 10 · lg(4 / 2). Множитель 10 подходит для отношения мощностей, а в условии даны напряжения.'],
+          2:['Рост учтен дважды','12 дБ получится, если подставить отношение мощностей 4 в формулу с множителем 20. Для мощности используют 10 · lg(4), для напряжения — 20 · lg(2).'],
+          3:['Перепутан порядок величин','Отрицательный результат получится при отношении 2 / 4. Для изменения от 2 до 4 В делят новое значение на исходное.']
+        }
+      },
+      condition:{
+        text:'Два резистора по 50 Ом соединены параллельно. Чему равно их общее сопротивление?',
+        answers:['100 Ом','50 Ом','25 Ом','12,5 Ом'],
+        correct:2,
+        rule:'При параллельном соединении двух одинаковых резисторов общее сопротивление вдвое меньше сопротивления одного: 50 / 2 = 25 Ом.',
+        wrong:{
+          0:['Пропущено условие «параллельно»','100 Ом получилось бы при последовательном соединении. Здесь два резистора подключены параллельно.'],
+          1:['Учтен только один резистор','50 Ом — сопротивление каждого резистора отдельно. Вторая параллельная ветвь уменьшает общее сопротивление.'],
+          3:['Число ветвей учтено дважды','12,5 Ом получилось бы у четырех одинаковых параллельных резисторов по 50 Ом. В условии таких резисторов два.']
+        }
+      }
+    };
+    const PRACTICE_TOPICS = {power: 2, db: 6, condition: 5};
+    const STUDY_BANK = [...QUESTIONS, ...Object.entries(PRACTICE_ANSWERS).map(([key, item]) => ({
+      id: 'practice-' + key, sec: PRACTICE_TOPICS[key], stem: item.text, options: item.answers,
+      correct: item.correct, explanation: item.rule, wrong: item.wrong
+    }))];
     const BANK_PAGE_SIZE = 12;
+    const bankRetryPending = new Set();
     const BANK_TOPICS = [
       [1, 'Международные нормы и CEPT'],
       [47, 'Законодательство РФ и позывные'],
@@ -5366,6 +5388,7 @@
     function answerSectionQuestion(qid, optIdx) {
       appState.quizAnswers[qid] = optIdx;
       renderAllSectionQuizzes();
+      renderQuestionBank();
       persistState();
       reminderControls.studied();
     }
@@ -5390,7 +5413,7 @@
       </div>`;
     }
 
-    function renderBankOptions(question, chosen, locked = false) {
+    function renderBankOptions(question, chosen, locked = false, showLabels = false) {
       return question.options.map((option, index) => {
         let state = '';
         if (chosen !== undefined) {
@@ -5398,10 +5421,27 @@
           else if (index === chosen) state = ' is-wrong';
         }
         return `<button type="button" class="option-btn${state}" data-bank-id="${question.id}" data-option="${index}" aria-pressed="${chosen === index}"${locked ? ' disabled' : ''}>
-          <span class="option-letter">${PDF_LETTERS[index]}</span>
-          <span>${escapeQuestionText(option)}</span>
+          <span class="option-letter">${(question.no ? PDF_LETTERS : LETTERS)[index]}</span>
+          <span>${escapeQuestionText(option)}${showLabels && state ? `<small class="bank-answer-mark">${index === chosen
+            ? (chosen === question.correct ? 'Ваш ответ · верно' : 'Ваш ответ · неверно') : 'Верный ответ'}</small>` : ''}</span>
         </button>`;
       }).join('');
+    }
+
+    function bankAnswerStore(question) {
+      return question.no ? appState.bankAnswers : appState.quizAnswers;
+    }
+
+    function renderStudyBankAnswer(question, chosen) {
+      const correct = chosen === question.correct;
+      const verdict = correct ? 'correct' : 'wrong';
+      const reason = correct ? undefined : question.wrong?.[chosen];
+      const title = correct ? 'Верно' : reason ? 'Почему этот вариант неверен' : 'Неверно';
+      return `<div class="feedback-box feedback-box--${verdict}" role="status">
+        <div class="feedback-verdict-${verdict}">${title}</div>
+        ${reason ? `<strong>${escapeQuestionText(reason[0])}</strong><p>${escapeQuestionText(reason[1])}</p>` : ''}
+        <div>${question.wrong ? escapeQuestionText(question.explanation) : question.explanation}</div>
+      </div>`;
     }
 
     function bankTopicIndex(number) {
@@ -5424,9 +5464,12 @@
       const topic = document.getElementById('bank-topic').value;
       const topicIndex = BANK_TOPICS.findIndex(([start]) => String(start) === topic);
       const mistakesOnly = document.getElementById('bank-mistakes').checked;
-      const matches = PDF_BANK.filter(question => {
-        if (topicIndex >= 0 && bankTopicIndex(question.no) !== topicIndex) return false;
-        const chosen = appState.bankAnswers[question.id];
+      const source = document.getElementById('bank-source').value;
+      const pool = source === 'pdf' ? PDF_BANK : source === 'study' ? STUDY_BANK : [...PDF_BANK, ...STUDY_BANK];
+      const matches = pool.filter(question => {
+        const questionTopic = question.no ? bankTopicIndex(question.no) : question.sec - 1;
+        if (topicIndex >= 0 && questionTopic !== topicIndex) return false;
+        const chosen = bankAnswerStore(question)[question.id];
         if (mistakesOnly && (chosen === undefined || chosen === question.correct)) return false;
         if (number) return question.no === Number(number[1]);
         const text = normalizeQuestionSearchText(question.stem);
@@ -5438,7 +5481,7 @@
       const start = bankPage * BANK_PAGE_SIZE;
       const visible = matches.slice(start, start + BANK_PAGE_SIZE);
       document.getElementById('bank-results-label').textContent = matches.length
-        ? `Найдено ${matches.length} из ${PDF_BANK.length}. Показано ${start + 1}–${start + visible.length}.`
+        ? `Найдено ${matches.length} из ${pool.length}. Показано ${start + 1}–${start + visible.length}.`
         : mistakesOnly ? 'Ошибок по выбранным условиям нет.' : 'Вопросы не найдены.';
       document.getElementById('bank-pagination').hidden = pageCount < 2;
       document.getElementById('bank-page-label').textContent = `${bankPage + 1} из ${pageCount}`;
@@ -5446,21 +5489,27 @@
       document.getElementById('bank-next').disabled = bankPage + 1 >= pageCount;
 
       document.getElementById('bank-results').innerHTML = visible.map(question => {
-        const showFeedback = !mistakesOnly || bankRetryFeedback.has(question.id);
-        const chosen = showFeedback ? appState.bankAnswers[question.id] : undefined;
-        const options = renderBankOptions(question, chosen);
+        const official = Boolean(question.no);
+        const showFeedback = !bankRetryPending.has(question.id) && (!mistakesOnly || bankRetryFeedback.has(question.id));
+        const chosen = showFeedback ? bankAnswerStore(question)[question.id] : undefined;
+        const label = official ? `Экзаменационный перечень · № ${question.no} · ${bankPageLabel(question)}`
+          : `Учебный вопрос · ${BANK_TOPICS[question.sec - 1][1]}`;
+        const feedback = chosen === undefined ? '' : official ? renderPdfAnswer(question, chosen)
+          : renderStudyBankAnswer(question, chosen);
         return `<article class="question-card">
-          <div class="question-meta saved-question-meta"><span>№ ${question.no} · ${bankPageLabel(question)}</span>
-            ${readingTools.markup('q', question.id)}</div>
-          ${renderPdfPrompt(question)}
-          <div class="options-list">${options}</div>
-          ${chosen === undefined ? '' : renderPdfAnswer(question, chosen)}
+          <div class="question-meta saved-question-meta"><span class="bank-source-label">${label}</span>
+            ${official ? readingTools.markup('q', question.id) : ''}</div>
+          ${official ? renderPdfPrompt(question) : `<div class="question-stem">${question.stem}</div>`}
+          <div class="options-list">${renderBankOptions(question, chosen, false, true)}</div>
+          ${feedback}
+          ${feedback ? `<button class="button button--secondary bank-answer-retry" type="button" data-bank-retry="${question.id}">Попробовать другой ответ</button>` : ''}
         </article>`;
       }).join('');
     }
 
-    function setBankTopic(start, query = '') {
+    function setBankTopic(start, query = '', source = 'all') {
       document.getElementById('bank-search').value = query;
+      document.getElementById('bank-source').value = source;
       const topic = document.getElementById('bank-topic');
       topic.value = String(start);
       topic.dispatchEvent(new Event('change', {bubbles: true}));
@@ -5475,15 +5524,15 @@
         `<option value="${start}">${label}</option>`).join(''));
       const applyFilters = () => {
         bankPage = 0;
+        bankRetryPending.clear();
+        bankRetryFeedback.clear();
         retryStatus.textContent = '';
         renderQuestionBank();
       };
       search.addEventListener('input', applyFilters);
       topic.addEventListener('change', applyFilters);
-      mistakes.addEventListener('change', () => {
-        bankRetryFeedback.clear();
-        applyFilters();
-      });
+      document.getElementById('bank-source').addEventListener('change', applyFilters);
+      mistakes.addEventListener('change', applyFilters);
       const results = document.getElementById('bank-results');
       const answerKey = document.querySelector('.bank-key-details');
       const keyToggle = answerKey.querySelector('summary');
@@ -5501,7 +5550,7 @@
         const link = event.target.closest('[data-question-number]');
         if (!link) return;
         event.preventDefault();
-        resetBankTopic('', link.dataset.questionNumber);
+        resetBankTopic('', link.dataset.questionNumber, 'pdf');
         const question = results.querySelector('.question-card');
         if (!question) return;
         question.tabIndex = -1;
@@ -5515,21 +5564,33 @@
         });
       }
       results.addEventListener('click', event => {
+        const retry = event.target.closest('[data-bank-retry]');
+        if (retry) {
+          const id = retry.dataset.bankRetry;
+          bankRetryPending.add(id);
+          renderQuestionBank();
+          results.querySelector(`[data-bank-id="${id}"]`)?.focus({preventScroll: true});
+          return;
+        }
         const button = event.target.closest('button[data-bank-id]');
         if (!button) return;
         const { bankId, option } = button.dataset;
         const selected = Number(option);
-        const question = PDF_BANK.find(item => item.id === bankId);
+        const question = PDF_BANK.find(item => item.id === bankId) ?? STUDY_BANK.find(item => item.id === bankId);
+        if (!question || !Number.isInteger(selected) || selected < 0 || selected >= question.options.length) return;
+        bankRetryPending.delete(bankId);
         retryStatus.textContent = '';
         if (mistakes.checked) {
           if (selected === question.correct) {
             bankRetryFeedback.delete(bankId);
-            retryStatus.textContent = `Вопрос № ${question.no} решён верно и убран из списка ошибок.`;
+            retryStatus.textContent = question.no ? `Вопрос № ${question.no} решен верно и убран из списка ошибок.`
+              : 'Учебный вопрос решен верно и убран из списка ошибок.';
           } else {
             bankRetryFeedback.add(bankId);
           }
         }
-        recordBankAnswer(question, selected);
+        if (question.no) recordBankAnswer(question, selected);
+        else answerSectionQuestion(question.id, selected);
         const nextFocus = results.querySelector(`[data-bank-id="${bankId}"][data-option="${option}"]`)
           || results.querySelector('button[data-bank-id]') || mistakes;
         nextFocus.focus({ preventScroll: true });
@@ -5565,7 +5626,7 @@
       const bankCount = PDF_BANK.length;
       const requiresMorse = category === '1';
       const savedExam = examsByCategory[category];
-      const bankLabel = `Блок вопросов (${bankCount})`;
+      const bankLabel = `Блок вопросов (${bankCount + STUDY_BANK.length})`;
       for (const [id, label] of Object.entries({
         'category-kpi-total': String(ticket),
         'category-kpi-pass': `${pass} из ${ticket}`,
@@ -5580,7 +5641,7 @@
         'exam-duration': `${minutes} минут`,
         'toc-exam-label': `Пробный билет (${ticket} вопросов)`,
         'bank-heading': `Блок вопросов для ${category}-й категории`,
-        'bank-category-summary': `${bankCount} вопросов по перечню СРР.`,
+        'bank-category-summary': `Экзаменационный перечень — ${bankCount}. Учебные вопросы — ${STUDY_BANK.length}.`,
         'bank-key-summary': 'Ключ к вопросам выбранной категории'
       })) {
         document.getElementById(id).textContent = label;
@@ -5617,12 +5678,13 @@
         const focusText = section.querySelector('.category-study-focus');
         focusText.textContent = focus;
         focusText.hidden = !focus;
-        const count = PDF_BANK.filter(question => bankTopicIndex(question.no) === index).length;
+        const count = PDF_BANK.filter(question => bankTopicIndex(question.no) === index).length
+          + STUDY_BANK.filter(question => question.sec === index + 1).length;
         link.textContent = `Вопросы по теме для ${category}-й категории (${count})`;
       }
 
       const sourceSelect = document.getElementById('exam-source');
-      sourceSelect.options[0].textContent = bankLabel;
+      sourceSelect.options[0].textContent = `Экзаменационный перечень (${bankCount})`;
       sourceSelect.options[1].disabled = category !== '2';
       sourceSelect.options[1].hidden = category !== '2';
       sourceSelect.value = 'pdf';
@@ -5633,6 +5695,7 @@
       renderMockExam();
       bankPage = 0;
       bankRetryFeedback.clear();
+      bankRetryPending.clear();
       document.getElementById('bank-retry-status').textContent = '';
       renderBankKey();
       renderQuestionBank();
@@ -5677,6 +5740,12 @@
         }
       }
 
+      for (const question of STUDY_BANK.slice(QUESTIONS.length)) {
+        const answer = appState.quizAnswers[question.id];
+        if (answer === undefined) continue;
+        totalAnswered++;
+        if (answer === question.correct) totalCorrect++;
+      }
       let bankAnswered = 0;
       let bankCorrect = 0;
       for (const question of PDF_BANK) {
@@ -5690,7 +5759,7 @@
       document.getElementById('global-progress-fill').style.width =
         `${100 * bankAnswered / PDF_BANK.length}%`;
       document.getElementById('study-progress-text').textContent =
-        `Учебные разделы · Отвечено ${totalAnswered} из ${QUESTIONS.length} · Верно ${totalCorrect}`;
+        `Учебные вопросы · Отвечено ${totalAnswered} из ${STUDY_BANK.length} · Верно ${totalCorrect}`;
 
       const record = appState.examRecord;
       const lastResult = document.getElementById('last-exam-result');
@@ -5716,6 +5785,7 @@
       renderExamStatus();
       renderMockExam();
       bankRetryFeedback.clear();
+      bankRetryPending.clear();
       document.getElementById('bank-retry-status').textContent = '';
       renderAllSectionQuizzes();
       renderQuestionBank();
@@ -6815,16 +6885,16 @@ ${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="co
         if (!destination?.target) return;
 
         if (destination.bankStart !== undefined) {
-          resetBankTopic(destination.bankStart);
+          resetBankTopic(destination.bankStart, '', question.no ? 'pdf' : 'study');
         }
         navigateFromExamReview(destination.target, {attempt: examSession, index});
       });
     }
 
-    function resetBankTopic(start, query = '') {
+    function resetBankTopic(start, query = '', source = 'all') {
       document.getElementById('bank-mistakes').checked = false;
       bankRetryFeedback.clear();
-      setBankTopic(start, query);
+      setBankTopic(start, query, source);
     }
 
     function navigateFromExamReview(target, context) {
@@ -6997,7 +7067,7 @@ ${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="co
             session = undefined;
             dialog.close();
             const target = document.getElementById(id);
-            if (command === 'bank') resetBankTopic(BANK_TOPICS[topic]?.[0] ?? '');
+            if (command === 'bank') resetBankTopic(BANK_TOPICS[topic]?.[0] ?? '', '', 'pdf');
             if (review?.attempt === examSession) navigateFromExamReview(target, review);
             else {
               target.tabIndex = -1;
@@ -7347,7 +7417,7 @@ ${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="co
         dialog.close();
         let target = item.target;
         if (item.question) {
-          resetBankTopic('', String(item.question.no));
+          resetBankTopic('', String(item.question.no), 'pdf');
           target = document.querySelector('#bank-results .question-card');
         }
         if (!target) return;
@@ -7846,124 +7916,6 @@ ${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="co
       }
     }
 
-    function initAnswerExplanations() {
-      const examples = {
-        power:{
-          text:'При передаче средняя мощность составляет 20 Вт, а пиковая мощность огибающей (PEP) — 80 Вт. Какое значение нужно использовать, если задан предел по PEP?',
-          answers:['20 Вт','80 Вт','60 Вт','100 Вт'],
-          correct:1,
-          rule:'Для сравнения с пределом по PEP нужна пиковая мощность огибающей, в этой задаче — 80 Вт.',
-          wrong:{
-            0:['Средняя мощность вместо пиковой','20 Вт — средняя мощность. Условие спрашивает мощность на пике огибающей.'],
-            2:['Разность вместо измеренного значения','60 Вт получится, если из пиковой мощности вычесть среднюю. Для сравнения с пределом используется сама пиковая мощность.'],
-            3:['Сложены две характеристики сигнала','100 Вт получится, если сложить среднюю и пиковую мощности. В условии это два измерения одного сигнала.']
-          }
-        },
-        db:{
-          text:'При неизменном сопротивлении напряжение на нагрузке увеличилось с 2 до 4 В. На сколько децибел вырос уровень напряжения?',
-          answers:['Примерно на 3 дБ','Примерно на 6 дБ','Примерно на 12 дБ','Уменьшился примерно на 6 дБ'],
-          correct:1,
-          rule:'Для отношения напряжений при одинаковом сопротивлении: 20 · lg(4 / 2) ≈ +6 дБ.',
-          wrong:{
-            0:['Формула для мощности применена к напряжению','3 дБ получится из 10 · lg(4 / 2). Множитель 10 подходит для отношения мощностей, а в условии даны напряжения.'],
-            2:['Рост учтен дважды','12 дБ получится, если подставить отношение мощностей 4 в формулу с множителем 20. Для мощности используют 10 · lg(4), для напряжения — 20 · lg(2).'],
-            3:['Перепутан порядок величин','Отрицательный результат получится при отношении 2 / 4. Для изменения от 2 до 4 В делят новое значение на исходное.']
-          }
-        },
-        condition:{
-          text:'Два резистора по 50 Ом соединены параллельно. Чему равно их общее сопротивление?',
-          answers:['100 Ом','50 Ом','25 Ом','12,5 Ом'],
-          correct:2,
-          rule:'При параллельном соединении двух одинаковых резисторов общее сопротивление вдвое меньше сопротивления одного: 50 / 2 = 25 Ом.',
-          wrong:{
-            0:['Пропущено условие «параллельно»','100 Ом получилось бы при последовательном соединении. Здесь два резистора подключены параллельно.'],
-            1:['Учтен только один резистор','50 Ом — сопротивление каждого резистора отдельно. Вторая параллельная ветвь уменьшает общее сопротивление.'],
-            3:['Число ветвей учтено дважды','12,5 Ом получилось бы у четырех одинаковых параллельных резисторов по 50 Ом. В условии таких резисторов два.']
-          }
-        }
-      };
-
-      const section = document.getElementById('answer-explanations');
-      const tabs = [...section.querySelectorAll('[data-answer-example]')];
-      const question = document.getElementById('answer-explanations-question');
-      const options = document.getElementById('answer-explanations-options');
-      const feedback = document.getElementById('answer-explanations-feedback');
-      const retry = document.getElementById('answer-explanations-repeat');
-      let example = examples.power;
-      let answered = false;
-
-      function showQuestion() {
-        answered = false;
-        question.textContent = example.text;
-        feedback.replaceChildren();
-        retry.hidden = true;
-        options.replaceChildren(...example.answers.map((answer, index) => {
-          const button = document.createElement('button');
-          button.type = 'button';
-          button.className = 'option-btn';
-          button.dataset.answer = index;
-          const letter = document.createElement('span');
-          letter.className = 'option-letter';
-          letter.textContent = LETTERS[index];
-          const choice = document.createElement('span');
-          choice.className = 'answer-explanations-choice';
-          choice.textContent = answer;
-          button.append(letter, choice);
-          return button;
-        }));
-      }
-
-      for (const tab of tabs) tab.addEventListener('click', () => {
-        example = examples[tab.dataset.answerExample];
-        for (const button of tabs) button.setAttribute('aria-pressed', String(button === tab));
-        showQuestion();
-      });
-      options.addEventListener('click', event => {
-        const button = event.target.closest('[data-answer]');
-        if (!button || answered) return;
-        answered = true;
-        const index = Number(button.dataset.answer);
-        const correct = index === example.correct;
-        for (const [position, option] of [...options.children].entries()) {
-          option.setAttribute('aria-disabled', 'true');
-          if (position !== index && position !== example.correct) continue;
-          const right = position === example.correct;
-          option.classList.add(right ? 'is-correct' : 'is-wrong');
-          const mark = document.createElement('small');
-          mark.textContent = right ? (correct ? 'Ваш ответ · верно' : 'Верный ответ') : 'Ваш ответ · неверно';
-          option.lastElementChild.append(mark);
-        }
-        const verdict = correct ? 'correct' : 'wrong';
-        const card = document.createElement('div');
-        card.className = 'feedback-box feedback-box--' + verdict;
-        const heading = document.createElement('h4');
-        heading.className = 'feedback-verdict-' + verdict;
-        heading.textContent = correct ? 'Верно' : 'Почему этот вариант неверен';
-        card.append(heading);
-        if (!correct) {
-          const [reason, explanation] = example.wrong[index];
-          const label = document.createElement('strong');
-          label.textContent = reason;
-          const detail = document.createElement('p');
-          detail.textContent = explanation;
-          card.append(label, detail);
-        }
-        const rule = document.createElement('p');
-        rule.textContent = example.rule;
-        card.append(rule);
-        feedback.replaceChildren(card);
-        retry.hidden = false;
-        feedback.scrollIntoView({block: 'nearest'});
-      });
-      retry.addEventListener('click', () => {
-        showQuestion();
-        question.focus({preventScroll: true});
-        question.scrollIntoView({block: 'nearest'});
-      });
-      showQuestion();
-    }
-
-
     function initTopicGapMap() {
       const opener = document.getElementById('topic-gap-open');
       const dialog = document.getElementById('topic-gap-dialog');
@@ -8094,7 +8046,7 @@ ${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="co
       bankButton.addEventListener('click', () => {
         document.getElementById('bank-mistakes').checked = selected.mistakes > 0;
         bankRetryFeedback.clear();
-        setBankTopic(selected.start);
+        setBankTopic(selected.start, '', 'pdf');
         dialog.close();
         const heading = document.getElementById('bank-heading');
         heading.tabIndex = -1;
@@ -8173,7 +8125,7 @@ ${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="co
           || raw.reading?.version !== 1 || !isRecord(raw.reading.places) || !Array.isArray(raw.reading.bookmarks)
           || raw.examHistory?.version !== 1 || !isRecord(raw.examHistory.categories)
           || raw.spacedReview?.version !== 1 || !isRecord(raw.spacedReview.entries)) throw new Error();
-        const quizAnswers = filterAnswers(raw.quizAnswers, QUESTIONS);
+        const quizAnswers = filterAnswers(raw.quizAnswers, STUDY_BANK);
         const bankAnswers = filterAnswers(raw.bankAnswers, ALL_PDF_QUESTIONS);
         const cleanedExams = {};
         for (const categoryId of Object.keys(CATEGORIES)) {
@@ -9180,7 +9132,6 @@ ${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="co
 
     document.addEventListener('DOMContentLoaded', async () => {
       await initApp();
-      initAnswerExplanations();
       initTopicGapMap();
       initProgressBackup();
       initVoiceExchanges();
