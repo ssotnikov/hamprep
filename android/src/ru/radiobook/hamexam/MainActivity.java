@@ -54,6 +54,7 @@ public final class MainActivity extends AppActivity {
     private StartupCover startupCover;
     private StudyReminders reminders;
     private ExamHtmlExport examExport;
+    private ProgressBackup progressBackup;
     private boolean requestingPermission;
     private boolean openStudyWhenReady;
     private boolean firstFrameRequested;
@@ -96,6 +97,7 @@ public final class MainActivity extends AppActivity {
         webView.setWebChromeClient(new WebChromeClient());
         webView.setWebViewClient(new HandbookClient());
         examExport = new ExamHtmlExport(this, webView, () -> isHandbook(webView.getUrl()), state);
+        progressBackup = new ProgressBackup(this, webView, () -> isHandbook(webView.getUrl()));
         appearanceMode = getSharedPreferences(STARTUP_PREFERENCES, MODE_PRIVATE)
                 .getString(STARTUP_APPEARANCE, "system");
         int background = backgroundFor(appearanceMode);
@@ -142,6 +144,9 @@ public final class MainActivity extends AppActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == ProgressBackup.CREATE_REQUEST || requestCode == ProgressBackup.OPEN_REQUEST) {
+            progressBackup.deliverResult(requestCode, resultCode, data);
+        }
         if (requestCode == ExamHtmlExport.CREATE_DOCUMENT_REQUEST) examExport.deliverResult(resultCode, data);
     }
 
@@ -419,6 +424,14 @@ public final class MainActivity extends AppActivity {
             }
             if (isLocal(url)) {
                 String path = url.getEncodedPath();
+                if (ProgressBackup.SAVE_PATH.equals(path) || ProgressBackup.OPEN_PATH.equals(path)) {
+                    if (isHandbook(view.getUrl()) && request.hasGesture() && "GET".equals(request.getMethod())
+                            && url.getEncodedQuery() == null && url.getEncodedFragment() == null && !request.isRedirect()) {
+                        if (ProgressBackup.SAVE_PATH.equals(path)) progressBackup.requestSave();
+                        else progressBackup.requestOpen();
+                    }
+                    return true;
+                }
                 if (ExamHtmlExport.SAVE_PATH.equals(path) || ExamHtmlExport.FORGET_PATH.equals(path)) {
                     if (isHandbook(view.getUrl()) && request.hasGesture() && "GET".equals(request.getMethod())
                             && url.getEncodedQuery() == null && url.getEncodedFragment() == null && !request.isRedirect()) {

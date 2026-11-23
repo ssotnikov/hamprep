@@ -2193,6 +2193,26 @@
     .review-return { margin: 8px 0 12px; }
 
     .export-entry { width: 100%; margin-top: 8px; }
+    .progress-backup-entry { margin: 8px 0 12px; }
+    #progress-backup-dialog { max-width: 410px; overscroll-behavior: contain; }
+    #progress-backup-dialog [hidden] { display: none; }
+    #progress-backup-dialog .button + .button,
+    #progress-backup-close { margin-top: 8px; }
+    #progress-backup-inventory { margin: 0 0 14px; }
+    #progress-backup-inventory div {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+      padding: 3px 0;
+    }
+    #progress-backup-inventory dd { margin: 0; font-weight: 650; }
+    #progress-backup-dialog .progress-backup-notice {
+      padding: 10px;
+      border-radius: 9px;
+      background: var(--surface-container-low);
+      margin-bottom: 12px;
+    }
+    #progress-backup-dialog #progress-backup-status { margin: 12px 0 0; }
     #exam-export-dialog { max-width: 410px; overflow: auto; overscroll-behavior: contain; }
     #exam-export-dialog h2 { margin-bottom: 8px; }
     #exam-export-dialog .export-meta { margin: 0 0 14px; color: var(--on-surface-variant); font-size: .89rem; }
@@ -2414,6 +2434,9 @@
         <p id="study-progress-text" class="caption"></p>
       </div>
       <button type="button" class="reminder-entry" id="reminder-open" hidden><svg viewBox="0 0 24 24" aria-hidden="true" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 8-3 8-3 10h18c0-2-3-2-3-10m-8 13h4"/></svg><span>Напоминания об обучении<small class="reminder-status">Выключены</small></span><b aria-hidden="true">›</b></button>
+      <div id="progress-backup-anchor" class="progress-backup-entry">
+        <button type="button" class="button button--secondary" id="progress-backup-open">Резервная копия прогресса</button>
+      </div>
       <button type="button" class="home-reset" id="reset-progress-btn">Сбросить весь прогресс</button>
     </header>
 
@@ -3516,6 +3539,24 @@
     </div>
   </section>
 
+<dialog id="progress-backup-dialog" class="exam-timeout-dialog" aria-labelledby="progress-backup-title">
+  <h2 id="progress-backup-title" tabindex="-1">Резервная копия прогресса</h2>
+  <div id="progress-backup-actions">
+    <p>Сохраните прогресс всех категорий в файл или восстановите его на этом устройстве.</p>
+    <p class="caption">В копию входят ответы, закладки, места чтения, отметки мини-сценариев, очередь повторения и история экзаменов.</p>
+    <button type="button" class="button" id="progress-backup-save">Сохранить копию</button>
+    <button type="button" class="button button--secondary" id="progress-backup-load">Загрузить файл копии</button>
+    <input id="progress-backup-file" type="file" accept=".json,application/json" hidden>
+  </div>
+  <div id="progress-backup-review" hidden>
+    <p id="progress-backup-date"></p>
+    <dl id="progress-backup-inventory"></dl>
+    <p class="progress-backup-notice">Восстановление заменит текущий учебный прогресс. Перед этим его можно сохранить в отдельный файл.</p>
+    <button type="button" class="button" id="progress-backup-confirm">Заменить и восстановить</button>
+  </div>
+  <p id="progress-backup-status" class="caption" role="status" hidden></p>
+  <button type="button" class="button button--secondary" id="progress-backup-close">Закрыть</button>
+</dialog>
   <dialog class="exam-timeout-dialog" id="exam-export-dialog" aria-labelledby="exam-export-title">
     <h2 id="exam-export-title">Экспорт результата</h2>
     <p class="export-meta" id="exam-export-attempt"></p>
@@ -5081,17 +5122,26 @@
         examsByCategory,
         ...examsByCategory['2']
       });
-      let savedLocally = false;
-      try {
-        window.localStorage.setItem(STORAGE_KEY, data);
-        savedLocally = true;
-      } catch (e) {
-        // Хост может сохранить состояние при недоступном локальном хранилище.
+      return writeProgress(data);
+    }
+
+    function writeProgress(data, replacing = false) {
+      function storeLocally() {
+        try {
+          window.localStorage.setItem(STORAGE_KEY, data);
+          return true;
+        } catch (error) {
+          return false;
+        }
       }
+
       const host = window.notebookAppApi;
-      if (typeof host?.setAppState !== 'function') return Promise.resolve(savedLocally);
-      hostSave = hostSave.then(() => host.setAppState(JSON.parse(data)))
-        .then(() => true, () => savedLocally);
+      if (typeof host?.setAppState !== 'function') return Promise.resolve(storeLocally());
+      const savedLocally = !replacing && storeLocally();
+      hostSave = hostSave.then(() => host.setAppState(JSON.parse(data))).then(() => {
+        if (replacing) storeLocally();
+        return true;
+      }, () => savedLocally);
       return hostSave;
     }
 
@@ -7061,17 +7111,27 @@ ${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="co
         return {version: 1, places: byCategory, bookmarks: [...bookmarks]};
       }
 
-      function restore(saved) {
-        if (saved?.version !== 1) return;
+      function cleanState(saved) {
+        const stored = {version: 1, places: {}, bookmarks: []};
+        if (saved?.version !== 1) return stored;
         for (const key of Object.keys(CATEGORIES)) {
           const place = saved.places?.[key];
           if (typeof place?.id === 'string' && /^[a-z0-9-]{1,64}$/.test(place.id)
-            && docs.has(place.section)) places.set(key, {id: place.id, section: place.section});
+            && docs.has(place.section)) stored.places[key] = {id: place.id, section: place.section};
         }
-        if (!Array.isArray(saved.bookmarks)) return;
-        for (const key of saved.bookmarks) {
-          if (typeof key === 'string' && /^(m:[a-z0-9-]{1,64}|q:pdf_[1-9][0-9]{0,3})$/.test(key)) bookmarks.add(key);
+        if (Array.isArray(saved.bookmarks)) {
+          stored.bookmarks = [...new Set(saved.bookmarks.filter(key =>
+            typeof key === 'string' && /^(m:[a-z0-9-]{1,64}|q:pdf_[1-9][0-9]{0,3})$/.test(key)))];
         }
+        return stored;
+      }
+
+      function restore(saved) {
+        const clean = cleanState(saved);
+        places.clear();
+        bookmarks.clear();
+        for (const [categoryId, place] of Object.entries(clean.places)) places.set(categoryId, place);
+        for (const key of clean.bookmarks) bookmarks.add(key);
       }
 
       function save() {
@@ -7260,7 +7320,7 @@ ${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="co
         target.tabIndex = -1;
         revealBelowTopbar(target);
       });
-      return {restore, state, update, suspend, markup};
+      return {restore, cleanState, state, update, suspend, markup};
     })();
 
     function renderMockExam() {
@@ -7564,20 +7624,26 @@ ${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="co
         };
       }
 
+      function cleanMarks(saved) {
+        return Array.isArray(saved) ? [...new Set(saved.filter(id => known.has(id)))] : [];
+      }
+
+      function restore(saved) {
+        completed.clear();
+        for (const id of cleanMarks(saved)) completed.add(id);
+        for (const resetPanel of panels) resetPanel();
+      }
+
       return {
         init(saved) {
           // Register trusted scenario IDs before accepting saved marks.
           for (const panel of document.querySelectorAll('[data-practical-section]')) panels.push(mount(panel));
-          if (Array.isArray(saved)) {
-            for (const id of saved) if (known.has(id)) completed.add(id);
-            for (const resetPanel of panels) resetPanel();
-          }
+          if (Array.isArray(saved)) restore(saved);
         },
+        cleanMarks,
+        restore,
         state() { return [...completed]; },
-        reset() {
-          completed.clear();
-          for (const resetPanel of panels) resetPanel();
-        }
+        reset() { restore([]); }
       };
     })();
 
@@ -7632,6 +7698,271 @@ ${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="co
       } catch (e) {
         // Fallback
       }
+    }
+
+    function initProgressBackup() {
+      const format = 'radioexam-progress';
+      const maxBytes = 256 * 1024;
+      const android = location.origin === 'https://appassets.androidplatform.net';
+      const opener = document.getElementById('progress-backup-open');
+      const dialog = document.getElementById('progress-backup-dialog');
+      const title = document.getElementById('progress-backup-title');
+      const actions = document.getElementById('progress-backup-actions');
+      const review = document.getElementById('progress-backup-review');
+      const file = document.getElementById('progress-backup-file');
+      const save = document.getElementById('progress-backup-save');
+      const load = document.getElementById('progress-backup-load');
+      const confirm = document.getElementById('progress-backup-confirm');
+      const close = document.getElementById('progress-backup-close');
+      const status = document.getElementById('progress-backup-status');
+      const inventory = document.getElementById('progress-backup-inventory');
+      let pendingExport;
+      let pendingImport;
+      let busy = false;
+
+      const isRecord = value => value !== null && typeof value === 'object' && !Array.isArray(value);
+      const isValidDate = value => Number.isSafeInteger(value) && value > 0 && value <= Date.UTC(9999, 11, 31);
+      const isKnownCategory = value => typeof value === 'string' && Object.hasOwnProperty.call(CATEGORIES, value);
+      const hasActiveExam = () => examSession.active && !examSession.finished
+        || Object.values(examsByCategory).some(entry => entry?.examAttempt && !entry.examAttempt.finished);
+
+      function filterAnswers(saved, questions) {
+        if (!isRecord(saved)) throw new Error();
+        const result = {};
+        for (const {id, options} of questions) {
+          const answer = saved[id];
+          if (Number.isInteger(answer) && answer >= 0 && answer < options.length) result[id] = answer;
+        }
+        return result;
+      }
+
+      function cleanExam(raw, categoryId) {
+        const record = raw?.examRecord;
+        const examRecord = validExamSummary(record) ? {
+          score: record.score, total: record.total, passed: record.passed === true,
+          source: knownHistorySource(record.source, categoryId)
+        } : null;
+        const saved = raw?.examAttempt;
+        const attempt = saved?.finished === true && isAttemptId(saved.id, categoryId)
+          && knownHistorySource(saved.source, categoryId) && isValidDate(saved.deadline)
+          ? decodeExamAttempt(saved, categoryId, questionsForCategory(categoryId)) : null;
+        const examAttempt = attempt ? {
+          id: attempt.id, source: attempt.source, finished: true,
+          ids: attempt.questions.map(question => question.id), answers: attempt.answers,
+          currentIndex: attempt.currentIndex, deadline: attempt.deadline,
+          secondsLeft: Number.isInteger(attempt.secondsLeft)
+            ? Math.max(0, Math.min(CATEGORIES[categoryId].minutes * 60, attempt.secondsLeft)) : 0
+        } : null;
+        return {examRecord, examAttempt};
+      }
+
+      function normalizeProgress(raw) {
+        if (!isRecord(raw) || !isRecord(raw.examsByCategory) || !isKnownCategory(raw.category)
+          || raw.examBankRevision !== EXAM_BANK_REVISION || !Array.isArray(raw.practicalCompleted)
+          || raw.reading?.version !== 1 || !isRecord(raw.reading.places) || !Array.isArray(raw.reading.bookmarks)
+          || raw.examHistory?.version !== 1 || !isRecord(raw.examHistory.categories)
+          || raw.spacedReview?.version !== 1 || !isRecord(raw.spacedReview.entries)) throw new Error();
+        const quizAnswers = filterAnswers(raw.quizAnswers, QUESTIONS);
+        const bankAnswers = filterAnswers(raw.bankAnswers, ALL_PDF_QUESTIONS);
+        const cleanedExams = {};
+        for (const categoryId of Object.keys(CATEGORIES)) {
+          const exam = cleanExam(raw.examsByCategory[categoryId], categoryId);
+          if (exam.examRecord || exam.examAttempt) cleanedExams[categoryId] = exam;
+        }
+        return {
+          quizAnswers, bankAnswers, category: raw.category, examBankRevision: EXAM_BANK_REVISION,
+          spacedReview: {version: 1, entries: restoreSpacedReviews(raw.spacedReview, bankAnswers, false)},
+          reading: readingTools.cleanState(raw.reading),
+          practicalCompleted: practicalStudy.cleanMarks(raw.practicalCompleted),
+          examHistory: {version: 1, categories: restoreExamHistory(raw.examHistory)},
+          examsByCategory: cleanedExams
+        };
+      }
+
+      function snapshot() {
+        saveCategoryExam();
+        return normalizeProgress({
+          quizAnswers: appState.quizAnswers, bankAnswers: appState.bankAnswers, category,
+          spacedReview: {version: 1, entries: appState.spacedReviews},
+          reading: readingTools.state(), practicalCompleted: practicalStudy.state(),
+          examBankRevision: EXAM_BANK_REVISION, examHistory: {version: 1, categories: examHistory},
+          examsByCategory
+        });
+      }
+
+      function showStatus(text) {
+        status.textContent = text;
+        status.hidden = !text;
+      }
+
+      function setBusy(value) {
+        busy = value;
+        for (const button of [save, load, confirm, close]) button.disabled = value;
+      }
+
+      function showReview(value) {
+        review.hidden = !value;
+        actions.hidden = Boolean(value);
+        title.textContent = value ? 'Проверка резервной копии' : 'Резервная копия прогресса';
+        close.textContent = value ? 'Назад' : 'Закрыть';
+        title.focus({preventScroll: true});
+      }
+
+      function inspect(json) {
+        try {
+          if (typeof json !== 'string' || new TextEncoder().encode(json).byteLength > maxBytes) throw new Error();
+          const backup = JSON.parse(json);
+          if (backup?.format !== format || backup.version !== 1 || !isValidDate(backup.createdAt)) throw new Error();
+          const value = normalizeProgress(backup.progress);
+          if (JSON.stringify(value) !== JSON.stringify(backup.progress)) {
+            // Reject malformed selected data without relying on key order.
+            const sameShape = (first, second) => first === second || (first !== null && second !== null
+              && typeof first === 'object' && typeof second === 'object' && Array.isArray(first) === Array.isArray(second)
+              && Object.keys(first).length === Object.keys(second).length
+              && Object.keys(first).every(key => Object.hasOwnProperty.call(second, key) && sameShape(first[key], second[key])));
+            if (!sameShape(value, backup.progress)) throw new Error();
+          }
+          const rows = [
+            ['Ответы', Object.keys(value.quizAnswers).length + Object.keys(value.bankAnswers).length],
+            ['Закладки', value.reading.bookmarks.length],
+            ['Завершенные экзамены', Object.values(value.examHistory.categories).reduce((total, list) => total + list.length, 0)],
+            ['Вопросы на повторение', Object.keys(value.spacedReview.entries).length],
+            ['Мини-сценарии', value.practicalCompleted.length]
+          ];
+          document.getElementById('progress-backup-date').textContent = 'Копия от ' +
+            new Date(backup.createdAt).toLocaleString('ru-RU', {day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit'});
+          inventory.textContent = '';
+          for (const [label, count] of rows) {
+            const row = document.createElement('div');
+            const term = document.createElement('dt');
+            term.textContent = label;
+            const description = document.createElement('dd');
+            description.textContent = count;
+            row.append(term, description);
+            inventory.append(row);
+          }
+          pendingImport = value;
+          showStatus('');
+          showReview(value);
+        } catch (error) {
+          showStatus('Файл не подходит или несовместим с этой версией. Прогресс сохранен.');
+        }
+      }
+
+      function sendAndroid(command) {
+        location.href = location.origin + '/__progress-backup/' + command;
+      }
+
+      if (android) {
+        window.takePendingProgressBackup = () => {
+          const data = pendingExport;
+          pendingExport = undefined;
+          return data;
+        };
+        window.addEventListener('radioexam-progress-backup', event => {
+          if (!busy) return;
+          pendingExport = undefined;
+          setBusy(false);
+          if (event.detail?.status === 'loaded') inspect(event.detail.json);
+          else if (event.detail?.status === 'saved') showStatus('Резервная копия сохранена.');
+          else if (event.detail?.status === 'save-error') showStatus('Не удалось сохранить копию.');
+          else if (event.detail?.status === 'open-error') showStatus('Не удалось прочитать файл копии.');
+        });
+      }
+
+      opener.addEventListener('click', () => {
+        readingTools.suspend();
+        pendingImport = undefined;
+        showStatus('');
+        dialog.showModal();
+        showReview();
+      });
+      close.addEventListener('click', () => {
+        if (pendingImport) { pendingImport = undefined; showStatus(''); showReview(); }
+        else dialog.close();
+      });
+      dialog.addEventListener('cancel', event => { if (busy) event.preventDefault(); });
+      dialog.addEventListener('close', () => { pendingImport = undefined; opener.focus({preventScroll: true}); });
+
+      save.addEventListener('click', () => {
+        showStatus('');
+        try {
+          const data = JSON.stringify({format, version: 1, createdAt: Date.now(), progress: snapshot()});
+          if (new TextEncoder().encode(data).byteLength > maxBytes) throw new Error();
+          if (android) {
+            pendingExport = data;
+            setBusy(true);
+            sendAndroid('save');
+            return;
+          }
+          const link = document.createElement('a');
+          const url = URL.createObjectURL(new Blob([data], {type: 'application/json'}));
+          link.href = url;
+          link.download = 'radioexam-progress-' + new Date().toISOString().slice(0, 10) + '.json';
+          link.click();
+          setTimeout(() => URL.revokeObjectURL(url), 1000);
+          showStatus('Копия передана на скачивание.');
+        } catch (error) {
+          pendingExport = undefined;
+          setBusy(false);
+          showStatus('Не удалось создать резервную копию.');
+        }
+      });
+      load.addEventListener('click', () => {
+        showStatus('');
+        if (hasActiveExam()) {
+          showStatus('Завершите активную попытку экзамена перед восстановлением.');
+          return;
+        }
+        if (android) {
+          setBusy(true);
+          sendAndroid('open');
+        } else {
+          file.value = '';
+          file.click();
+        }
+      });
+      file.addEventListener('change', async () => {
+        const selected = file.files[0];
+        if (!selected) return;
+        setBusy(true);
+        try {
+          if (selected.size > maxBytes) throw new Error();
+          inspect(await selected.text());
+        } catch (error) {
+          showStatus('Не удалось прочитать файл копии.');
+        } finally {
+          setBusy(false);
+          file.value = '';
+        }
+      });
+      confirm.addEventListener('click', async () => {
+        if (!pendingImport || busy || hasActiveExam()) return;
+        setBusy(true);
+        try {
+          const data = pendingImport;
+          if (!await writeProgress(JSON.stringify(data), true)) {
+            showStatus('Не удалось сохранить восстановленный прогресс.');
+            return;
+          }
+          appState.quizAnswers = data.quizAnswers;
+          appState.bankAnswers = data.bankAnswers;
+          appState.spacedReviews = data.spacedReview.entries;
+          examHistory = data.examHistory.categories;
+          for (const id of Object.keys(examsByCategory)) delete examsByCategory[id];
+          Object.assign(examsByCategory, data.examsByCategory);
+          readingTools.restore(data.reading);
+          practicalStudy.restore(data.practicalCompleted);
+          setCategory(data.category);
+          resetBankTopic('');
+          renderAllSectionQuizzes();
+          pendingImport = undefined;
+          showReview();
+          showStatus('Прогресс восстановлен.');
+        } finally {
+          setBusy(false);
+        }
+      });
     }
 
     function initPageSearch() {
@@ -8430,6 +8761,7 @@ ${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="co
 
     document.addEventListener('DOMContentLoaded', async () => {
       await initApp();
+      initProgressBackup();
       initVoiceExchanges();
       initStyledSelects();
       initTableScrollbars();
