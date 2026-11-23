@@ -1,7 +1,7 @@
 ![Android](https://img.shields.io/badge/Android-8.0%2B-3DDC84?style=flat&labelColor=365563)
 ![Languages: RU](https://img.shields.io/badge/Languages-RU-3DDC84?style=flat&labelColor=365563)
-[![Ham Prep: SRR RU](https://img.shields.io/badge/Ham%20Prep-SRR%20RU-FB223A?style=flat&labelColor=365563)](https://srr.ru)
-![License](https://img.shields.io/badge/License-MIT-blue?style=flat&labelColor=365563)
+[![Ham Prep: SRR RU](https://img.shields.io/badge/Ham%20Prep-SRR%20RU-FB223A?style=flat&labelColor=365563)](https://srr.ru/radiooperatoram/for-forein-hams/)
+[![License](https://img.shields.io/badge/License-MIT-blue?style=flat&labelColor=365563)](LICENSE.md)
 
 <p>
   <img src="android/res/drawable-nodpi/handbook_startup_icon.png" alt="Иконка приложения «Радиоэкзамен»" width="63" height="63">
