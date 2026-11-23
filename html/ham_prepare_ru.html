@@ -1074,6 +1074,12 @@
       cursor: pointer;
       list-style: none;
     }
+    body.key-panel-open .page-grid { overflow: visible; }
+    .bank-key-details[open] > .bank-key-toggle {
+      position: sticky;
+      top: calc(var(--pinned-top-height) + 8px);
+      z-index: 11;
+    }
     .bank-key-toggle::-webkit-details-marker { display: none; }
     .bank-key-toggle:focus-visible, .bank-key-toggle:hover { background: var(--key-focus); }
     .bank-key-toggle .bank-page-arrow { transform: scaleX(-1); }
@@ -5289,6 +5295,18 @@
         applyFilters();
       });
       const results = document.getElementById('bank-results');
+      const answerKey = document.querySelector('.bank-key-details');
+      const keyToggle = answerKey.querySelector('summary');
+      const topbar = document.querySelector('.pinned-topbar');
+      answerKey.addEventListener('toggle', () => {
+        document.body.classList.toggle('key-panel-open', answerKey.open);
+      });
+      keyToggle.addEventListener('click', event => {
+        if (!answerKey.open || answerKey.getBoundingClientRect().top >= topbar.offsetHeight + 8) return;
+        event.preventDefault();
+        answerKey.open = false;
+        revealBelowTopbar(keyToggle);
+      });
       document.getElementById('bank-key').addEventListener('click', event => {
         const link = event.target.closest('[data-question-number]');
         if (!link) return;
