@@ -1011,6 +1011,15 @@
     .bank-pass-summary div { background: var(--surface-container-low); padding: 8px; border-radius: 10px; }
     .bank-pass-summary strong { display: block; }
     #bank-results-label { margin: var(--space-sm) 0 0; }
+    #bank-results-label.bank-results-empty {
+      padding: 9px 12px;
+      border-inline-start: 3px solid var(--primary);
+      border-radius: 10px;
+      background: var(--surface-container);
+      color: var(--on-surface);
+    }
+    #bank-results-hint { display: block; margin-block-start: 3px; color: var(--on-surface-variant); }
+    #bank-results-hint[hidden] { display: none; }
     .bank-retry-checkbox {
       align-self: flex-start;
       display: inline-flex;
@@ -3529,7 +3538,10 @@
             <select class="select" id="bank-topic">
               <option value="">Все темы</option>
             </select>
-            <p class="caption" id="bank-results-label" role="status"></p>
+            <p class="caption" id="bank-results-label" role="status">
+              <span id="bank-results-message"></span>
+              <span id="bank-results-hint" hidden></span>
+            </p>
             <label class="bank-retry-checkbox"><input type="checkbox" id="bank-mistakes"> Мои ошибки</label>
             <p class="caption bank-retry-status" id="bank-retry-status" role="status"></p>
           </div>
@@ -5514,7 +5526,8 @@
     function bankQuestionSelection() {
       const search = document.getElementById('bank-search');
       const query = normalizeQuestionSearchText(search.value.trim());
-      const number = query.match(/^№?\s*(\d+)$/);
+      const match = query.match(/^№?\s*(\d+)$/);
+      const number = match ? Number(match[1]) : null;
       const topic = document.getElementById('bank-topic').value;
       const topicIndex = BANK_TOPICS.findIndex(([start]) => String(start) === topic);
       const mistakesOnly = document.getElementById('bank-mistakes').checked;
@@ -5525,24 +5538,67 @@
         if (topicIndex >= 0 && questionTopic !== topicIndex) return false;
         const chosen = bankAnswerStore(question)[question.id];
         if (mistakesOnly && (chosen === undefined || chosen === question.correct)) return false;
-        if (number) return question.no === Number(number[1]);
+        if (number !== null) return question.no === number;
         const text = normalizeQuestionSearchText(question.stem);
         return text.includes(query);
       });
 
-      return {pool, matches, mistakesOnly};
+      return {pool, matches, query, number, source, topicIndex, mistakesOnly};
+    }
+
+    function bankEmptySearchResult({query, number, source, topicIndex, mistakesOnly}) {
+      if (number === null) {
+        if (query) return [
+          'По этому тексту совпадений нет.',
+          mistakesOnly || topicIndex >= 0 || source !== 'all'
+            ? 'Проверьте запрос и выбранные фильтры.'
+            : 'Попробуйте другое слово или номер вопроса.'
+        ];
+        return [mistakesOnly ? 'Ошибок по выбранным условиям нет.' : 'При выбранных фильтрах вопросов нет.', ''];
+      }
+
+      const title = `Вопрос № ${number}`;
+      const question = ALL_PDF_QUESTIONS.find(item => item.no === number);
+      if (!question) return [`${title} отсутствует в экзаменационном перечне.`, 'Проверьте номер вопроса.'];
+
+      if (!PDF_BANK.includes(question)) {
+        const categories = Object.keys(CATEGORIES).filter(id => isExamQuestionInCategory(number, id));
+        if (categories.length === 1) return [
+          `${title} есть в перечне для ${categories[0]}-й категории.`,
+          `Чтобы открыть вопрос, выберите ${categories[0]}-ю категорию.`
+        ];
+        if (categories.length) return [
+          `${title} есть в перечне для категорий ${categories.join(', ')}.`,
+          'Выберите одну из указанных категорий.'
+        ];
+        return [`${title} есть в перечне.`, 'Вопрос недоступен для выбора категории.'];
+      }
+      if (source === 'study') return [
+        `${title} есть в экзаменационном перечне.`,
+        'Выберите источник «Экзаменационный перечень» или «Все источники».'
+      ];
+      if (topicIndex >= 0 && topicIndex !== bankTopicIndex(number)) return [
+        `${title} относится к другой теме.`, 'Выберите «Все темы».'
+      ];
+      return [`${title} не входит в «Мои ошибки».`, 'Снимите флажок «Мои ошибки», чтобы открыть вопрос.'];
     }
 
     function renderQuestionBank() {
       spacedStudy.update();
-      const {pool, matches, mistakesOnly} = bankQuestionSelection();
+      const selection = bankQuestionSelection();
+      const {pool, matches, mistakesOnly} = selection;
       const pageCount = Math.ceil(matches.length / BANK_PAGE_SIZE);
       bankPage = Math.min(bankPage, Math.max(0, pageCount - 1));
       const start = bankPage * BANK_PAGE_SIZE;
       const visible = matches.slice(start, start + BANK_PAGE_SIZE);
-      document.getElementById('bank-results-label').textContent = matches.length
-        ? `Найдено ${matches.length} из ${pool.length}. Показано ${start + 1}–${start + visible.length}.`
-        : mistakesOnly ? 'Ошибок по выбранным условиям нет.' : 'Вопросы не найдены.';
+      const [message, hint] = matches.length
+        ? [`Найдено ${matches.length} из ${pool.length}. Показано ${start + 1}–${start + visible.length}.`, '']
+        : bankEmptySearchResult(selection);
+      document.getElementById('bank-results-label').classList.toggle('bank-results-empty', !matches.length);
+      document.getElementById('bank-results-message').textContent = message;
+      const hintElement = document.getElementById('bank-results-hint');
+      hintElement.textContent = hint;
+      hintElement.hidden = !hint;
       document.getElementById('bank-pagination').hidden = pageCount < 2;
       document.getElementById('bank-page-label').textContent = `${bankPage + 1} из ${pageCount}`;
       document.getElementById('bank-prev').disabled = bankPage === 0;
@@ -6157,9 +6213,12 @@
         ? 'Продолжить экзамен' : 'Пробный экзамен';
     }
 
+    function isExamQuestionInCategory(number, categoryId) {
+      return CATEGORIES[categoryId].ranges.some(([start, end]) => number >= start && number <= end);
+    }
+
     function questionsForCategory(categoryId) {
-      return ALL_PDF_QUESTIONS.filter(({no}) =>
-        CATEGORIES[categoryId].ranges.some(([start, end]) => no >= start && no <= end));
+      return ALL_PDF_QUESTIONS.filter(({no}) => isExamQuestionInCategory(no, categoryId));
     }
 
     function createExamAttemptId() {
