@@ -981,6 +981,18 @@
       max-width: 68ch;
       font-size: 0.9375rem;
     }
+    #answer-explanations { margin: 20px 0 0; }
+    #answer-explanations [hidden] { display: none; }
+    .answer-explanations-tabs { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+    .answer-explanations-tabs .button { padding-inline: 10px; font-size: .9rem; }
+    .answer-explanations-tabs .button[aria-pressed="true"] { background: var(--primary); color: var(--on-primary); }
+    .answer-explanations-choice span { display: block; }
+    .answer-explanations-choice small { display: block; margin-top: 3px; font-weight: 650; }
+    .answer-explanations-choice[aria-disabled="true"] { cursor: default; }
+    #answer-explanations-feedback p { margin: 0 0 6px; }
+    #answer-explanations-feedback p:last-child { margin-bottom: 0; }
+    #answer-explanations-repeat { width: 100%; margin-top: 8px; }
+
     .feedback-box--correct {
       border-left: var(--inset-rule-positive);
     }
@@ -3496,6 +3508,7 @@
             <button class="button button--secondary" type="button" id="spaced-open" aria-describedby="spaced-summary">Повторить сегодня</button>
             <small id="spaced-summary" aria-live="polite"></small>
           </div>
+          <p><a href="#answer-explanations">Тренировка «Почему этот вариант неверен»</a></p>
           <small class="spaced-save-status" id="spaced-save-status" role="status"></small>
           <p class="caption">Источник — <a href="https://r9c.srr.ru/wp-content/uploads/2026/02/exam-voprosy2023.pdf">Перечень экзаменационных вопросов по приказу от 01.10.2015 № 224</a>.</p>
           <div class="field-group bank-toolbar">
@@ -3527,6 +3540,21 @@
             <li><strong>Сравните нагрузки в тракте 50 Ом.</strong> Для активных нагрузок 50 и 100 Ом рассчитайте коэффициент отражения и КСВ. Проверьте результаты на откалиброванном анализаторе, если он есть. Для 100 Ом амплитудный коэффициент отражения равен 1/3, доля отражённой мощности — 1/9, КСВ — 2. При комплексной нагрузке считайте по формуле Γ = (Z<sub>L</sub> − Z<sub>0</sub>)/(Z<sub>L</sub> + Z<sub>0</sub>). Источники — Кубанов и соавторы, гл. 1, Косарев и Смирнов, ч. 1, гл. 6, и <cite>Методическое пособие по эксплуатации антенно-фидерных устройств</cite> (2023), гл. 6, с. 60 в PDF.</li>
             <li><strong>Разберите прохождение КВ.</strong> Для одной трассы сравните дневные и ночные условия. Укажите, как поглощение в области D влияет на нижнюю границу, а состояние ионосферы — на максимально применимую частоту. Отметьте, где возможна зона пропуска. Источники — «Введение к прохождению радиоволн на КВ», Андрусевич и соавторы, гл. 4 и 7, Аветисян и Никогосян, «Распространение радиоволн».</li>
           </ol>
+          <section id="answer-explanations" aria-labelledby="answer-explanations-title">
+            <h3 id="answer-explanations-title">Почему этот вариант неверен</h3>
+            <p class="caption">Выберите задачу и ответ, чтобы посмотреть пояснение.</p>
+            <div class="answer-explanations-tabs" role="group" aria-label="Учебная задача">
+              <button type="button" class="button button--secondary" data-answer-example="power" aria-pressed="true">Мощность</button>
+              <button type="button" class="button button--secondary" data-answer-example="db" aria-pressed="false">Децибелы</button>
+              <button type="button" class="button button--secondary" data-answer-example="condition" aria-pressed="false">Условие задачи</button>
+            </div>
+            <article class="question-card" aria-labelledby="answer-explanations-question">
+              <h4 class="question-stem" id="answer-explanations-question" tabindex="-1"></h4>
+              <div class="options-list" id="answer-explanations-options" role="group" aria-label="Варианты ответа"></div>
+              <div id="answer-explanations-feedback" role="status" aria-atomic="true"></div>
+              <button type="button" class="button button--secondary" id="answer-explanations-repeat" hidden>Попробовать другой ответ</button>
+            </article>
+          </section>
         </section>
 
 
@@ -7818,6 +7846,124 @@ ${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="co
       }
     }
 
+    function initAnswerExplanations() {
+      const examples = {
+        power:{
+          text:'При передаче средняя мощность составляет 20 Вт, а пиковая мощность огибающей (PEP) — 80 Вт. Какое значение нужно использовать, если задан предел по PEP?',
+          answers:['20 Вт','80 Вт','60 Вт','100 Вт'],
+          correct:1,
+          rule:'Для сравнения с пределом по PEP нужна пиковая мощность огибающей, в этой задаче — 80 Вт.',
+          wrong:{
+            0:['Средняя мощность вместо пиковой','20 Вт — средняя мощность. Условие спрашивает мощность на пике огибающей.'],
+            2:['Разность вместо измеренного значения','60 Вт получится, если из пиковой мощности вычесть среднюю. Для сравнения с пределом используется сама пиковая мощность.'],
+            3:['Сложены две характеристики сигнала','100 Вт получится, если сложить среднюю и пиковую мощности. В условии это два измерения одного сигнала.']
+          }
+        },
+        db:{
+          text:'При неизменном сопротивлении напряжение на нагрузке увеличилось с 2 до 4 В. На сколько децибел вырос уровень напряжения?',
+          answers:['Примерно на 3 дБ','Примерно на 6 дБ','Примерно на 12 дБ','Уменьшился примерно на 6 дБ'],
+          correct:1,
+          rule:'Для отношения напряжений при одинаковом сопротивлении: 20 · lg(4 / 2) ≈ +6 дБ.',
+          wrong:{
+            0:['Формула для мощности применена к напряжению','3 дБ получится из 10 · lg(4 / 2). Множитель 10 подходит для отношения мощностей, а в условии даны напряжения.'],
+            2:['Рост учтен дважды','12 дБ получится, если подставить отношение мощностей 4 в формулу с множителем 20. Для мощности используют 10 · lg(4), для напряжения — 20 · lg(2).'],
+            3:['Перепутан порядок величин','Отрицательный результат получится при отношении 2 / 4. Для изменения от 2 до 4 В делят новое значение на исходное.']
+          }
+        },
+        condition:{
+          text:'Два резистора по 50 Ом соединены параллельно. Чему равно их общее сопротивление?',
+          answers:['100 Ом','50 Ом','25 Ом','12,5 Ом'],
+          correct:2,
+          rule:'При параллельном соединении двух одинаковых резисторов общее сопротивление вдвое меньше сопротивления одного: 50 / 2 = 25 Ом.',
+          wrong:{
+            0:['Пропущено условие «параллельно»','100 Ом получилось бы при последовательном соединении. Здесь два резистора подключены параллельно.'],
+            1:['Учтен только один резистор','50 Ом — сопротивление каждого резистора отдельно. Вторая параллельная ветвь уменьшает общее сопротивление.'],
+            3:['Число ветвей учтено дважды','12,5 Ом получилось бы у четырех одинаковых параллельных резисторов по 50 Ом. В условии таких резисторов два.']
+          }
+        }
+      };
+
+      const section = document.getElementById('answer-explanations');
+      const tabs = [...section.querySelectorAll('[data-answer-example]')];
+      const question = document.getElementById('answer-explanations-question');
+      const options = document.getElementById('answer-explanations-options');
+      const feedback = document.getElementById('answer-explanations-feedback');
+      const retry = document.getElementById('answer-explanations-repeat');
+      let example = examples.power;
+      let answered = false;
+
+      function showQuestion() {
+        answered = false;
+        question.textContent = example.text;
+        feedback.replaceChildren();
+        retry.hidden = true;
+        options.replaceChildren(...example.answers.map((answer, index) => {
+          const button = document.createElement('button');
+          button.type = 'button';
+          button.className = 'option-btn';
+          button.dataset.answer = index;
+          const letter = document.createElement('span');
+          letter.className = 'option-letter';
+          letter.textContent = LETTERS[index];
+          const choice = document.createElement('span');
+          choice.className = 'answer-explanations-choice';
+          choice.textContent = answer;
+          button.append(letter, choice);
+          return button;
+        }));
+      }
+
+      for (const tab of tabs) tab.addEventListener('click', () => {
+        example = examples[tab.dataset.answerExample];
+        for (const button of tabs) button.setAttribute('aria-pressed', String(button === tab));
+        showQuestion();
+      });
+      options.addEventListener('click', event => {
+        const button = event.target.closest('[data-answer]');
+        if (!button || answered) return;
+        answered = true;
+        const index = Number(button.dataset.answer);
+        const correct = index === example.correct;
+        for (const [position, option] of [...options.children].entries()) {
+          option.setAttribute('aria-disabled', 'true');
+          if (position !== index && position !== example.correct) continue;
+          const right = position === example.correct;
+          option.classList.add(right ? 'is-correct' : 'is-wrong');
+          const mark = document.createElement('small');
+          mark.textContent = right ? (correct ? 'Ваш ответ · верно' : 'Верный ответ') : 'Ваш ответ · неверно';
+          option.lastElementChild.append(mark);
+        }
+        const verdict = correct ? 'correct' : 'wrong';
+        const card = document.createElement('div');
+        card.className = 'feedback-box feedback-box--' + verdict;
+        const heading = document.createElement('h4');
+        heading.className = 'feedback-verdict-' + verdict;
+        heading.textContent = correct ? 'Верно' : 'Почему этот вариант неверен';
+        card.append(heading);
+        if (!correct) {
+          const [reason, explanation] = example.wrong[index];
+          const label = document.createElement('strong');
+          label.textContent = reason;
+          const detail = document.createElement('p');
+          detail.textContent = explanation;
+          card.append(label, detail);
+        }
+        const rule = document.createElement('p');
+        rule.textContent = example.rule;
+        card.append(rule);
+        feedback.replaceChildren(card);
+        retry.hidden = false;
+        feedback.scrollIntoView({block: 'nearest'});
+      });
+      retry.addEventListener('click', () => {
+        showQuestion();
+        question.focus({preventScroll: true});
+        question.scrollIntoView({block: 'nearest'});
+      });
+      showQuestion();
+    }
+
+
     function initTopicGapMap() {
       const opener = document.getElementById('topic-gap-open');
       const dialog = document.getElementById('topic-gap-dialog');
@@ -9034,6 +9180,7 @@ ${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="co
 
     document.addEventListener('DOMContentLoaded', async () => {
       await initApp();
+      initAnswerExplanations();
       initTopicGapMap();
       initProgressBackup();
       initVoiceExchanges();
