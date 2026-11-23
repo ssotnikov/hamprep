@@ -3509,8 +3509,8 @@
             <small id="spaced-summary" aria-live="polite"></small>
           </div>
           <div class="bank-pass-controls">
-            <button type="button" class="button button--secondary" id="bank-pass-open">Начать новый проход</button>
-            <button type="button" class="button button--secondary" id="bank-pass-last" hidden>Результат последнего прохода</button>
+            <button type="button" class="button button--secondary" id="bank-pass-open">Новая попытка</button>
+            <button type="button" class="button button--secondary" id="bank-pass-last" hidden>Результат последней попытки</button>
           </div>
           <p id="bank-pass-pending" class="caption" hidden></p>
           <small class="spaced-save-status" id="spaced-save-status" role="status"></small>
@@ -3546,21 +3546,21 @@
           </details>
           </div>
           <div id="bank-pass-workspace" hidden>
-            <h2 id="bank-pass-title" tabindex="-1">Новый проход</h2>
+            <h2 id="bank-pass-title" tabindex="-1">Новая попытка</h2>
             <p class="caption" id="bank-pass-description"></p>
             <p class="caption" id="bank-pass-save-status" role="status"></p>
             <div id="bank-pass-run">
               <p id="bank-pass-position"></p>
-              <progress id="bank-pass-meter" aria-label="Отвечено в новом проходе"></progress>
+              <progress id="bank-pass-meter" aria-label="Отвечено в этой попытке"></progress>
               <article id="bank-pass-question" class="question-card"></article>
               <div class="bank-pass-controls">
-                <button type="button" class="button button--secondary" id="bank-pass-prev">← Назад</button>
-                <button type="button" class="button" id="bank-pass-next">Далее →</button>
-                <button type="button" class="button button--secondary" id="bank-pass-finish">Завершить проход</button>
+                <button type="button" class="button button--secondary" id="bank-pass-prev">Предыдущий вопрос</button>
+                <button type="button" class="button" id="bank-pass-next">Следующий вопрос</button>
+                <button type="button" class="button button--secondary" id="bank-pass-finish">Завершить попытку</button>
               </div>
             </div>
             <div id="bank-pass-summary" class="bank-pass-summary" hidden></div>
-            <button type="button" class="button button--secondary" id="bank-pass-home">К блоку вопросов</button>
+            <button type="button" class="button button--secondary" id="bank-pass-home" hidden>К блоку вопросов</button>
           </div>
           <h3>Практикум</h3>
           <ol>
@@ -3693,21 +3693,21 @@
 
 <dialog id="bank-pass-start-dialog" class="exam-timeout-dialog" aria-labelledby="bank-pass-start-title">
   <h2 id="bank-pass-start-title">Что повторить?</h2>
-  <p>В новом проходе варианты появятся без прежних отметок. Предыдущие результаты сохранятся.</p>
+  <p>В новой попытке варианты появятся без прежних отметок. Предыдущие результаты сохранятся.</p>
   <label class="bank-pass-scope"><input type="radio" name="bank-pass-scope" value="all" checked>
     <span>Весь блок вопросов<small id="bank-pass-all-count" class="caption"></small></span></label>
   <label class="bank-pass-scope"><input type="radio" name="bank-pass-scope" value="filtered" id="bank-pass-filtered">
     <span>Текущая выборка<small id="bank-pass-filtered-count" class="caption"></small></span></label>
   <form method="dialog" class="bank-pass-controls">
-    <button type="submit" class="button" value="start">Начать проход</button>
+    <button type="submit" class="button" value="start">Начать попытку</button>
     <button type="submit" class="button button--secondary" value="cancel">Отмена</button>
   </form>
 </dialog>
 <dialog id="bank-pass-finish-dialog" class="exam-timeout-dialog" aria-labelledby="bank-pass-finish-title">
-  <h2 id="bank-pass-finish-title">Завершить проход?</h2>
+  <h2 id="bank-pass-finish-title">Завершить попытку?</h2>
   <p id="bank-pass-remaining"></p>
   <form method="dialog" class="bank-pass-controls">
-    <button type="submit" class="button" value="finish">Завершить проход</button>
+    <button type="submit" class="button" value="finish">Завершить попытку</button>
     <button type="submit" class="button button--secondary" value="cancel">Продолжить</button>
   </form>
 </dialog>
@@ -8014,10 +8014,10 @@ ${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="co
       function updateEntry() {
         const entry = questionPasses[category];
         const run = entry?.active;
-        get('open').textContent = run ? 'Продолжить проход' : 'Начать новый проход';
+        get('open').textContent = run ? 'Продолжить прохождение' : 'Новая попытка';
         get('last').hidden = !entry?.last;
         get('pending').hidden = !run;
-        get('pending').textContent = run ? 'Текущий проход · отвечено '
+        get('pending').textContent = run ? 'Текущее прохождение · отвечено '
           + Object.keys(run.answers).length + ' из ' + run.ids.length : '';
       }
 
@@ -8034,7 +8034,7 @@ ${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="co
         const revision = ++saveRevision;
         const saved = await persistState();
         if (revision === saveRevision) {
-          get('save-status').textContent = saved ? '' : 'Не удалось сохранить проход на этом устройстве.';
+          get('save-status').textContent = saved ? '' : 'Не удалось сохранить прохождение на этом устройстве.';
         }
       }
 
@@ -8044,6 +8044,7 @@ ${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="co
         workspace.hidden = false;
         runPanel.hidden = !isRun;
         summary.hidden = isRun;
+        get('home').hidden = isRun;
         get('title').textContent = title;
         get('description').textContent = category + '-я категория · '
           + (scope === 'all' ? 'Весь блок вопросов' : 'Текущая выборка');
@@ -8059,7 +8060,7 @@ ${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="co
         get('meter').max = length;
         get('meter').value = answered;
         get('prev').disabled = run.index === 0;
-        get('next').textContent = run.index === length - 1 ? 'Посмотреть итог' : 'Далее →';
+        get('next').hidden = run.index === length - 1;
         const official = Boolean(question.no);
         const label = official ? 'Экзаменационный перечень · № ' + question.no : 'Учебный вопрос';
         const feedback = selected === undefined ? '' : official
@@ -8073,7 +8074,7 @@ ${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="co
 
       function showRun() {
         sourceQuestions = passQuestionMap(category);
-        showWorkspace('Новый проход', active().scope, true);
+        showWorkspace('Новая попытка', active().scope, true);
         renderQuestion(true);
       }
 
@@ -8082,7 +8083,7 @@ ${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="co
         const questions = passQuestionMap(category);
         const answered = Object.keys(run.answers).length;
         const correct = run.ids.filter(id => run.answers[id] === questions.get(id).correct).length;
-        showWorkspace('Результат прохода', run.scope, false);
+        showWorkspace('Результат попытки', run.scope, false);
         get('description').textContent += ' · отвечено ' + answered + ' из ' + run.ids.length;
         summary.innerHTML = [[correct, 'Верно'], [answered - correct, 'Неверно'], [run.ids.length - answered, 'Без ответа']]
           .map(([value, label]) => `<div><strong>${value}</strong>${label}</div>`).join('');
@@ -8154,8 +8155,7 @@ ${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="co
           const run = active();
           if (!run) return;
           const next = run.index + step;
-          if (next === run.ids.length) { requestFinish(); return; }
-          if (next < 0 || next > run.ids.length) return;
+          if (next < 0 || next >= run.ids.length) return;
           run.index = next;
           renderQuestion(true);
           save();
