@@ -1,6 +1,6 @@
 ![Android](https://img.shields.io/badge/Android-8.0%2B-3DDC84?style=flat&labelColor=365563)
 ![Languages: RU](https://img.shields.io/badge/Languages-RU-3DDC84?style=flat&labelColor=365563)
-![Ham Radio: СРР РФ](https://img.shields.io/badge/Ham%20Radio-%D0%A1%D0%A0%D0%A0%20%D0%A0%D0%A4-3DDC84?style=flat&labelColor=365563)
+![Ham Radio: СРР РФ](https://img.shields.io/badge/Ham%20Prep-%D0%A1%D0%A0%D0%A0%20%D0%A0%D0%A4-3DDC84?style=flat&labelColor=365563)
 ![License](https://img.shields.io/badge/License-MIT-blue?style=flat&labelColor=365563)
 
 <p>
