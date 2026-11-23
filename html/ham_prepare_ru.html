@@ -983,7 +983,6 @@
     }
     .bank-source-label { color: var(--on-surface-variant); }
     .bank-answer-mark { display: block; margin-top: 3px; font-weight: 650; }
-    .bank-answer-retry { margin-top: 8px; }
     .feedback-box--correct {
       border-left: var(--inset-rule-positive);
     }
@@ -5185,7 +5184,6 @@
       correct: item.correct, explanation: item.rule, wrong: item.wrong
     }))];
     const BANK_PAGE_SIZE = 12;
-    const bankRetryPending = new Set();
     const BANK_TOPICS = [
       [1, 'Международные нормы и CEPT'],
       [47, 'Законодательство РФ и позывные'],
@@ -5490,7 +5488,7 @@
 
       document.getElementById('bank-results').innerHTML = visible.map(question => {
         const official = Boolean(question.no);
-        const showFeedback = !bankRetryPending.has(question.id) && (!mistakesOnly || bankRetryFeedback.has(question.id));
+        const showFeedback = !mistakesOnly || bankRetryFeedback.has(question.id);
         const chosen = showFeedback ? bankAnswerStore(question)[question.id] : undefined;
         const label = official ? `Экзаменационный перечень · № ${question.no} · ${bankPageLabel(question)}`
           : `Учебный вопрос · ${BANK_TOPICS[question.sec - 1][1]}`;
@@ -5500,9 +5498,8 @@
           <div class="question-meta saved-question-meta"><span class="bank-source-label">${label}</span>
             ${official ? readingTools.markup('q', question.id) : ''}</div>
           ${official ? renderPdfPrompt(question) : `<div class="question-stem">${question.stem}</div>`}
-          <div class="options-list">${renderBankOptions(question, chosen, false, true)}</div>
+          <div class="options-list">${renderBankOptions(question, chosen, chosen !== undefined, true)}</div>
           ${feedback}
-          ${feedback ? `<button class="button button--secondary bank-answer-retry" type="button" data-bank-retry="${question.id}">Попробовать другой ответ</button>` : ''}
         </article>`;
       }).join('');
     }
@@ -5524,7 +5521,6 @@
         `<option value="${start}">${label}</option>`).join(''));
       const applyFilters = () => {
         bankPage = 0;
-        bankRetryPending.clear();
         bankRetryFeedback.clear();
         retryStatus.textContent = '';
         renderQuestionBank();
@@ -5564,21 +5560,12 @@
         });
       }
       results.addEventListener('click', event => {
-        const retry = event.target.closest('[data-bank-retry]');
-        if (retry) {
-          const id = retry.dataset.bankRetry;
-          bankRetryPending.add(id);
-          renderQuestionBank();
-          results.querySelector(`[data-bank-id="${id}"]`)?.focus({preventScroll: true});
-          return;
-        }
         const button = event.target.closest('button[data-bank-id]');
-        if (!button) return;
+        if (!button || button.disabled) return;
         const { bankId, option } = button.dataset;
         const selected = Number(option);
         const question = PDF_BANK.find(item => item.id === bankId) ?? STUDY_BANK.find(item => item.id === bankId);
         if (!question || !Number.isInteger(selected) || selected < 0 || selected >= question.options.length) return;
-        bankRetryPending.delete(bankId);
         retryStatus.textContent = '';
         if (mistakes.checked) {
           if (selected === question.correct) {
@@ -5591,8 +5578,10 @@
         }
         if (question.no) recordBankAnswer(question, selected);
         else answerSectionQuestion(question.id, selected);
-        const nextFocus = results.querySelector(`[data-bank-id="${bankId}"][data-option="${option}"]`)
-          || results.querySelector('button[data-bank-id]') || mistakes;
+        const answeredCard = results.querySelector(`[data-bank-id="${bankId}"]`)?.closest('.question-card');
+        const feedback = answeredCard?.querySelector('.feedback-box');
+        if (feedback) feedback.tabIndex = -1;
+        const nextFocus = feedback || results.querySelector('button[data-bank-id]:not(:disabled)') || mistakes;
         nextFocus.focus({ preventScroll: true });
       });
     }
@@ -5695,7 +5684,6 @@
       renderMockExam();
       bankPage = 0;
       bankRetryFeedback.clear();
-      bankRetryPending.clear();
       document.getElementById('bank-retry-status').textContent = '';
       renderBankKey();
       renderQuestionBank();
@@ -5759,7 +5747,7 @@
       document.getElementById('global-progress-fill').style.width =
         `${100 * bankAnswered / PDF_BANK.length}%`;
       document.getElementById('study-progress-text').textContent =
-        `Учебные вопросы · Отвечено ${totalAnswered} из ${STUDY_BANK.length} · Верно ${totalCorrect}`;
+        `Учебные вопросы · Отвечено ${totalAnswered} из ${STUDY_BANK.length} · Верно ${totalCorrect} · Ошибок ${totalAnswered - totalCorrect}`;
 
       const record = appState.examRecord;
       const lastResult = document.getElementById('last-exam-result');
@@ -5785,7 +5773,6 @@
       renderExamStatus();
       renderMockExam();
       bankRetryFeedback.clear();
-      bankRetryPending.clear();
       document.getElementById('bank-retry-status').textContent = '';
       renderAllSectionQuizzes();
       renderQuestionBank();
