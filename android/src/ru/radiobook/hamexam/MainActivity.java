@@ -24,8 +24,6 @@ import android.widget.FrameLayout;
 import android.widget.Toast;
 import android.window.OnBackInvokedDispatcher;
 
-import org.json.JSONObject;
-
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.Collections;
@@ -57,7 +55,6 @@ public final class MainActivity extends AppActivity {
     private StudyReminders reminders;
     private ExamHtmlExport examExport;
     private ProgressBackup progressBackup;
-    private CallsignSpeech callsignSpeech;
     private boolean requestingPermission;
     private boolean openStudyWhenReady;
     private boolean firstFrameRequested;
@@ -101,7 +98,6 @@ public final class MainActivity extends AppActivity {
         webView.setWebViewClient(new HandbookClient());
         examExport = new ExamHtmlExport(this, webView, () -> isHandbook(webView.getUrl()), state);
         progressBackup = new ProgressBackup(this, webView, () -> isHandbook(webView.getUrl()));
-        callsignSpeech = new CallsignSpeech(this, this::publishCallsignSpeech);
         appearanceMode = getSharedPreferences(STARTUP_PREFERENCES, MODE_PRIVATE)
                 .getString(STARTUP_APPEARANCE, "system");
         int background = backgroundFor(appearanceMode);
@@ -364,21 +360,8 @@ public final class MainActivity extends AppActivity {
         });
     }
 
-    private void publishCallsignSpeech(String requestId, String status) {
-        if (!isHandbook(webView.getUrl())) return;
-        webView.evaluateJavascript("window.dispatchEvent(new CustomEvent('radioexam-callsign-speech',{detail:{id:"
-                + JSONObject.quote(requestId) + ",status:" + JSONObject.quote(status) + "}}))", null);
-    }
-
-    @Override
-    protected void onPause() {
-        callsignSpeech.stop();
-        super.onPause();
-    }
-
     @Override
     protected void onDestroy() {
-        callsignSpeech.close();
         webView.removeCallbacks(startupTimeout);
         webView.removeCallbacks(checkStartup);
         ((ViewGroup) webView.getParent()).removeView(webView);
@@ -441,14 +424,6 @@ public final class MainActivity extends AppActivity {
             }
             if (isLocal(url)) {
                 String path = url.getEncodedPath();
-                if (path != null && path.startsWith(CallsignSpeech.COMMAND_PATH)) {
-                    if (isHandbook(view.getUrl()) && "GET".equals(request.getMethod())
-                            && url.getEncodedQuery() == null && url.getEncodedFragment() == null && !request.isRedirect()) {
-                        callsignSpeech.handleCommand(path.substring(CallsignSpeech.COMMAND_PATH.length()),
-                                request.hasGesture());
-                    }
-                    return true;
-                }
                 if (ProgressBackup.SAVE_PATH.equals(path) || ProgressBackup.OPEN_PATH.equals(path)) {
                     if (isHandbook(view.getUrl()) && request.hasGesture() && "GET".equals(request.getMethod())
                             && url.getEncodedQuery() == null && url.getEncodedFragment() == null && !request.isRedirect()) {
