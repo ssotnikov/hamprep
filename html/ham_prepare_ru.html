@@ -5695,6 +5695,15 @@
       return migrated;
     }
 
+    function readQuestionAnswers(saved, questions) {
+      const answers = {};
+      for (const {id, options} of questions) {
+        const answer = saved?.[id];
+        if (Number.isInteger(answer) && answer >= 0 && answer < options.length) answers[id] = answer;
+      }
+      return answers;
+    }
+
     async function loadState() {
       try {
         const host = window.notebookAppApi;
@@ -5710,6 +5719,40 @@
       } catch (e) {
         return null;
       }
+    }
+
+    function readStoredProgress(saved) {
+      const stored = saved && typeof saved === 'object' ? saved : null;
+      const storedExams = stored?.examsByCategory ?? (stored
+        ? {'2': {examRecord: stored.examRecord, examAttempt: stored.examAttempt}} : {});
+      const legacyBank = stored?.examBankRevision === undefined;
+      const bankAnswers = legacyBank ? migrateLegacyBankAnswers(stored?.bankAnswers)
+        : readQuestionAnswers(stored.bankAnswers, ALL_PDF_QUESTIONS);
+      const exams = {};
+      for (const categoryId of Object.keys(CATEGORIES)) {
+        const entry = storedExams[categoryId];
+        if (!entry || typeof entry !== 'object' || Array.isArray(entry)) continue;
+        const attempt = entry.examAttempt;
+        exams[categoryId] = legacyBank && attempt && (attempt.source !== 'study' || categoryId !== '2')
+          ? {...entry, examAttempt: {...attempt, answers: migrateLegacyBankAnswers(attempt.answers)}}
+          : entry;
+      }
+      const needsHistoryMigration = Boolean(saved) && !Object.prototype.hasOwnProperty.call(saved, 'examHistory');
+      const needsReviewMigration = Boolean(saved) && !Object.prototype.hasOwnProperty.call(saved, 'spacedReview');
+      const savedCategory = String(stored?.category ?? '2');
+      return {
+        category: Object.prototype.hasOwnProperty.call(CATEGORIES, savedCategory) ? savedCategory : '2',
+        quizAnswers: readQuestionAnswers(stored?.quizAnswers, STUDY_BANK),
+        bankAnswers,
+        exams,
+        history: needsHistoryMigration ? migrateExamHistory(exams) : restoreExamHistory(stored?.examHistory),
+        spacedReviews: restoreSpacedReviews(stored?.spacedReview, bankAnswers, needsReviewMigration),
+        questionPasses: cleanQuestionPasses(stored?.questionPasses),
+        reading: stored?.reading,
+        practicalCompleted: stored?.practicalCompleted,
+        needsHistoryMigration,
+        needsReviewMigration
+      };
     }
 
     // =========================================================================
@@ -6104,12 +6147,12 @@
       sourceSelect.options[0].textContent = `Экзаменационный перечень (${bankCount})`;
       sourceSelect.options[1].disabled = category !== '2';
       sourceSelect.options[1].hidden = category !== '2';
-      sourceSelect.value = 'pdf';
       appState.examRecord = savedExam?.examRecord ?? null;
+      const attempt = decodeExamAttempt(savedExam?.examAttempt, category, PDF_BANK);
       examSession = newExamSession();
-      restoreExamAttempt(savedExam?.examAttempt);
-      renderExamStatus();
-      renderMockExam();
+      if (attempt) Object.assign(examSession, attempt, {id: attempt.id ?? createExamAttemptId(), active: true});
+      sourceSelect.value = examSession.source;
+      if (!attempt || examSession.finished || startExamTimer()) renderExam();
       bankPage = 0;
       bankRetryFeedback.clear();
       document.getElementById('bank-retry-status').textContent = '';
@@ -6210,8 +6253,7 @@
       for (const key of Object.keys(examsByCategory)) delete examsByCategory[key];
       stopExamTimer();
       examSession = newExamSession();
-      renderExamStatus();
-      renderMockExam();
+      renderExam();
       bankRetryFeedback.clear();
       document.getElementById('bank-retry-status').textContent = '';
       renderAllSectionQuizzes();
@@ -6506,14 +6548,15 @@
     function startExamTimer() {
       if (!refreshExamTime()) {
         finishMockExam();
-        return;
+        return false;
       }
       examSession.timerId = setInterval(() => {
         if (!refreshExamTime()) finishMockExam();
       }, 1000);
+      return true;
     }
 
-    function renderExamStatus() {
+    function renderExam() {
       const status = document.getElementById('exam-status-tag');
       const record = examSession.finished ? appState.examRecord : null;
       const inProgress = examSession.active && !examSession.finished;
@@ -6530,6 +6573,7 @@
       document.getElementById('start-exam-btn').textContent = examSession.finished ? 'Начать новый билет' : 'Начать экзамен';
       document.getElementById('progress-exam-link').textContent = inProgress
         ? 'Продолжить экзамен' : 'Пробный экзамен';
+      renderMockExam();
     }
 
     function isExamQuestionInCategory(number, categoryId) {
@@ -6556,32 +6600,17 @@
       const pool = new Map((source === 'pdf' ? bank : QUESTIONS).map(question => [question.id, question]));
       const questions = saved.ids.map(id => pool.get(id));
       if (questions.includes(undefined) || new Set(saved.ids).size !== ticket) return null;
-      const answers = {};
-      for (const question of questions) {
-        const answer = saved.answers?.[question.id];
-        if (Number.isInteger(answer) && answer >= 0 && answer < question.options.length) answers[question.id] = answer;
-      }
       return {
         id: isAttemptId(saved.id, categoryId) ? saved.id : null,
         source,
         questions,
         finished: saved.finished === true,
-        answers,
+        answers: readQuestionAnswers(saved.answers, questions),
         marked: Array.isArray(saved.marked) ? saved.ids.filter(id => saved.marked.includes(id)) : [],
         currentIndex: Number.isInteger(saved.currentIndex) ? Math.max(0, Math.min(saved.currentIndex, ticket - 1)) : 0,
         deadline: saved.deadline,
         secondsLeft: saved.secondsLeft ?? 0
       };
-    }
-
-    function restoreExamAttempt(saved) {
-      const attempt = decodeExamAttempt(saved, category, PDF_BANK);
-      if (!attempt) return;
-      examSession = {...newExamSession(), ...attempt, id: attempt.id ?? createExamAttemptId(), active: true};
-      document.getElementById('exam-source').value = attempt.source;
-      renderExamStatus();
-      if (!examSession.finished) startExamTimer();
-      renderMockExam();
     }
 
     function startMockExam(source = document.getElementById('exam-source').value) {
@@ -6614,9 +6643,7 @@
         deadline: Date.now() + qualification.minutes * 60000
       };
 
-      startExamTimer();
-      renderExamStatus();
-      renderMockExam();
+      if (startExamTimer()) renderExam();
       persistState();
       revealExamQuestion();
     }
@@ -6674,24 +6701,35 @@
       reminderControls.studied();
     }
 
+    function getExamCounts({questions, answers}) {
+      let score = 0;
+      let answered = 0;
+      for (const question of questions) {
+        const answer = answers[question.id];
+        if (answer === undefined) continue;
+        answered++;
+        if (answer === question.correct) score++;
+      }
+      return {score, answered, total: questions.length};
+    }
+
     function finishMockExam(showResult = false) {
       if (!examSession.active || examSession.finished) return;
       const timedOut = !refreshExamTime();
       examSession.finished = true;
       stopExamTimer();
 
-      const score = examSession.questions.filter(question => examSession.answers[question.id] === question.correct).length;
+      const {score, total} = getExamCounts(examSession);
       appState.examRecord = {
         score,
-        total: examSession.questions.length,
+        total,
         passed: score >= qualification.pass,
         source: examSession.source
       };
       recordExamHistory(timedOut ? Math.min(examSession.deadline, Date.now()) : Date.now());
       persistState();
       updateProgressSummaries();
-      renderExamStatus();
-      renderMockExam();
+      renderExam();
       if (timedOut) {
         const dialog = document.getElementById('exam-action-dialog');
         if (dialog.open) dialog.close();
@@ -6813,10 +6851,10 @@
       return history;
     }
 
-    function migrateExamHistory() {
+    function migrateExamHistory(exams) {
       const history = {};
       for (const categoryId of Object.keys(CATEGORIES)) {
-        const saved = examsByCategory[categoryId];
+        const saved = exams[categoryId];
         const previous = saved?.examRecord;
         const attempt = decodeExamAttempt(saved?.examAttempt, categoryId, questionsForCategory(categoryId));
         const id = 'legacy-' + categoryId;
@@ -6824,7 +6862,7 @@
         const rawAnswers = saved?.examAttempt?.answers;
         const trustworthy = attempt?.finished && rawAnswers && typeof rawAnswers === 'object'
           && !Array.isArray(rawAnswers) && Object.keys(rawAnswers).length === Object.keys(attempt.answers).length;
-        const snapshotScore = trustworthy ? attempt.questions.filter(q => attempt.answers[q.id] === q.correct).length : null;
+        const snapshotScore = trustworthy ? getExamCounts(attempt).score : null;
         if (!hasSummary && !trustworthy) continue;
         const knownSource = knownHistorySource(previous?.source, categoryId);
         const matching = trustworthy && (!hasSummary || (previous.score === snapshotScore
@@ -6838,7 +6876,7 @@
         };
         if (matching) {
           Object.assign(row, getExamHistoryStats(attempt));
-          saved.examAttempt.id = id;
+          exams[categoryId] = {...saved, examAttempt: {...saved.examAttempt, id}};
         }
         addExamHistoryRow(history, categoryId, row);
       }
@@ -6961,8 +6999,7 @@
       const id = current ? examSession.id : attemptId;
       let record = (examHistory[categoryId] ?? []).find(row => row.id === id);
       if (!record && current) {
-        const total = examSession.questions.length;
-        const score = examSession.questions.filter(q => examSession.answers[q.id] === q.correct).length;
+        const {score, total} = getExamCounts(examSession);
         record = {total, score, source: examSession.source, passed: score >= qualification.pass,
           finishedAt: null, ...getExamHistoryStats(examSession)};
       }
@@ -8005,11 +8042,9 @@ ${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="co
 
       let html = '';
       const { questions, answers, currentIndex } = examSession;
-      const total = questions.length;
-      const answeredCount = questions.filter(question => answers[question.id] !== undefined).length;
+      const {score, answered, total} = getExamCounts(examSession);
 
       if (examSession.finished) {
-        const score = questions.filter(question => answers[question.id] === question.correct).length;
         const passed = score >= qualification.pass;
         const groups = getExamReviewGroups(examSession);
         const actions = [
@@ -8021,7 +8056,7 @@ ${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="co
           <div class="inset" id="exam-result-summary" tabindex="-1" style="border-left: ${passed ? 'var(--inset-rule-positive)' : 'var(--inset-rule-error)'};">
             <div class="inset-title">Протокол: теория ${passed ? 'зачтена' : 'не зачтена'}</div>
             <p>Правильных ответов: <strong>${score} из ${total}</strong> (требуется не менее ${qualification.pass}). Нажмите на любой номер вопроса ниже, чтобы разобрать ответ.</p>
-            <p>Верно: ${score} · Неверно: ${answeredCount - score} · Пропущено: ${total - answeredCount}</p>
+            <p>Верно: ${score} · Неверно: ${answered - score} · Пропущено: ${total - answered}</p>
             ${actions ? `<div class="action-row exam-result-actions">${actions}</div>` : ''}
             <button type="button" class="button button--secondary export-entry" data-exam-export="current">Экспорт в HTML</button>
           </div>
@@ -8034,7 +8069,7 @@ ${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="co
         html += renderExamQuestionGrid() + renderExamReview(groups, opened);
       } else {
         document.getElementById('exam-question-number').textContent = `Вопрос ${currentIndex + 1} из ${total}`;
-        document.getElementById('exam-answered').textContent = `Отвечено ${answeredCount} из ${total}`;
+        document.getElementById('exam-answered').textContent = `Отвечено ${answered} из ${total}`;
       }
 
       // Активный вопрос билета
@@ -8317,44 +8352,24 @@ ${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="co
     })();
 
     async function initApp() {
-      const saved = await loadState();
-      questionPasses = cleanQuestionPasses(saved?.questionPasses);
-      readingTools.restore(saved?.reading);
-      practicalStudy.init(saved?.practicalCompleted);
-      if (saved && typeof saved === 'object') {
-        appState.quizAnswers = saved.quizAnswers ?? {};
-        appState.bankAnswers = saved.bankAnswers ?? {};
-        Object.assign(examsByCategory, saved.examsByCategory ?? {
-          2: { examRecord: saved.examRecord, examAttempt: saved.examAttempt }
-        });
-        if (saved.examBankRevision === undefined) {
-          appState.bankAnswers = migrateLegacyBankAnswers(appState.bankAnswers);
-          for (const [savedCategory, entry] of Object.entries(examsByCategory)) {
-            const attempt = entry?.examAttempt;
-            if (attempt && (attempt.source !== 'study' || savedCategory !== '2')) {
-              examsByCategory[savedCategory] = {
-                ...entry,
-                examAttempt: { ...attempt, answers: migrateLegacyBankAnswers(attempt.answers) }
-              };
-            }
-          }
-        }
-      }
-
-      const needsHistoryMigration = Boolean(saved) && !Object.prototype.hasOwnProperty.call(saved, 'examHistory');
-      examHistory = needsHistoryMigration ? migrateExamHistory() : restoreExamHistory(saved?.examHistory);
-      const needsReviewMigration = Boolean(saved) && !Object.prototype.hasOwnProperty.call(saved, 'spacedReview');
-      appState.spacedReviews = restoreSpacedReviews(saved?.spacedReview, appState.bankAnswers, needsReviewMigration);
+      const progress = readStoredProgress(await loadState());
+      questionPasses = progress.questionPasses;
+      readingTools.restore(progress.reading);
+      practicalStudy.init(progress.practicalCompleted);
+      appState.quizAnswers = progress.quizAnswers;
+      appState.bankAnswers = progress.bankAnswers;
+      appState.spacedReviews = progress.spacedReviews;
+      Object.assign(examsByCategory, progress.exams);
+      examHistory = progress.history;
       updatePhoneticLab();
       updateEmissionLab();
       updateRfLab();
       updateDbLab();
       initQuestionBank();
-      const savedCategory = String(saved?.category ?? '2');
-      setCategory(Object.hasOwnProperty.call(CATEGORIES, savedCategory) ? savedCategory : '2');
+      setCategory(progress.category);
       renderAllSectionQuizzes();
-      if (needsReviewMigration) saveSpacedProgress();
-      else if (needsHistoryMigration) persistState();
+      if (progress.needsReviewMigration) saveSpacedProgress();
+      else if (progress.needsHistoryMigration) persistState();
       document.getElementById('qualification-category').addEventListener('change', event => {
         saveCategoryExam();
         setCategory(event.target.value);
@@ -8831,16 +8846,6 @@ ${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="co
       const hasActiveExam = () => examSession.active && !examSession.finished
         || Object.values(examsByCategory).some(entry => entry?.examAttempt && !entry.examAttempt.finished);
 
-      function filterAnswers(saved, questions) {
-        if (!isRecord(saved)) throw new Error();
-        const result = {};
-        for (const {id, options} of questions) {
-          const answer = saved[id];
-          if (Number.isInteger(answer) && answer >= 0 && answer < options.length) result[id] = answer;
-        }
-        return result;
-      }
-
       function cleanExam(raw, categoryId) {
         const record = raw?.examRecord;
         const examRecord = validExamSummary(record) ? {
@@ -8867,8 +8872,9 @@ ${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="co
           || raw.reading?.version !== 1 || !isRecord(raw.reading.places) || !Array.isArray(raw.reading.bookmarks)
           || raw.examHistory?.version !== 1 || !isRecord(raw.examHistory.categories)
           || raw.spacedReview?.version !== 1 || !isRecord(raw.spacedReview.entries)) throw new Error();
-        const quizAnswers = filterAnswers(raw.quizAnswers, STUDY_BANK);
-        const bankAnswers = filterAnswers(raw.bankAnswers, ALL_PDF_QUESTIONS);
+        if (!isRecord(raw.quizAnswers) || !isRecord(raw.bankAnswers)) throw new Error();
+        const quizAnswers = readQuestionAnswers(raw.quizAnswers, STUDY_BANK);
+        const bankAnswers = readQuestionAnswers(raw.bankAnswers, ALL_PDF_QUESTIONS);
         const cleanedExams = {};
         for (const categoryId of Object.keys(CATEGORIES)) {
           const exam = cleanExam(raw.examsByCategory[categoryId], categoryId);
@@ -9364,8 +9370,9 @@ ${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="co
           finishMockExam();
           return;
         }
-        const { questions, answers, marked } = examSession;
-        const remaining = questions.filter(question => answers[question.id] === undefined).length;
+        const {marked} = examSession;
+        const {answered, total} = getExamCounts(examSession);
+        const remaining = total - answered;
         title.textContent = titleText;
         copy.textContent = message;
         copy.hidden = !action;
@@ -9409,10 +9416,10 @@ ${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="co
           finishMockExam();
           return;
         }
-        const { questions, answers } = examSession;
-        const remaining = questions.filter(question => answers[question.id] === undefined).length;
+        const {answered, total} = getExamCounts(examSession);
+        const remaining = total - answered;
         if (remaining === 0) finishMockExam(true);
-        else open('Завершить экзамен?', `Отвечено ${questions.length - remaining} из ${questions.length} · Без ответа ${remaining}.`,
+        else open('Завершить экзамен?', `Отвечено ${answered} из ${total} · Без ответа ${remaining}.`,
           'Завершить и проверить', () => finishMockExam(true), true);
       });
     }
