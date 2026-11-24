@@ -1833,8 +1833,7 @@
     .history-filters > [hidden] { display:none; }
     .history-filters .ui-dropdown { margin:0; }
     .history-filters .ui-dropdown-value { white-space:normal; }
-    .history-coverage { margin:12px 0 16px; padding:12px; background:var(--surface-container-low); border:1px solid var(--outline-variant); border-radius:12px; }
-    .history-coverage strong { display:block; margin-bottom:6px; }
+    .history-intro { margin: 0 0 12px; }
     .history-caption { display:block; color:var(--on-surface-variant); font-size:.86rem; }
     #history-dialog h3 { margin:12px 0 8px; font-size:1rem; }
     .history-chart { display:grid; gap:8px; grid-template-columns:repeat(var(--points),minmax(0,1fr)); padding:10px; margin-bottom:16px; background:var(--surface-container-low); border-radius:12px; }
@@ -1845,6 +1844,8 @@
     .history-attempt { padding:10px 12px; border:1px solid var(--outline-variant); border-radius:12px; }
     .history-attempt-head { display:flex; align-items:baseline; justify-content:space-between; gap:6px 12px; flex-wrap:wrap; }
     .history-attempt-head strong { font-size:1.16rem; }
+    .history-attempt-stats { margin-top: 8px; padding-top: 7px; border-top: 1px solid var(--outline-variant); }
+    .history-attempt-stats strong { display: block; font-size: .9rem; }
     .history-status { font-size:.83rem; font-weight:650; color:var(--error); }
     .history-status.is-passed { color:var(--positive); }
     #history-dialog .history-attempt .button { margin:7px 0 0; }
@@ -3789,14 +3790,15 @@
       <h2 id="history-title" tabindex="-1">История попыток</h2>
       <form method="dialog"><button class="button history-close" aria-label="Закрыть">×</button></form>
     </div>
+    <p class="caption history-intro">Завершенные пробные экзамены</p>
     <div class="history-filters">
       <div><label for="history-category">Категория</label><select id="history-category">
         <option value="1">1-я категория</option><option value="2">2-я категория</option>
         <option value="3">3-я категория</option><option value="4">4-я категория</option>
       </select></div>
-      <div id="history-source-group"><label for="history-source">Источник</label><select id="history-source">
+      <div id="history-source-group"><label for="history-source">Источник вопросов в билете</label><select id="history-source">
         <option value="all">Все источники</option>
-        <option value="pdf">Блок вопросов</option><option value="study">Учебные вопросы</option>
+        <option value="pdf">Экзаменационный перечень</option><option value="study">Учебные вопросы</option>
       </select></div>
     </div>
     <div id="history-content"></div>
@@ -6577,11 +6579,14 @@
         const status = row.passed === null ? '' : `<span class="history-status${row.passed ? ' is-passed' : ''}">
           ${row.passed ? 'Теория зачтена' : 'Теория не зачтена'}</span>`;
         const date = row.finishedAt === null ? 'Результат до появления истории' : fullDate.format(row.finishedAt);
-        const source = row.source === 'pdf' ? 'Блок вопросов' : row.source === 'study' ? 'Учебные вопросы' : 'Источник неизвестен';
+        const source = row.source === 'pdf' ? 'Экзаменационный перечень' : row.source === 'study' ? 'Учебные вопросы' : 'Источник неизвестен';
         return `<article class="history-attempt">
-          <div class="history-attempt-head"><strong>${row.score} из ${row.total}</strong>${status}</div>
+          <div class="history-attempt-head"><strong>${row.score} из ${row.total} верно</strong>${status}</div>
           <span class="history-caption">${date} · ${source}</span>
-          ${row.wrong === undefined ? '' : `<span class="history-caption">Неверно: ${row.wrong} · Пропущено: ${row.skipped}</span>`}
+          ${row.skipped === undefined ? '' : `<div class="history-attempt-stats">
+            <strong>Отвечено ${row.total - row.skipped} из ${row.total}</strong>
+            <span class="history-caption">Неверно ${row.wrong} · Пропущено ${row.skipped}</span>
+          </div>`}
           ${row.id === reviewId ? '<button type="button" class="button button--secondary" id="history-review">Открыть разбор</button>' : ''}
           <button type="button" class="button button--secondary export-entry" data-exam-export="${row.id}">Экспорт в HTML</button>
         </article>`;
@@ -6610,24 +6615,14 @@
         const selected = categoryFilter.value;
         sourceGroup.hidden = selected !== '2';
         const source = sourceGroup.hidden ? 'pdf' : sourceFilter.value;
-        const pool = selected === category ? PDF_BANK : questionsForCategory(selected);
-        const answered = pool.filter(q => {
-          const value = appState.bankAnswers[q.id];
-          return Number.isInteger(value) && value >= 0 && value < q.options.length;
-        }).length;
         const rows = (examHistory[selected] ?? []).filter(row => row.source !== null
           && (source === 'all' || row.source === source));
         const legacy = (examHistory[selected] ?? []).find(row => row.source === null);
         const snapshot = selected === category ? examSession : examsByCategory[selected]?.examAttempt;
         reviewId = snapshot?.finished && rows.some(row => row.id === snapshot.id) ? snapshot.id : null;
-        const ratio = answered / pool.length;
-        body.innerHTML = `<div class="history-coverage"><strong>Покрытие блока вопросов</strong>
-          <span>Отвечено ${answered} из ${pool.length} · ${Math.round(100 * ratio)}%</span>
-          <div class="progress-track" aria-hidden="true"><div class="progress-fill" style="width:${100 * ratio}%"></div></div></div>`
-          + chart(rows) + '<h3>Завершенные попытки</h3>'
+        body.innerHTML = chart(rows)
           + (rows.length ? '<div class="history-rows">' + rows.map(attempt).join('') + '</div>'
-            : '<p class="history-caption">Завершенных попыток'
-              + (source === 'all' || sourceGroup.hidden ? '' : ' по выбранному источнику') + ' пока нет.</p>')
+            : '<p class="history-caption">По выбранным фильтрам завершенных пробных экзаменов нет.</p>')
           + (legacy ? '<h3>Старый результат без источника</h3>' + attempt(legacy) : '')
           + summary(rows);
       }
