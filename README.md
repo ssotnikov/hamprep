@@ -14,18 +14,7 @@
 Приложение помогает самостоятельно подготовиться к квалификационному экзамену радиолюбителя на 1–4-ю категории. Выберите свою категорию, изучайте теорию, отвечайте на вопросы и проверяйте готовность на пробном экзамене с таймером. Учебные материалы, задания и аудио доступны без интернета.
 
 
-<p>
-  <img src="android/assets/screenshots/01-program-light.jpg" alt="Оглавление программы" width="160">
-  <img src="android/assets/screenshots/02-home-light.jpg" alt="Главный экран" width="160">
-  <img src="android/assets/screenshots/03-exam-dark.jpg" alt="Пробный экзамен" width="160">
-  <img src="android/assets/screenshots/04-question-practice-light.jpg" alt="Практика по вопросам" width="160">
-  <img src="android/assets/screenshots/05-voice-dark.jpg" alt="Голосовой радиообмен" width="160">
-  <img src="android/assets/screenshots/06-modes-dark.jpg" alt="Виды связи" width="160">
-  <img src="android/assets/screenshots/07-antennas-light.jpg" alt="Антенны" width="160">
-  <img src="android/assets/screenshots/08-measurements-dark.jpg" alt="Измерения" width="160">
-  <img src="android/assets/screenshots/09-safety-light.jpg" alt="Безопасность" width="160">
-  <img src="android/assets/screenshots/10-interference-dark.jpg" alt="Радиопомехи" width="160">
-</p>
+![Экраны приложения «Радиоэкзамен» на телефоне](rustore/promo/preview/phone.png)
 
 
 ## Теория и практика
