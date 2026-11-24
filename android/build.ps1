@@ -4,7 +4,8 @@ param(
     [string] $SdkRoot = $env:ANDROID_HOME,
     [string] $JdkRoot = $env:JAVA_HOME,
     [string] $Output,
-    [switch] $DebugWebView
+    [switch] $DebugWebView,
+    [switch] $SkipTelegram
 )
 
 $ErrorActionPreference = 'Stop'
@@ -12,6 +13,7 @@ $ErrorActionPreference = 'Stop'
 $manifestText = [IO.File]::ReadAllText((Join-Path $PSScriptRoot 'AndroidManifest.xml'))
 $manifestXml = [xml] $manifestText
 $version = $manifestXml.DocumentElement.GetAttribute('versionName', 'http://schemas.android.com/apk/res/android')
+$standardRelease = -not $Output -and -not $DebugWebView
 if (-not $Output) {
     if (-not $version -or $version.IndexOfAny([IO.Path]::GetInvalidFileNameChars()) -ge 0 -or
         $version.TrimEnd(' ', '.') -ne $version) {
@@ -22,6 +24,10 @@ if (-not $Output) {
     $Output = Join-Path $releaseDirectory $apkName
 }
 $destination = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($Output)
+$telegramDirectory = Join-Path $env:LOCALAPPDATA 'RadioExam\Telegram'
+$sendToTelegram = $standardRelease -and -not $SkipTelegram -and
+    (Test-Path -LiteralPath (Join-Path $telegramDirectory 'delivery.json') -PathType Leaf)
+$telegramHash = $null
 
 function Invoke-BuildTool {
     param([string] $Tool, [string[]] $Arguments)
@@ -103,6 +109,9 @@ try {
         '--ks-pass', 'env:HAM_EXAM_SIGNING_PASSWORD', '--ks-key-alias', 'hamprepru',
         '--v4-signing-enabled', 'false', '--out', $signed, $aligned)
     Invoke-BuildTool "$tools\apksigner.bat" @('verify', $signed)
+    if ($sendToTelegram) {
+        $telegramHash = (Get-FileHash -LiteralPath $signed -Algorithm SHA256).Hash
+    }
     [IO.Directory]::CreateDirectory([IO.Path]::GetDirectoryName($destination)) | Out-Null
     [IO.File]::Copy($signed, $destination, $true)
     Get-Item -LiteralPath $destination
@@ -114,5 +123,21 @@ try {
     if ([IO.Path]::GetDirectoryName($resolvedWork) -eq $tempRoot.TrimEnd('\') -and
         [IO.Path]::GetFileName($resolvedWork).StartsWith('hamprepru-')) {
         [IO.Directory]::Delete($resolvedWork, $true)
+    }
+}
+
+if ($sendToTelegram) {
+    $telegramPython = Join-Path $telegramDirectory 'venv\Scripts\python.exe'
+    $telegramScript = Join-Path $PSScriptRoot '..\skills\telegram-apk-delivery\scripts\send_apk.py'
+    $env:HAM_EXAM_SIGNING_PASSWORD = $null
+    try {
+        & $telegramPython -I $telegramScript send $destination --sha256 $telegramHash | Out-Host
+        if ($LASTEXITCODE -ne 0) {
+            Write-Warning 'APK built locally. Telegram delivery did not complete.'
+        }
+    } catch {
+        Write-Warning 'APK built locally. Telegram delivery could not run. Check the local Telegram setup.'
+    } finally {
+        $env:HAM_EXAM_SIGNING_PASSWORD = $previousSigningPassword
     }
 }
