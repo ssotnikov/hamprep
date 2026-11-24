@@ -1712,11 +1712,63 @@
 
     .about-button { color: inherit; cursor: pointer; }
     .appearance-actions .toolbar-icon { margin-left: 5px; }
-    html.about-open {
+    html.about-open, html.exam-checklist-open {
       overflow: hidden;
       overscroll-behavior: none;
       scrollbar-gutter: stable;
     }
+    #exam-checklist-open { width: 100%; margin-top: 10px; }
+    #exam-checklist {
+      position: fixed;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      box-sizing: border-box;
+      width: 100vw;
+      height: 100%;
+      max-width: none;
+      max-height: none;
+      margin: 0;
+      padding: 0;
+      border: 0;
+      background: var(--background);
+      color: var(--on-surface);
+      overflow-y: auto;
+      overscroll-behavior-y: contain;
+    }
+    .exam-checklist-wrap { width: calc(100% - 32px); max-width: 540px; margin: 0 auto; }
+    .exam-checklist-bar {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      padding: 8px 0;
+      background: var(--background);
+      border-bottom: 4px solid var(--primary);
+    }
+    .exam-checklist-bar form { margin: 0 auto; }
+    .exam-checklist-content { padding: 14px 0 24px; }
+    .exam-checklist-content h2 { margin: 0 0 4px; font-size: clamp(1.35rem, 5.5vw, 1.8rem); }
+    .exam-checklist-content h3 { margin: 0 0 5px; font-size: 1.05rem; }
+    .exam-checklist-conditions { border: 1px solid var(--outline-variant); border-radius: 14px; padding: 10px 12px; background: var(--surface-container-low); }
+    .exam-checklist-conditions dl { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); margin: 7px 0; text-align: center; }
+    .exam-checklist-conditions dl > div { padding: 2px 3px; }
+    .exam-checklist-conditions dl > div + div { border-inline-start: 1px solid var(--outline-variant); }
+    .exam-checklist-conditions dt { color: var(--on-surface-variant); font-size: .75rem; }
+    .exam-checklist-conditions dd { margin: 0; font-weight: 700; font-variant-numeric: tabular-nums; }
+    .exam-checklist-conditions .caption { margin: 5px 0 0; }
+    .exam-checklist-morse { margin-top: 9px; padding: 8px 10px; border-radius: 10px; color: var(--warning); background: var(--warning-container); }
+    .exam-checklist-morse p { margin: 3px 0 0; font-size: .83rem; }
+    .exam-checklist-link { display: flex; width: 100%; text-align: center; margin-top: 12px; }
+    .exam-checklist-guest { margin: 4px 0 13px; text-align: center; }
+    .exam-checklist-commission ul { margin: 5px 0 7px; padding-inline-start: 20px; }
+    .exam-checklist-commission li { padding: 5px 0; }
+    .exam-checklist-commission li + li { border-top: 1px solid var(--outline-variant); }
+    .exam-checklist-commission p, .exam-checklist-after p { margin: 1px 0 0; color: var(--on-surface-variant); font-size: .875rem; }
+    .exam-checklist-after { margin-top: 14px; border-top: 1px solid var(--outline-variant); padding-top: 9px; }
+    .exam-checklist-after p { margin-bottom: 4px; }
+    .exam-checklist-source { margin-top: 12px; }
+    .exam-checklist-source span { display: block; }
     .about-dialog[open] {
       overflow-y: auto;
       overscroll-behavior-y: contain;
@@ -2554,6 +2606,7 @@
           <span id="category-kpi-cw-note">Практический прием телеграфа обязателен для 1-й категории.</span></p>
       </details>
 
+      <button type="button" class="button button--secondary" id="exam-checklist-open">Памятка перед реальной сдачей</button>
       <section class="preparation-progress" id="global-progress-panel" aria-labelledby="preparation-title">
         <h2 id="preparation-title">Прогресс подготовки</h2>
         <div class="preparation-sources">
@@ -3830,6 +3883,57 @@
       <button class="export-forget" id="exam-export-forget" type="button" hidden>Забыть данные</button>
       <small class="export-message caption" id="exam-export-message" role="status"></small>
     </form>
+  </dialog>
+
+  <dialog id="exam-checklist" aria-labelledby="exam-checklist-title">
+    <div class="exam-checklist-bar">
+      <form method="dialog" class="exam-checklist-wrap">
+        <button type="submit" class="button button--secondary"><span aria-hidden="true">‹</span> Назад</button>
+      </form>
+    </div>
+    <div class="exam-checklist-wrap exam-checklist-content">
+      <h2 id="exam-checklist-title" tabindex="-1">Памятка перед реальной сдачей</h2>
+      <p class="caption">Условия экзамена и вопросы для комиссии перед записью.</p>
+      <label for="exam-checklist-category">Категория</label>
+      <select id="exam-checklist-category">
+        <option value="1">1-я категория</option><option value="2">2-я категория</option>
+        <option value="3">3-я категория</option><option value="4">4-я категория</option>
+      </select>
+      <section class="exam-checklist-conditions" aria-labelledby="exam-checklist-theory">
+        <h3 id="exam-checklist-theory">Теоретический экзамен</h3>
+        <dl aria-live="polite">
+          <div><dt>Вопросов</dt><dd id="exam-checklist-total"></dd></div>
+          <div><dt>Для зачета</dt><dd id="exam-checklist-threshold"></dd></div>
+          <div><dt>Лимит времени</dt><dd id="exam-checklist-time"></dd></div>
+        </dl>
+        <p class="caption">В каждом вопросе один верный вариант из четырех.</p>
+        <div class="exam-checklist-morse" id="exam-checklist-morse" hidden>
+          <strong>Отдельно проверяют прием Морзе</strong>
+          <p>250 знаков со скоростью 60 знаков в минуту. Допускается до трех ошибок. На подготовку и прием отводится до 15 минут.</p>
+        </div>
+      </section>
+      <a class="button exam-checklist-link" href="https://exam.srr.ru/" target="_blank" rel="noopener noreferrer">Пробный экзамен на сайте СРР</a>
+      <p class="caption exam-checklist-guest">Для входа без регистрации логин и пароль — «гость».</p>
+      <section class="exam-checklist-commission" aria-labelledby="exam-checklist-commission">
+        <h3 id="exam-checklist-commission">Что уточнить</h3>
+        <ul>
+          <li><strong>Куда и когда обращаться</strong><p>Контакт комиссии, ближайшая дата, время и адрес.</p></li>
+          <li><strong>Как записаться на экзамен</strong><p>Куда подать заявление и какие документы подготовить. Перед проверкой потребуется документ, удостоверяющий личность.</p></li>
+          <li><strong>В каком формате пройдет экзамен</strong><p>Доступна ли дистанционная сдача и как к ней подготовиться.<span id="exam-checklist-morse-question" hidden> Уточните, как пройдет проверка приема Морзе.</span></p></li>
+          <li><strong>Условия допуска и стоимость</strong><p>По информации СРР, члены Союза и несовершеннолетние сдают экзамен в комиссиях СРР бесплатно. Платная сдача возможна в филиалах ГРЧЦ.</p></li>
+        </ul>
+        <a href="https://srr.ru/struktura/regionalnye-otdeleniya-2/" target="_blank" rel="noopener noreferrer">Найти свое региональное отделение СРР</a>
+      </section>
+      <section class="exam-checklist-after" aria-labelledby="exam-checklist-first-call">
+        <h3 id="exam-checklist-first-call">Если получаете позывной впервые</h3>
+        <p>После сдачи в комиссии СРР дождитесь записи в списке <a href="https://srr.ru/spisok-sdavshih-ekzamen-v-srr-2-2/" target="_blank" rel="noopener noreferrer">«Экзамен сдали…»</a>. Затем подайте заявление на образование позывного сигнала во ФГУП «ГРЧЦ» через Госуслуги или кабинет заявителя.</p>
+        <a href="https://srr.ru/poluchaem-radiolyubitelskij-pozyvnoj-vpervye/" target="_blank" rel="noopener noreferrer">Инструкция СРР по получению первого позывного</a>
+      </section>
+      <p class="caption exam-checklist-source">
+        <a href="https://srr.ru/wp-content/uploads/2021/11/polozhenie_o_kdk_2021_09_25_1.pdf#page=3" target="_blank" rel="noopener noreferrer">Положение СРР, пп. 14–26</a>
+        <span>Условия сверены 24 ноября 2026 г.</span>
+      </p>
+    </div>
   </dialog>
 
   <dialog class="exam-timeout-dialog" id="history-dialog" aria-labelledby="history-title">
@@ -9210,6 +9314,34 @@ ${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="co
       return true;
     }
 
+    function initRealExamChecklist() {
+      const open = document.getElementById('exam-checklist-open');
+      const dialog = document.getElementById('exam-checklist');
+      const select = document.getElementById('exam-checklist-category');
+      const title = document.getElementById('exam-checklist-title');
+      const root = document.documentElement;
+      select.addEventListener('change', () => {
+        const {ticket, pass, minutes} = CATEGORIES[select.value];
+        document.getElementById('exam-checklist-total').textContent = ticket;
+        document.getElementById('exam-checklist-threshold').textContent = pass + ' из ' + ticket;
+        document.getElementById('exam-checklist-time').textContent = minutes + ' мин';
+        document.getElementById('exam-checklist-morse').hidden = select.value !== '1';
+        document.getElementById('exam-checklist-morse-question').hidden = select.value !== '1';
+      });
+      open.addEventListener('click', () => {
+        select.value = category;
+        select.dispatchEvent(new Event('change', {bubbles: true}));
+        dialog.showModal();
+        root.classList.add('exam-checklist-open');
+        dialog.scrollTop = 0;
+        title.focus({preventScroll: true});
+      });
+      dialog.addEventListener('close', () => {
+        root.classList.remove('exam-checklist-open');
+        open.focus({preventScroll: true});
+      });
+    }
+
     function initAboutDialog() {
       const button = document.getElementById('about-button');
       const dialog = document.getElementById('about-dialog');
@@ -9665,6 +9797,7 @@ ${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="co
       initProgressBackup();
       initVoiceExchanges();
       initStyledSelects();
+      initRealExamChecklist();
       initTableScrollbars();
       document.documentElement.dataset.handbookReady = 'true';
     });
