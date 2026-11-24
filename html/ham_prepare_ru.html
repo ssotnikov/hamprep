@@ -411,33 +411,62 @@
       font-variant-numeric: tabular-nums;
     }
 
-    /* Progress bar panel */
-    .progress-panel {
+    .preparation-progress { margin: var(--space-lg) 0 0; }
+    .preparation-progress h2 { margin: 0 0 8px; font-size: 1.18rem; }
+    .preparation-sources {
       background: var(--surface-container-low);
-      border-left: var(--inset-rule);
-      padding: var(--space-md) var(--space-lg);
-      margin: var(--space-lg) 0;
+      border: 1px solid var(--outline-variant);
+      border-radius: 14px;
+      padding: 12px 13px;
     }
-    .progress-header {
+    .preparation-source + .preparation-source {
+      border-top: 1px solid var(--outline-variant);
+      margin-top: 12px;
+      padding-top: 10px;
+    }
+    .preparation-source h3 { margin: 0 0 3px; font-size: .98rem; }
+    .preparation-source p { margin: 0; }
+    .preparation-source strong { font-variant-numeric: tabular-nums; }
+    .preparation-track {
+      appearance: none;
+      display: block;
+      width: 100%;
+      height: 6px;
+      margin: 7px 0;
+      border: 0;
+      border-radius: 10px;
+      overflow: hidden;
+      background: var(--surface-container-high);
+      accent-color: var(--primary);
+    }
+    .preparation-track::-webkit-progress-bar { background: var(--surface-container-high); }
+    .preparation-track::-webkit-progress-value { background: var(--primary); }
+    .preparation-track::-moz-progress-bar { background: var(--primary); }
+    #preparation-exam-history {
+      display: block;
+      width: 100%;
+      margin-top: 9px;
+      padding: 10px 13px;
+      text-align: left;
+      border-color: var(--outline-variant);
+    }
+    .preparation-exam-line {
       display: flex;
       flex-wrap: wrap;
       justify-content: space-between;
-      align-items: center;
-      gap: var(--space-sm);
-      margin-bottom: var(--space-sm);
+      align-items: baseline;
+      gap: 3px 10px;
     }
-    .progress-track {
-      width: 100%;
-      height: 10px;
-      background: var(--surface-container-high);
-      margin-bottom: var(--space-md);
-      overflow: hidden;
-    }
-    .progress-fill {
-      height: 100%;
-      width: 0%;
-      background: var(--primary);
-      transition: width var(--dur-short) var(--ease-out);
+    .preparation-exam-meta { justify-content: flex-start; margin-top: 4px; }
+    .preparation-exam-meta .caption { margin: 0; }
+    .preparation-history-link { display: block; margin-top: 4px; color: var(--primary); font-size: .82rem; }
+    .preparation-settings {
+      display: grid;
+      justify-items: start;
+      gap: 6px;
+      border-top: 1px solid var(--outline-variant);
+      margin-top: 12px;
+      padding-top: 10px;
     }
     .action-row {
       display: flex;
@@ -2296,6 +2325,9 @@
     #topic-gap-dialog .topic-gap-rules p { margin-top: 7px; }
     .topic-gap-details, .topic-gap-actions { display: grid; gap: 8px; margin-top: 10px; }
     .progress-backup-entry { margin: 8px 0 12px; }
+    .preparation-settings .reminder-entry, .preparation-settings .progress-backup-entry { width: 100%; margin: 0; }
+    .preparation-settings #progress-backup-open { width: 100%; justify-content: space-between; text-align: left; }
+    .preparation-settings .home-reset { margin-top: 3px; }
     #progress-backup-result:not(:empty) {
       margin-top: 8px;
       padding: 9px 12px;
@@ -2522,26 +2554,40 @@
           <span id="category-kpi-cw-note">Практический прием телеграфа обязателен для 1-й категории.</span></p>
       </details>
 
-      <div class="progress-panel" id="global-progress-panel">
-        <div class="progress-header">
-          <div>
-            <strong>Блок вопросов</strong>
-            <span id="global-progress-text" class="mono">Отвечено 0 из 405</span>
-          </div>
-          <span class="status-tag" id="last-exam-result">Последняя попытка — нет результата</span>
+      <section class="preparation-progress" id="global-progress-panel" aria-labelledby="preparation-title">
+        <h2 id="preparation-title">Прогресс подготовки</h2>
+        <div class="preparation-sources">
+          <section class="preparation-source" id="preparation-bank">
+            <h3 id="preparation-bank-title">Экзаменационный перечень</h3>
+            <p class="caption">Отвечено <strong data-preparation-count>0 из 405</strong></p>
+            <progress class="preparation-track" value="0" max="405" aria-labelledby="preparation-bank-title"></progress>
+            <p class="caption" data-preparation-outcomes>Верно 0 · Ошибок 0</p>
+          </section>
+          <section class="preparation-source" id="preparation-study">
+            <h3 id="preparation-study-title">Учебные вопросы</h3>
+            <p class="caption">Отвечено <strong data-preparation-count>0 из 75</strong></p>
+            <progress class="preparation-track" value="0" max="75" aria-labelledby="preparation-study-title"></progress>
+            <p class="caption" data-preparation-outcomes>Верно 0 · Ошибок 0</p>
+          </section>
         </div>
-        <div class="progress-track" aria-hidden="true">
-          <div class="progress-fill" id="global-progress-fill"></div>
+        <button type="button" class="button button--secondary" id="preparation-exam-history">
+          <span class="preparation-exam-line"><strong>Последний пробный экзамен</strong><strong id="last-exam-result" hidden></strong></span>
+          <span class="preparation-exam-line preparation-exam-meta">
+            <span class="caption" id="preparation-exam-source">Еще нет завершенных попыток</span>
+            <span class="history-status" id="preparation-exam-status" hidden></span>
+          </span>
+          <span class="preparation-history-link">История попыток <span aria-hidden="true">›</span></span>
+        </button>
+      </section>
+      <button type="button" class="button" id="topic-gap-open">Карта пробелов по темам</button>
+      <div class="preparation-settings">
+        <button type="button" class="reminder-entry" id="reminder-open" hidden><svg viewBox="0 0 24 24" aria-hidden="true" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 8-3 8-3 10h18c0-2-3-2-3-10m-8 13h4"/></svg><span>Напоминания об обучении<small class="reminder-status">Выключены</small></span><b aria-hidden="true">›</b></button>
+        <div id="progress-backup-anchor" class="progress-backup-entry">
+          <button type="button" class="button button--secondary" id="progress-backup-open">Резервная копия прогресса <span aria-hidden="true">›</span></button>
+          <div id="progress-backup-result" role="status"></div>
         </div>
-        <p id="study-progress-text" class="caption"></p>
+        <button type="button" class="home-reset" id="reset-progress-btn">Сбросить весь прогресс</button>
       </div>
-      <button type="button" class="reminder-entry" id="reminder-open" hidden><svg viewBox="0 0 24 24" aria-hidden="true" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 8-3 8-3 10h18c0-2-3-2-3-10m-8 13h4"/></svg><span>Напоминания об обучении<small class="reminder-status">Выключены</small></span><b aria-hidden="true">›</b></button>
-      <button type="button" class="button button--secondary" id="topic-gap-open">Карта пробелов по темам</button>
-      <div id="progress-backup-anchor" class="progress-backup-entry">
-        <button type="button" class="button button--secondary" id="progress-backup-open">Резервная копия прогресса</button>
-        <div id="progress-backup-result" role="status"></div>
-      </div>
-      <button type="button" class="home-reset" id="reset-progress-btn">Сбросить весь прогресс</button>
     </header>
 
     <nav id="topics" class="mobile-toc" aria-labelledby="program-title">
@@ -5837,6 +5883,16 @@
       updateProgressSummaries();
     }
 
+    function renderPreparationProgress(source, answered, total, correct) {
+      const section = document.getElementById('preparation-' + source);
+      section.querySelector('[data-preparation-count]').textContent = `${answered} из ${total}`;
+      section.querySelector('[data-preparation-outcomes]').textContent =
+        `Верно ${correct} · Ошибок ${answered - correct}`;
+      const track = section.querySelector('progress');
+      track.max = total;
+      track.value = answered;
+    }
+
     function updateProgressSummaries() {
       let totalAnswered = 0;
       let totalCorrect = 0;
@@ -5889,23 +5945,23 @@
         bankAnswered++;
         if (answer === question.correct) bankCorrect++;
       }
-      document.getElementById('global-progress-text').textContent =
-        `Отвечено ${bankAnswered} из ${PDF_BANK.length} · Верно ${bankCorrect} · Ошибок ${bankAnswered - bankCorrect}`;
-      document.getElementById('global-progress-fill').style.width =
-        `${100 * bankAnswered / PDF_BANK.length}%`;
-      document.getElementById('study-progress-text').textContent =
-        `Учебные вопросы · Отвечено ${totalAnswered} из ${STUDY_BANK.length} · Верно ${totalCorrect} · Ошибок ${totalAnswered - totalCorrect}`;
+      renderPreparationProgress('bank', bankAnswered, PDF_BANK.length, bankCorrect);
+      renderPreparationProgress('study', totalAnswered, STUDY_BANK.length, totalCorrect);
 
       const record = appState.examRecord;
       const lastResult = document.getElementById('last-exam-result');
+      const examSource = document.getElementById('preparation-exam-source');
+      const examStatus = document.getElementById('preparation-exam-status');
       const tocExam = document.getElementById('toc-stat-exam');
-      const score = record ? `${record.score}/${record.total}`: '—';
-      const source = record?.source === 'pdf' ? 'блок вопросов' : 'учебные разделы';
-      lastResult.textContent = record
-        ? `Последняя попытка ${score} · ${record.source ? source : 'до обновления ключа'}`
-        : 'Последняя попытка — нет результата';
-      lastResult.classList.toggle('status-tag--pass', Boolean(record?.source && record.passed));
-      tocExam.textContent = score;
+      lastResult.hidden = !record;
+      lastResult.textContent = record ? `${record.score} из ${record.total} верно` : '';
+      examSource.textContent = !record ? 'Еще нет завершенных попыток'
+        : record.source === 'pdf' ? 'Экзаменационный перечень'
+        : record.source === 'study' ? 'Учебные вопросы' : 'Результат до обновления ключа';
+      examStatus.hidden = !record?.source || typeof record.passed !== 'boolean';
+      examStatus.textContent = examStatus.hidden ? '' : record.passed ? 'Теория зачтена' : 'Теория не зачтена';
+      examStatus.classList.toggle('is-passed', Boolean(record?.passed));
+      tocExam.textContent = record ? `${record.score}/${record.total}` : '—';
       tocExam.classList.toggle('is-done', Boolean(record?.source && record.passed));
     }
 
@@ -6556,6 +6612,7 @@
 
     (() => {
       const launch = document.getElementById('history-open');
+      const preparationLaunch = document.getElementById('preparation-exam-history');
       const dialog = document.getElementById('history-dialog');
       const title = document.getElementById('history-title');
       const body = document.getElementById('history-content');
@@ -6566,6 +6623,7 @@
       const fullDate = new Intl.DateTimeFormat('ru-RU', {day: 'numeric', month: 'long', year: 'numeric'});
       let reviewId;
       let openReview = false;
+      let returnFocus;
 
       function chart(rows) {
         const dated = rows.filter(row => row.finishedAt !== null).slice(0, 5).reverse();
@@ -6628,7 +6686,8 @@
           + summary(rows);
       }
 
-      launch.addEventListener('click', () => {
+      function openHistory(event) {
+        returnFocus = event.currentTarget;
         openReview = false;
         categoryFilter.value = category;
         sourceFilter.value = 'all';
@@ -6636,13 +6695,15 @@
         dialog.showModal();
         dialog.scrollTop = 0;
         title.focus({preventScroll: true});
-      });
+      }
+      launch.addEventListener('click', openHistory);
+      preparationLaunch.addEventListener('click', openHistory);
       categoryFilter.addEventListener('change', () => {
         sourceFilter.value = 'all';
         render();
       });
       sourceFilter.addEventListener('change', render);
-      dialog.addEventListener('close', () => { if (!openReview && !dialog.open) launch.focus({preventScroll: true}); });
+      dialog.addEventListener('close', () => { if (!openReview && !dialog.open) returnFocus?.focus({preventScroll: true}); });
       body.addEventListener('click', event => {
         if (!event.target.closest('#history-review') || !reviewId) return;
         if (categoryFilter.value !== category) {
