@@ -2561,7 +2561,7 @@
       <div class="appearance-row">
         <div class="version-group">
           <button class="about-button toolbar-icon" id="about-button" type="button" title="О приложении" aria-label="О приложении" aria-haspopup="dialog"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M10 9a10 10 0 0 0 0 14m12-14a10 10 0 0 1 0 14M6.5 6a14 14 0 0 0 0 20m19-20a14 14 0 0 1 0 20" fill="none" stroke="#4785c5" stroke-width="1.9" stroke-linecap="round"/><circle cx="16" cy="12" r="1.75" fill="#edac2d"/><path d="M16 16v7" stroke="#4785c5" stroke-width="2.8" stroke-linecap="round"/></svg></button>
-          <span class="app-version">Версия <span id="app-version">1.10.2</span></span>
+          <span class="app-version">Версия <span id="app-version">1.11.0</span></span>
         </div>
         <div class="appearance-actions">
           <button class="find-toggle" id="find-toggle" type="button" aria-label="Поиск по материалам" aria-expanded="false" aria-controls="find-panel" title="Поиск по материалам">
@@ -3782,6 +3782,13 @@
                   <option value="en">English</option>
                 </select>
               </div>
+              <div class="field-group" id="voice-practice-voice-field" hidden>
+                <label class="field-label" for="voice-practice-voice">Голос</label>
+                <select class="select" id="voice-practice-voice">
+                  <option value="bundled">Встроенный</option>
+                  <option value="android">Системный голос Android</option>
+                </select>
+              </div>
             </div>
             <div>
               <h3 id="voice-practice-question"></h3>
@@ -3792,6 +3799,7 @@
                 <button type="button" class="button primary" id="voice-practice-play">▶ Слушать диалог</button>
               </div>
               <progress class="voice-practice-meter" id="voice-practice-progress" max="1" value="0" aria-label="Позиция воспроизведения"></progress>
+              <p class="caption" id="voice-practice-speech-status" role="status" hidden></p>
               <p class="caption voice-practice-error" id="voice-practice-audio-error" role="status" hidden>Запись не воспроизводится. Попробуйте запустить ее еще раз.</p>
               <audio id="voice-practice-audio" preload="none"></audio>
             </div>
@@ -9819,6 +9827,9 @@ ${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="co
       const source = get('source');
       const topic = get('topic');
       const language = get('language');
+      const voice = get('voice');
+      const speechStatus = get('speech-status');
+      const isAndroid = location.origin === 'https://appassets.androidplatform.net';
       const audio = get('audio');
       const play = get('play');
       const progress = get('progress');
@@ -9846,7 +9857,51 @@ ${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="co
       let limit;
       let clipStart;
       let playingLine;
+      let speechId = null;
+      let speechSequence = 0;
+      let speechTimer;
       const playLabel = () => generated() ? '▶ Слушать позывной' : '▶ Слушать диалог';
+      const useSystemVoice = () => isAndroid && generated() && voice.value === 'android';
+
+      function sendSpeechCommand(command) {
+        location.href = location.origin + '/__callsign-speech/' + command;
+      }
+
+      function clearSpeechState() {
+        clearTimeout(speechTimer);
+        speechId = null;
+        progress.value = 0;
+        play.textContent = playLabel();
+      }
+
+      function stopSpeech() {
+        if (speechId === null) return;
+        const id = speechId;
+        clearSpeechState();
+        sendSpeechCommand('stop/' + id);
+      }
+
+      function useBundledFallback() {
+        clearSpeechState();
+        voice.value = 'bundled';
+        voice.dispatchEvent(new Event('change', { bubbles: true }));
+        speechStatus.textContent = 'Системный голос недоступен. Выбран встроенный голос. Нажмите «Слушать позывной» еще раз.';
+        speechStatus.hidden = false;
+      }
+
+      function startSystemSpeech() {
+        clearAudio();
+        clearTimeout(speechTimer);
+        speechStatus.hidden = true;
+        speechId = String(++speechSequence);
+        play.textContent = '■ Остановить';
+        progress.removeAttribute('value');
+        speechTimer = setTimeout(() => {
+          stopSpeech();
+          useBundledFallback();
+        }, 17_000);
+        sendSpeechCommand('play/' + speechId + '/' + language.value + '/' + callsign);
+      }
 
       function clearAudio() {
         if (url) {
@@ -9866,6 +9921,7 @@ ${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="co
       }
 
       function playRecording(line) {
+        speechStatus.hidden = true;
         if (line !== undefined || playingLine !== line) clearAudio();
         if (!url) {
           let blob;
@@ -9895,11 +9951,14 @@ ${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="co
       }
 
       function resetTask() {
+        stopSpeech();
         clearAudio();
+        speechStatus.hidden = true;
         if (generated()) callsign = generatePracticeCallsign(callsign);
         const task = generated() ? null : tasks[topic.value];
         const report = topic.value === 'report' && !generated();
         get('topic-field').hidden = generated();
+        get('voice-field').hidden = !isAndroid || !generated();
         get('question').textContent = task ? task.question : 'Какой позывной передает диктор?';
         get('hint').textContent = task ? task.hint : 'Учебный пример. Введите латинские буквы и цифры.';
         get('answer-label').textContent = report ? 'Рапорт RS' : 'Позывной';
@@ -9921,14 +9980,40 @@ ${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="co
         dialogues.hidden = isPractice;
         practice.hidden = !isPractice;
         if (isPractice) pauseDialogue();
-        else clearAudio();
+        else {
+          stopSpeech();
+          clearAudio();
+          speechStatus.hidden = true;
+        }
       }
 
       dialogueMode.addEventListener('click', () => showMode(false));
       practiceMode.addEventListener('click', () => showMode(true));
       [source, topic, language].forEach(select => select.addEventListener('change', resetTask));
+      voice.addEventListener('change', () => {
+        stopSpeech();
+        clearAudio();
+        speechStatus.hidden = true;
+      });
+      if (isAndroid) {
+        window.addEventListener('radioexam-callsign-speech', event => {
+          const detail = event.detail;
+          if (!detail || speechId === null || detail.id !== speechId) return;
+          if (detail.status === 'unavailable') useBundledFallback();
+          else if (detail.status === 'finished' || detail.status === 'stopped') clearSpeechState();
+        });
+        document.addEventListener('visibilitychange', () => {
+          if (document.hidden) stopSpeech();
+        });
+        const observer = new IntersectionObserver(entries => {
+          if (!entries[0].isIntersecting) stopSpeech();
+        });
+        observer.observe(document.getElementById('voice-exchanges'));
+      }
       audio.addEventListener('play', () => { play.textContent = 'Ⅱ Пауза'; });
-      audio.addEventListener('pause', () => { play.textContent = playLabel(); });
+      audio.addEventListener('pause', () => {
+        if (speechId === null) play.textContent = playLabel();
+      });
       audio.addEventListener('error', () => {
         if (url) {
           clearAudio();
@@ -9942,12 +10027,17 @@ ${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="co
         if (Number.isFinite(duration) && duration > 0) progress.value = (audio.currentTime - clipStart) / duration;
       });
       play.addEventListener('click', () => {
-        if (!audio.paused) audio.pause();
+        if (speechId !== null) stopSpeech();
+        else if (useSystemVoice()) startSystemSpeech();
+        else if (!audio.paused) audio.pause();
         else playRecording();
       });
       get('replay').addEventListener('click', () => {
-        if (generated()) clearAudio();
-        playRecording(generated() ? undefined : tasks[topic.value].line);
+        if (useSystemVoice()) startSystemSpeech();
+        else {
+          if (generated()) clearAudio();
+          playRecording(generated() ? undefined : tasks[topic.value].line);
+        }
       });
       get('next').addEventListener('click', () => {
         if (!generated()) {
