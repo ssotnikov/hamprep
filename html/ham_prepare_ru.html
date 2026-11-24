@@ -2447,13 +2447,8 @@
     .reading-save-status:not(:empty) { display:block; color:var(--on-surface-variant); }
 
     .voice-exchanges > .voice-intro { color: var(--on-surface-variant); max-width: 58ch; }
-    .voice-cases { border: 1px solid var(--scheme-border); border-radius: 15px; overflow: hidden; }
+    .voice-cases { border: 1px solid var(--scheme-border); border-radius: 15px; }
     .voice-body { padding: 12px; }
-    .voice-languages, .voice-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
-    .voice-languages .button, .voice-actions .button { width: auto; }
-    .voice-languages .button { transition:none; }
-    .voice-languages .button:active { filter:none; }
-    .voice-languages .button[aria-pressed="true"] { background:var(--primary); color:var(--on-primary); }
     .voice-case[hidden] { display:none; }
     .voice-description { margin:0 0 12px; color:var(--on-surface-variant); }
     .voice-topic { margin-bottom:10px; }
@@ -2464,22 +2459,6 @@
       padding: 12px;
       background: var(--surface-container-low);
       border-radius: 12px;
-    }
-    .voice-actions { justify-content:flex-start; align-items:center; gap:8px; }
-    .voice-actions .voice-play { min-height:52px; }
-    .voice-actions .ui-dropdown { position:relative; flex:0 0 90px; min-width:0; }
-    .voice-actions .ui-dropdown-list {
-      position:absolute;
-      z-index:2;
-      top:100%;
-      inset-inline:0;
-      margin-top:4px;
-      box-shadow:0 4px 12px #0003;
-    }
-    .voice-actions .ui-dropdown > summary { gap:4px; padding:5px 7px; }
-    .voice-actions .ui-dropdown-arrow { margin-right:2px; }
-    @media (max-width:360px) {
-      .voice-actions .voice-play { padding-inline:6px; font-size:.82rem; }
     }
     .voice-seek { display: block; width: 100%; margin: 0; min-height: 30px; accent-color: var(--primary); }
     .voice-progress {
@@ -2505,11 +2484,9 @@
     .voice-turn.button[aria-current="true"] { background: var(--ui-tone); }
     .voice-turn strong { display: block; color: var(--tertiary); font-size: .84em; }
     .voice-turn time { margin-inline-start: 7px; color: var(--on-surface-variant); font-weight: 400; }
-    .voice-sources { margin-top: 15px; }
-    .voice-sources ul { display: flex; flex-wrap: wrap; gap: 4px 16px; margin: 6px 0 0; padding: 0; list-style: none; }
-    .voice-sources li { margin: 0; }
     .voice-mode { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; margin:12px 0; }
     .voice-mode .button[aria-pressed="true"] { background:var(--primary); color:var(--on-primary); }
+    .voice-mode .button[aria-pressed="false"] { background:var(--ui-tone); color:var(--on-surface); }
     .voice-practice {
       display:grid;
       gap:12px;
@@ -2535,7 +2512,6 @@
     .voice-practice-form input[aria-invalid="true"] { border-color:var(--error); }
     .voice-practice-error { color:var(--error); }
     .voice-practice-result { border-top:1px solid var(--scheme-border); padding-top:10px; }
-    .voice-practice-result-actions { display:flex; flex-wrap:wrap; gap:8px; }
     .voice-practice-compare { display:grid; grid-template-columns:max-content minmax(0,1fr); gap:6px 8px; align-items:center; }
     .voice-practice-symbols { display:flex; gap:3px; flex-wrap:wrap; }
     .voice-practice-symbol {
@@ -2553,6 +2529,39 @@
       color:var(--warning); background:var(--warning-container);
     }
     .voice-practice-meter { width:100%; accent-color:var(--primary); }
+    .voice-body > .voice-description { margin: 0 0 6px; }
+    .voice-player > .voice-play { width: 100%; min-height: 50px; }
+    .voice-settings {
+      --voice-setting-height: 44px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 94px;
+      align-items: stretch;
+      gap: 8px;
+    }
+    .voice-settings .ui-dropdown { position: relative; min-width: 0; margin: 0; }
+    .voice-settings .ui-dropdown > summary { box-sizing: border-box; height: 100%; min-height: var(--voice-setting-height); gap: 4px; padding: 5px 7px; }
+    .voice-settings .ui-dropdown-list {
+      position: absolute; top: 100%; left: 0; right: 0; margin-top: 4px;
+      z-index: 3; box-shadow: 0 4px 12px #0003;
+    }
+    .voice-start-practice { width: 100%; margin: 0 0 12px; white-space: normal; }
+    .voice-start-practice[hidden] { display: none; }
+    .voice-reply-icon { margin-inline-end: 6px; font-size: .76em; }
+    .voice-practice-result-actions {
+      display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 8px;
+    }
+    .voice-practice-result-actions .button { min-width: 0; width: 100%; white-space: normal; }
+    .voice-sources { border-top: 1px solid var(--scheme-border); margin-top: 18px; padding-top: 12px; }
+    .voice-sources h3 { margin: 0 0 5px; font-size: 1.05rem; }
+    .voice-sources p { margin: 0 0 7px; }
+    .voice-sources ul { display: grid; gap: 4px; }
+    .voice-sources a { display: block; min-height: 36px; padding: 6px 0; }
+    .voice-file-type { font-size: .78em; white-space: nowrap; }
+    @media (max-width: 350px) {
+      .voice-settings { grid-template-columns: minmax(0,1fr) 80px; gap: 5px; }
+      .voice-practice-result-actions { grid-template-columns: 1fr; }
+    }
+
   </style>
 </head>
 <body>
@@ -2561,7 +2570,7 @@
       <div class="appearance-row">
         <div class="version-group">
           <button class="about-button toolbar-icon" id="about-button" type="button" title="О приложении" aria-label="О приложении" aria-haspopup="dialog"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M10 9a10 10 0 0 0 0 14m12-14a10 10 0 0 1 0 14M6.5 6a14 14 0 0 0 0 20m19-20a14 14 0 0 1 0 20" fill="none" stroke="#4785c5" stroke-width="1.9" stroke-linecap="round"/><circle cx="16" cy="12" r="1.75" fill="#edac2d"/><path d="M16 16v7" stroke="#4785c5" stroke-width="2.8" stroke-linecap="round"/></svg></button>
-          <span class="app-version">Версия <span id="app-version">1.11.1</span></span>
+          <span class="app-version">Версия <span id="app-version">1.12.0</span></span>
         </div>
         <div class="appearance-actions">
           <button class="find-toggle" id="find-toggle" type="button" aria-label="Поиск по материалам" aria-expanded="false" aria-controls="find-panel" title="Поиск по материалам">
@@ -3750,7 +3759,7 @@
 
         <section class="study-section voice-exchanges" id="voice-exchanges" aria-labelledby="voice-exchanges-heading">
           <h2 id="voice-exchanges-heading">Голосовой радиообмен</h2>
-          <p class="voice-intro">Послушайте учебные диалоги или потренируйтесь принимать позывные и рапорты на слух.</p>
+          <p class="voice-intro">Послушайте диалог с расшифровкой или проверьте, что удалось принять на слух.</p>
           <div class="voice-mode" role="group" aria-label="Режим голосового радиообмена">
             <button type="button" class="button" id="voice-mode-dialogues" aria-pressed="true" aria-controls="voice-dialogues">Диалоги</button>
             <button type="button" class="button" id="voice-mode-practice" aria-pressed="false" aria-controls="voice-practice">Практика на слух</button>
@@ -3775,23 +3784,29 @@
                 <label class="field-label" for="voice-practice-topic">Тема радиообмена</label>
                 <select class="select" id="voice-practice-topic"></select>
               </div>
-              <div class="field-group">
-                <label class="field-label" for="voice-practice-language">Язык записи</label>
-                <select class="select" id="voice-practice-language">
-                  <option value="ru">Русский</option>
-                  <option value="en">English</option>
-                </select>
-              </div>
             </div>
             <div>
               <h3 id="voice-practice-question"></h3>
               <p class="caption" id="voice-practice-hint"></p>
             </div>
             <div class="voice-player">
-              <div class="voice-actions">
-                <button type="button" class="button primary" id="voice-practice-play">▶ Слушать диалог</button>
-              </div>
+              <button type="button" class="button primary voice-play" id="voice-practice-play">▶ Слушать диалог</button>
               <progress class="voice-practice-meter" id="voice-practice-progress" max="1" value="0" aria-label="Позиция воспроизведения"></progress>
+              <div class="voice-settings">
+                <label>Язык записи
+                  <select id="voice-practice-language">
+                    <option value="ru">Русский</option>
+                    <option value="en">English</option>
+                  </select>
+                </label>
+                <label>Скорость
+                  <select id="voice-practice-speed">
+                    <option value="0.75">0,75×</option>
+                    <option value="1" selected>1×</option>
+                    <option value="1.25">1,25×</option>
+                  </select>
+                </label>
+              </div>
               <p class="caption voice-practice-error" id="voice-practice-audio-error" role="status" hidden>Запись не воспроизводится. Попробуйте запустить ее еще раз.</p>
               <audio id="voice-practice-audio" preload="none"></audio>
             </div>
@@ -3810,7 +3825,7 @@
               <p class="caption" id="voice-practice-differences" hidden></p>
               <div class="voice-practice-result-actions">
                 <button type="button" class="button" id="voice-practice-replay">Переслушать реплику</button>
-                <button type="button" class="button" id="voice-practice-next">Другое задание</button>
+                <button type="button" class="button primary" id="voice-practice-next">Другое задание</button>
               </div>
               <details class="voice-transcript" id="voice-practice-transcript">
                 <summary>Текст реплики</summary><p></p>
@@ -3820,12 +3835,14 @@
               </details>
             </section>
           </div>
-          <div class="caption voice-sources">
-            <p>Учебные диалоги с синтетической озвучкой. Позывные используются как примеры.</p>
+          <div class="voice-sources" aria-labelledby="voice-sources-heading">
+            <h3 id="voice-sources-heading">Материалы СРР</h3>
+            <p class="caption">Учебные диалоги с синтетической озвучкой. Позывные используются как примеры.</p>
             <ul>
-              <li><a href="https://srr.ru/radiooperatoram/pravila-radioobmena/">Правила радиообмена СРР</a></li>
-              <li><a href="https://www.arrl.org/quick-reference-operating-aids">Фонетический алфавит и рапорты · ARRL</a></li>
-              <li><a href="https://www.arrl.org/contest-basics">Основы соревнований · ARRL</a></li>
+              <li><a href="https://srr.ru/radiooperatoram/pravila-radioobmena/">Правила радиообмена</a></li>
+              <li><a href="https://srr.ru/wp-content/uploads/2015/11/spravochnik.pdf#page=100">Фонетический алфавит на русском и английском <span class="voice-file-type">PDF</span></a></li>
+              <li><a href="https://srr.ru/sorevnovaniya/radiosvyaz-na-kv/">Основы соревнований на КВ</a></li>
+              <li><a href="https://srr.ru/reglament-rules/">Пример регламента соревнований на КВ</a></li>
             </ul>
           </div>
         </section>
@@ -4818,14 +4835,18 @@
     <article class="voice-case" hidden>
       <div class="voice-body">
         <p class="voice-description"></p>
-        <div class="voice-languages" role="group" aria-label="Язык записи">
-          <button class="button button--secondary" type="button" data-voice-language="ru" aria-pressed="true">Русский</button>
-          <button class="button button--secondary" type="button" data-voice-language="en" aria-pressed="false">English</button>
-        </div>
         <div class="voice-player">
           <audio preload="none"></audio>
-          <div class="voice-actions">
-            <button class="button voice-play" type="button">▶ Слушать</button>
+          <button class="button primary voice-play" type="button">▶ Слушать</button>
+          <input class="voice-seek" aria-label="Позиция записи" type="range" value="0" min="0" step="0.1">
+          <div class="voice-progress"><span>0:00</span><span>0:00</span></div>
+          <div class="voice-settings">
+            <label>Язык записи
+              <select data-voice-language>
+                <option value="ru">Русский</option>
+                <option value="en">English</option>
+              </select>
+            </label>
             <label>Скорость
               <select aria-label="Скорость воспроизведения">
                 <option value="0.75">0,75×</option>
@@ -4834,10 +4855,9 @@
               </select>
             </label>
           </div>
-          <input class="voice-seek" aria-label="Позиция записи" type="range" value="0" min="0" step="0.1">
-          <div class="voice-progress"><span>0:00</span><span>0:00</span></div>
           <p class="caption voice-error" role="status" hidden>Не удалось воспроизвести запись. Попробуйте еще раз.</p>
         </div>
+        <button class="button button--secondary voice-start-practice" type="button" hidden>Потренироваться по этому диалогу</button>
         <details class="voice-transcript"><summary>Расшифровка по репликам</summary><ol></ol></details>
         <details class="voice-notes"><summary>Разбор радиообмена</summary><ul></ul></details>
       </div>
@@ -9824,6 +9844,7 @@ ${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="co
       const progress = get('progress');
       const audioError = get('audio-error');
       const inputError = get('input-error');
+      const form = get('form');
       const answer = get('answer');
       const check = get('check');
       const result = get('result');
@@ -9846,6 +9867,7 @@ ${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="co
       let limit;
       let clipStart;
       let playingLine;
+      const speed = get('speed');
       const playLabel = () => generated() ? '▶ Слушать позывной' : '▶ Слушать диалог';
 
       function clearAudio() {
@@ -9885,6 +9907,7 @@ ${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="co
           playingLine = line;
           url = URL.createObjectURL(blob);
           audio.src = limit === undefined ? url : url + '#t=' + clipStart + ',' + limit;
+          audio.playbackRate = Number(speed.value);
         }
         if (audio.ended) audio.currentTime = clipStart;
         audioError.hidden = true;
@@ -9894,9 +9917,9 @@ ${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="co
         });
       }
 
-      function resetTask() {
+      function resetTask(keepCallsign = false) {
         clearAudio();
-        if (generated()) callsign = generatePracticeCallsign(callsign);
+        if (generated() && (!keepCallsign || !callsign)) callsign = generatePracticeCallsign(callsign);
         const task = generated() ? null : tasks[topic.value];
         const report = topic.value === 'report' && !generated();
         get('topic-field').hidden = generated();
@@ -9909,6 +9932,7 @@ ${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="co
         answer.removeAttribute('aria-invalid');
         inputError.hidden = true;
         check.disabled = false;
+        form.hidden = false;
         result.hidden = true;
         get('result-title').textContent = '';
         transcript.open = false;
@@ -9926,7 +9950,10 @@ ${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="co
 
       dialogueMode.addEventListener('click', () => showMode(false));
       practiceMode.addEventListener('click', () => showMode(true));
-      [source, topic, language].forEach(select => select.addEventListener('change', resetTask));
+      [source, topic].forEach(select => select.addEventListener('change', () => resetTask()));
+      language.addEventListener('change', () => resetTask(true));
+      speed.addEventListener('change', () => { audio.playbackRate = Number(speed.value); });
+      audio.addEventListener('ended', () => { play.textContent = '↻ Слушать снова'; });
       audio.addEventListener('play', () => { play.textContent = 'Ⅱ Пауза'; });
       audio.addEventListener('pause', () => { play.textContent = playLabel(); });
       audio.addEventListener('error', () => {
@@ -9960,7 +9987,7 @@ ${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="co
         answer.removeAttribute('aria-invalid');
         inputError.hidden = true;
       });
-      get('form').addEventListener('submit', event => {
+      form.addEventListener('submit', event => {
         event.preventDefault();
         if (check.disabled) return;
         const typed = answer.value.normalize('NFKC').toUpperCase().replace(/\s+/g, '');
@@ -10005,16 +10032,28 @@ ${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="co
           }
         }
         get('replay').textContent = task ? 'Переслушать реплику' : 'Переслушать позывной';
-        get('next').textContent = task ? 'Другое задание' : 'Новый позывной';
-        answer.value = typed;
+        get('next').textContent = task ? 'Следующее задание' : 'Новый позывной';        answer.value = typed;
         answer.readOnly = true;
         check.disabled = true;
+        form.hidden = true;
         result.hidden = false;
-        get('result-title').textContent = summary.length ? 'Разбор ответа' : 'Верно';
+        get('result-title').textContent = summary.length ? 'Есть ошибки в ответе' : 'Верно';
         answer.blur();
         result.scrollIntoView({ block: 'nearest' });
       });
       resetTask();
+      return {
+        supports: id => Object.prototype.hasOwnProperty.call(tasks, id),
+        open(id, recordingLanguage) {
+          source.value = 'recording';
+          topic.value = id;
+          language.value = recordingLanguage;
+          source.dispatchEvent(new Event('change', { bubbles: true }));
+          showMode(true);
+          play.focus({ preventScroll: true });
+          get().scrollIntoView({ block: 'nearest' });
+        }
+      };
     }
 
     function initVoiceExchanges() {
@@ -10025,6 +10064,7 @@ ${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="co
       const players = [];
       let selectedLanguage = 'ru';
       let currentPlayer;
+      const practice = initVoicePractice(samples, () => currentPlayer?.audio.pause());
       const clock = seconds => {
         const whole = Math.floor(seconds);
         return Math.floor(whole / 60) + ':' + String(whole % 60).padStart(2, '0');
@@ -10034,12 +10074,15 @@ ${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="co
         const card = template.content.firstElementChild.cloneNode(true);
         const audio = card.querySelector('audio');
         const play = card.querySelector('.voice-play');
-        const speed = card.querySelector('select');
+        const exercise = card.querySelector('.voice-start-practice');
+        exercise.hidden = !practice.supports(sample.id);
+        exercise.addEventListener('click', () => practice.open(sample.id, language));
+        const speed = card.querySelector('select[aria-label="Скорость воспроизведения"]');
         const seek = card.querySelector('.voice-seek');
         const list = card.querySelector('ol');
         const error = card.querySelector('.voice-error');
         const [elapsed, duration] = card.querySelector('.voice-progress').children;
-        const buttons = Array.from(card.querySelectorAll('[data-voice-language]'));
+        const languageSelect = card.querySelector('[data-voice-language]');
         let language;
         let rows = [];
         let url;
@@ -10110,7 +10153,10 @@ ${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="co
           const variant = sample.variants[language];
           duration.textContent = clock(variant.seconds);
           seek.max = variant.seconds;
-          buttons.forEach(button => button.setAttribute('aria-pressed', String(button.dataset.voiceLanguage === language)));
+          if (languageSelect.value !== language) {
+            languageSelect.value = language;
+            languageSelect.dispatchEvent(new Event('change', { bubbles: true }));
+          }
           list.textContent = '';
           rows = variant.lines.map(line => {
             const item = document.createElement('li');
@@ -10121,10 +10167,16 @@ ${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="co
             label.textContent = line.station;
             const time = document.createElement('time');
             time.textContent = clock(line.start);
+            const icon = document.createElement('span');
+            icon.className = 'voice-reply-icon';
+            icon.setAttribute('aria-hidden', 'true');
+            icon.textContent = '▶';
+            label.prepend(icon);
             label.append(time);
             const words = document.createElement('span');
             words.lang = language;
             words.textContent = line.text;
+            button.setAttribute('aria-label', 'Слушать с ' + time.textContent + '. ' + line.station + '. ' + line.text);
             button.append(label, words);
             button.addEventListener('click', () => playFrom(line.start));
             item.append(button);
@@ -10135,12 +10187,10 @@ ${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="co
           updateTime(0);
         }
 
-        for (const button of buttons) {
-          button.addEventListener('click', () => {
-            selectedLanguage = button.dataset.voiceLanguage;
-            setLanguage(selectedLanguage);
-          });
-        }
+        languageSelect.addEventListener('change', () => {
+          selectedLanguage = languageSelect.value;
+          setLanguage(selectedLanguage);
+        });
         audio.addEventListener('play', () => {
           players.forEach(player => { if (player.audio !== audio) player.audio.pause(); });
           play.textContent = 'Ⅱ Пауза';
@@ -10185,7 +10235,6 @@ ${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="co
       }
       topic.addEventListener('change', showTopic);
       showTopic();
-      initVoicePractice(samples, () => currentPlayer.audio.pause());
     }
 
     document.addEventListener('DOMContentLoaded', async () => {
