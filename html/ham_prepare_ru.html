@@ -1029,7 +1029,21 @@
       margin-bottom: var(--space-xs);
     }
 
-    .bank-toolbar { max-width: 68ch; margin-top: var(--space-lg); }
+    .bank-toolbar { max-width: 68ch; }
+    .bank-filters > summary {
+      box-sizing: border-box;
+      min-height: 44px;
+      padding: 10px 12px;
+      border: 1px solid var(--scheme-border);
+      border-radius: 10px;
+      background: var(--ui-tone);
+      color: var(--on-surface);
+      cursor: pointer;
+      font-weight: 650;
+    }
+    .bank-filters > .field-group { padding: var(--space-sm) 0; }
+    .bank-tools { max-width: 68ch; margin-block: var(--space-sm) var(--space-md); }
+    .bank-tools .bank-pass-controls { margin: 0; }
     .bank-pass-controls { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0; }
     #bank-pass-workspace { max-width: 68ch; }
     #bank-pass-workspace [hidden], .bank-pass-controls [hidden] { display: none; }
@@ -1060,6 +1074,7 @@
       gap: var(--space-xs);
       min-height: 44px;
     }
+    .bank-retry-status { margin: 0; }
     .bank-retry-status:empty { display: none; }
     .bank-pagination {
       display: grid;
@@ -1926,14 +1941,12 @@
     .history-topics { margin:14px 0 0; }
     .history-topics summary { cursor:pointer; font-weight:650; padding:9px 4px; }
     .history-topic { padding:8px 4px; border-top:1px solid var(--outline-variant); }
-    .spaced-entry { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; margin: 16px 0 22px; }
-    .spaced-entry small { flex: 1 1 160px; color: var(--on-surface-variant); }
+    #spaced-summary:not(:empty) { display: block; margin-top: var(--space-xs); color: var(--on-surface-variant); }
     .spaced-save-status:not(:empty) { display: block; margin: 8px 0; color: var(--on-surface-variant); }
     #spaced-dialog { max-width: 410px; overflow-y: auto; overscroll-behavior: contain; }
     #spaced-dialog .button { margin-top: 8px; width: 100%; }
     #spaced-dialog .spaced-topic { color: var(--on-surface-variant); margin-bottom: 10px; font-size: .88rem; }
     .spaced-next-date { margin-top: 12px; font-weight: 650; }
-    @media (max-width: 500px) { .spaced-entry .button { width: 100%; } }
     .practical-panel { margin-block: 28px; }
     .practical-header { display: flex; align-items: baseline; flex-wrap: wrap; justify-content: space-between; gap: 4px 12px; }
     .practical-header h3 { margin: 0; }
@@ -3668,40 +3681,46 @@
         <section class="study-section" id="study-practice">
           <div id="bank-browse">
           <h2 id="bank-heading">Блок вопросов для 2-й категории</h2>
-          <p><span id="bank-category-summary">405 вопросов по перечню СРР.</span> Выберите вариант для проверки. Для нормативных вопросов сверяйтесь с документами в конце пособия.</p>
-          <div class="spaced-entry">
-            <button class="button button--secondary" type="button" id="spaced-open" aria-describedby="spaced-summary">Повторить сегодня</button>
-            <small id="spaced-summary" aria-live="polite"></small>
-          </div>
-          <div class="bank-pass-controls">
-            <button type="button" class="button button--secondary" id="bank-pass-open">Новая попытка</button>
-            <button type="button" class="button button--secondary" id="bank-pass-last" hidden>Результат последней попытки</button>
-          </div>
-          <p id="bank-pass-pending" class="caption" hidden></p>
-          <small class="spaced-save-status" id="spaced-save-status" role="status"></small>
-          <p class="caption">Источник — <a href="https://r9c.srr.ru/wp-content/uploads/2026/02/exam-voprosy2023.pdf">Перечень экзаменационных вопросов по приказу от 01.10.2015 № 224</a>.</p>
           <div class="field-group bank-toolbar">
             <label class="field-label" for="bank-search">Поиск в блоке вопросов</label>
-            <p class="caption bank-search-hint" id="bank-search-hint">По формулировке в обоих источниках или по номеру экзаменационного перечня.</p>
             <input class="input" type="search" id="bank-search" maxlength="32" aria-describedby="bank-search-hint" placeholder="Например, 407 или КСВ">
-            <label class="field-label" for="bank-source">Источник</label>
-            <select class="select" id="bank-source">
-              <option value="all">Все источники</option>
-              <option value="pdf">Экзаменационный перечень</option>
-              <option value="study">Учебные вопросы</option>
-            </select>
-            <label class="field-label" for="bank-topic">Тема</label>
-            <select class="select" id="bank-topic">
-              <option value="">Все темы</option>
-            </select>
+            <p class="caption bank-search-hint" id="bank-search-hint">По тексту в обоих источниках или по номеру из перечня.</p>
+            <details class="bank-filters" id="bank-filters">
+              <summary id="bank-filter-toggle">Фильтры<span id="bank-filter-state"></span></summary>
+              <div class="field-group">
+                <label class="field-label" for="bank-source">Источник</label>
+                <select class="select" id="bank-source">
+                  <option value="all">Все источники</option>
+                  <option value="pdf">Экзаменационный перечень</option>
+                  <option value="study">Учебные вопросы</option>
+                </select>
+                <label class="field-label" for="bank-topic">Тема</label>
+                <select class="select" id="bank-topic">
+                  <option value="">Все темы</option>
+                </select>
+                <label class="bank-retry-checkbox"><input type="checkbox" id="bank-mistakes"> Мои ошибки</label>
+              </div>
+            </details>
             <p class="caption" id="bank-results-label" role="status">
               <span id="bank-results-message"></span>
               <span id="bank-results-hint" hidden></span>
             </p>
-            <label class="bank-retry-checkbox"><input type="checkbox" id="bank-mistakes"> Мои ошибки</label>
             <p class="caption bank-retry-status" id="bank-retry-status" role="status"></p>
           </div>
-          <div id="bank-results" tabindex="-1"></div>
+          <div id="bank-results" tabindex="-1">
+            <div id="bank-first-result"></div>
+            <div class="bank-tools">
+              <div class="bank-pass-controls">
+                <button type="button" class="button button--secondary" id="bank-pass-open">Пройти подборку</button>
+                <button type="button" class="button button--secondary" id="spaced-open" aria-describedby="spaced-summary">Повторить сегодня</button>
+                <button type="button" class="button button--secondary" id="bank-pass-last" hidden>Результат последней попытки</button>
+              </div>
+              <p id="bank-pass-pending" class="caption" hidden></p>
+              <small id="spaced-summary"></small>
+              <small class="spaced-save-status" id="spaced-save-status" role="status"></small>
+            </div>
+            <div id="bank-more-results"></div>
+          </div>
           <div class="bank-pagination" id="bank-pagination" role="group" aria-label="Страницы блока вопросов">
             <button class="button button--secondary" type="button" id="bank-prev"><svg class="bank-page-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5.8c0-.7-.8-1.1-1.3-.7l-8.1 6.2a.9.9 0 0 0 0 1.4l8.1 6.2c.5.4 1.3 0 1.3-.7z"/></svg> Назад</button>
             <span id="bank-page-label"></span>
@@ -3712,6 +3731,8 @@
             <p class="caption">Порядок вариантов и ключ соответствуют перечню. <a href="https://r9c.srr.ru/wp-content/uploads/2026/02/exam-voprosy2023.pdf#page=105">Ключ ответов в перечне</a>.</p>
             <ul class="bank-key-grid" id="bank-key"></ul>
           </details>
+          <p class="caption" id="bank-category-summary">405 вопросов по перечню СРР.</p>
+          <p class="caption">Источник — <a href="https://r9c.srr.ru/wp-content/uploads/2026/02/exam-voprosy2023.pdf">Перечень экзаменационных вопросов по приказу от 01.10.2015 № 224</a>. Для нормативных вопросов сверяйтесь с документами в конце пособия.</p>
           </div>
           <div id="bank-pass-workspace" hidden>
             <h2 id="bank-pass-title" tabindex="-1">Новая попытка</h2>
@@ -5928,7 +5949,9 @@
     function renderQuestionBank() {
       spacedStudy.update();
       const selection = bankQuestionSelection();
-      const {pool, matches, mistakesOnly} = selection;
+      const {pool, matches, source, topicIndex, mistakesOnly} = selection;
+      const activeFilters = Number(source !== 'all') + Number(topicIndex >= 0) + Number(mistakesOnly);
+      document.getElementById('bank-filter-state').textContent = activeFilters ? ' · ' + activeFilters : '';
       const pageCount = Math.ceil(matches.length / BANK_PAGE_SIZE);
       bankPage = Math.min(bankPage, Math.max(0, pageCount - 1));
       const start = bankPage * BANK_PAGE_SIZE;
@@ -5946,7 +5969,7 @@
       document.getElementById('bank-prev').disabled = bankPage === 0;
       document.getElementById('bank-next').disabled = bankPage + 1 >= pageCount;
 
-      document.getElementById('bank-results').innerHTML = visible.map(question => {
+      const cards = visible.map(question => {
         const official = Boolean(question.no);
         const showFeedback = !mistakesOnly || bankRetryFeedback.has(question.id);
         const chosen = showFeedback ? bankAnswerStore(question)[question.id] : undefined;
@@ -5961,7 +5984,9 @@
           <div class="options-list">${renderBankOptions(question, chosen, chosen !== undefined, true)}</div>
           ${feedback}
         </article>`;
-      }).join('');
+      });
+      document.getElementById('bank-first-result').innerHTML = cards[0] ?? '';
+      document.getElementById('bank-more-results').innerHTML = cards.slice(1).join('');
     }
 
     function setBankTopic(start, query = '', source = 'all') {
@@ -5976,6 +6001,8 @@
       const search = document.getElementById('bank-search');
       const topic = document.getElementById('bank-topic');
       const mistakes = document.getElementById('bank-mistakes');
+      const filters = document.getElementById('bank-filters');
+      const filterToggle = document.getElementById('bank-filter-toggle');
       const retryStatus = document.getElementById('bank-retry-status');
       topic.insertAdjacentHTML('beforeend', BANK_TOPICS.map(([start, label]) =>
         `<option value="${start}">${label}</option>`).join(''));
@@ -6041,7 +6068,8 @@
         const answeredCard = results.querySelector(`[data-bank-id="${bankId}"]`)?.closest('.question-card');
         const feedback = answeredCard?.querySelector('.feedback-box');
         if (feedback) feedback.tabIndex = -1;
-        const nextFocus = feedback || results.querySelector('button[data-bank-id]:not(:disabled)') || mistakes;
+        const nextFocus = feedback || results.querySelector('button[data-bank-id]:not(:disabled)')
+          || (filters.open ? mistakes : filterToggle);
         nextFocus.focus({ preventScroll: true });
       });
     }
@@ -7648,8 +7676,7 @@ ${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="co
         const due = sorted.filter(question => reviews[question.id].due <= today);
         const next = sorted.length ? reviews[sorted[0].id].due : undefined;
         button.textContent = due.length ? 'Повторить сегодня · ' + due.length : 'Повторить сегодня';
-        summary.textContent = due.length ? 'Вопросов к повторению: ' + due.length
-          : next === undefined ? 'Очередь пока пуста' : 'Ближайший повтор · ' + formatReviewDay(next, today);
+        summary.textContent = !due.length && next !== undefined ? 'Ближайший повтор · ' + formatReviewDay(next, today) : '';
         return {due, next};
       }
 
@@ -8424,7 +8451,7 @@ ${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="co
       function updateEntry() {
         const entry = questionPasses[category];
         const run = entry?.active;
-        get('open').textContent = run ? 'Продолжить прохождение' : 'Новая попытка';
+        get('open').textContent = run ? 'Продолжить прохождение' : 'Пройти подборку';
         get('last').hidden = !entry?.last;
         get('pending').hidden = !run;
         get('pending').textContent = run ? 'Текущее прохождение · отвечено '
