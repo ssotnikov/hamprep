@@ -3681,6 +3681,16 @@
         <section class="study-section" id="study-practice">
           <div id="bank-browse">
           <h2 id="bank-heading">Блок вопросов для 2-й категории</h2>
+          <div class="bank-tools">
+            <div class="bank-pass-controls">
+              <button type="button" class="button button--secondary" id="bank-pass-open">Пройти подборку</button>
+              <button type="button" class="button button--secondary" id="spaced-open" aria-describedby="spaced-summary">Повторить сегодня</button>
+              <button type="button" class="button button--secondary" id="bank-pass-last" hidden>Результат последней попытки</button>
+            </div>
+            <p id="bank-pass-pending" class="caption" hidden></p>
+            <small id="spaced-summary"></small>
+            <small class="spaced-save-status" id="spaced-save-status" role="status"></small>
+          </div>
           <div class="field-group bank-toolbar">
             <label class="field-label" for="bank-search">Поиск в блоке вопросов</label>
             <input class="input" type="search" id="bank-search" maxlength="32" aria-describedby="bank-search-hint" placeholder="Например, 407 или КСВ">
@@ -3707,20 +3717,7 @@
             </p>
             <p class="caption bank-retry-status" id="bank-retry-status" role="status"></p>
           </div>
-          <div id="bank-results" tabindex="-1">
-            <div id="bank-first-result"></div>
-            <div class="bank-tools">
-              <div class="bank-pass-controls">
-                <button type="button" class="button button--secondary" id="bank-pass-open">Пройти подборку</button>
-                <button type="button" class="button button--secondary" id="spaced-open" aria-describedby="spaced-summary">Повторить сегодня</button>
-                <button type="button" class="button button--secondary" id="bank-pass-last" hidden>Результат последней попытки</button>
-              </div>
-              <p id="bank-pass-pending" class="caption" hidden></p>
-              <small id="spaced-summary"></small>
-              <small class="spaced-save-status" id="spaced-save-status" role="status"></small>
-            </div>
-            <div id="bank-more-results"></div>
-          </div>
+          <div id="bank-results" tabindex="-1"></div>
           <div class="bank-pagination" id="bank-pagination" role="group" aria-label="Страницы блока вопросов">
             <button class="button button--secondary" type="button" id="bank-prev"><svg class="bank-page-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5.8c0-.7-.8-1.1-1.3-.7l-8.1 6.2a.9.9 0 0 0 0 1.4l8.1 6.2c.5.4 1.3 0 1.3-.7z"/></svg> Назад</button>
             <span id="bank-page-label"></span>
@@ -5969,7 +5966,7 @@
       document.getElementById('bank-prev').disabled = bankPage === 0;
       document.getElementById('bank-next').disabled = bankPage + 1 >= pageCount;
 
-      const cards = visible.map(question => {
+      document.getElementById('bank-results').innerHTML = visible.map(question => {
         const official = Boolean(question.no);
         const showFeedback = !mistakesOnly || bankRetryFeedback.has(question.id);
         const chosen = showFeedback ? bankAnswerStore(question)[question.id] : undefined;
@@ -5984,9 +5981,7 @@
           <div class="options-list">${renderBankOptions(question, chosen, chosen !== undefined, true)}</div>
           ${feedback}
         </article>`;
-      });
-      document.getElementById('bank-first-result').innerHTML = cards[0] ?? '';
-      document.getElementById('bank-more-results').innerHTML = cards.slice(1).join('');
+      }).join('');
     }
 
     function setBankTopic(start, query = '', source = 'all') {
