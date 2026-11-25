@@ -1173,7 +1173,7 @@
       .exam-controls .button { width: 100%; }
     }
     body.exam-in-progress .page-grid { overflow: visible; }
-    #mock-exam.exam-in-progress #exam-workspace { padding: 10px 0 75px; }
+    #mock-exam.exam-in-progress #exam-workspace { padding-top: 10px; }
     .exam-bar {
       position: sticky;
       top: var(--pinned-top-height);
@@ -2083,9 +2083,6 @@
       .home-actions .button { justify-content: flex-start; }
     }
     .section-tile { width: 48px; height: 48px; }
-    #mock-exam.exam-in-progress #exam-workspace {
-      padding-bottom: calc(var(--pinned-bottom-height) + 2 * var(--bottom-control-gap));
-    }
     .find-toggle { background: var(--scheme-selected); color: var(--scheme-selected-ink); }
     .find-panel button:focus-visible { background: var(--scheme-selected); }
     .find-exact:has(:focus-visible), .exam-bar-actions button:focus-visible, .exam-num-btn:focus-visible {
