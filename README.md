@@ -7,7 +7,7 @@
   <img src="android/res/drawable-nodpi/handbook_startup_icon.png" alt="Иконка приложения «Радиоэкзамен»" width="63" height="63">
 </p>
 
-# Радиоэкзамен (СРР РФ) для Android
+# Радиоэкзамен
 
 <a href="https://www.rustore.ru/catalog/app/ru.radiobook.hamexam"><img src="android/assets/rustore-badge-light.svg" alt="Скачайте из RuStore" width="188"></a>
 
