@@ -1175,18 +1175,27 @@
       min-height: 42px;
       font-weight: 600;
     }
-    .exam-source { max-width: 26rem; }
-
     /* Mock Exam Simulator */
-    .exam-controls {
+    .exam-heading-row { margin-bottom: var(--space-xs); }
+    .exam-heading-row h2 { margin: 0; }
+    .exam-heading-row .status-tag[hidden] { display: none; }
+    .exam-facts, .exam-launch { max-width: 26rem; }
+    .exam-facts {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      margin: var(--space-sm) 0 var(--space-md);
+      padding: var(--space-sm) 0;
+      border: 1px solid var(--scheme-border);
+      border-radius: var(--rounded);
       background: var(--surface-container-low);
-      border-left: var(--inset-rule);
-      padding: var(--space-md) var(--space-lg);
-      margin: var(--space-md) 0 var(--space-lg);
+      text-align: center;
     }
-    @media (max-width: 640px) {
-      .exam-controls .button { width: 100%; }
-    }
+    .exam-facts > div { padding: 0 4px; overflow-wrap: break-word; }
+    .exam-facts > div + div { border-left: 1px solid var(--scheme-border); }
+    .exam-facts dt { color: var(--on-surface-variant); font-size: var(--label-size); }
+    .exam-facts dd { margin: var(--space-xs) 0 0; font-weight: 700; font-size: 1.125rem; }
+    .exam-controls { margin-top: var(--space-sm); }
+    .exam-controls .button { width: 100%; }
     body.exam-in-progress .page-grid { overflow: visible; }
     #mock-exam.exam-in-progress #exam-workspace { padding-top: 10px; }
     .exam-bar {
@@ -1911,7 +1920,21 @@
     #quick-study-dialog h2 { margin: 0 0 6px; }
     #quick-study-dialog .quick-topic { color: var(--on-surface-variant); font-size: .88rem; margin: 0 0 12px; }
 
-    #history-open { margin: 10px 0 4px; width:100%; max-width:26rem; }
+    #history-open {
+      min-height: 44px;
+      margin: 4px 0;
+      padding: 4px 0;
+      border: 0;
+      background: transparent;
+      color: var(--tertiary);
+      font: inherit;
+      font-weight: 650;
+      text-align: left;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      cursor: pointer;
+    }
+    #history-open:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
     #history-dialog { max-width:490px; overflow:auto; overscroll-behavior:contain; }
     .history-head { display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:14px; }
     #history-dialog .history-head h2 { margin:0; }
@@ -3625,32 +3648,31 @@
         <!-- ИТОГОВЫЙ ПРОБНЫЙ ЭКЗАМЕН (30 ВОПРОСОВ) -->
         <!-- ============================================================ -->
         <section class="study-section" id="mock-exam">
-          <div class="section-head">
-            <div class="section-title-group">
-              <span class="step-badge">ЭКЗ</span>
-              <h2 id="exam-heading">Пробный квалификационный экзамен (30 вопросов)</h2>
-            </div>
-            <span class="status-tag" id="exam-status-tag">Готов к запуску</span>
+          <div class="section-head exam-heading-row">
+            <h2 id="exam-heading">Пробный экзамен</h2>
+            <span class="status-tag" id="exam-status-tag" hidden></span>
           </div>
 
-          <p>
-            Пробный экзамен проверяет теорию для <strong id="exam-category">2-й категории</strong>. Для зачета
-            нужно набрать <strong id="exam-pass-score">25 из 30</strong> за <strong id="exam-duration">60 минут</strong>.
-            Ответы можно менять до завершения.
-          </p>
+          <p class="caption" id="exam-category">2-я категория · проверка теории</p>
+          <dl class="exam-facts">
+            <div><dt>Вопросов</dt><dd id="exam-total">30</dd></div>
+            <div><dt>Для зачёта</dt><dd id="exam-pass-score">25</dd></div>
+            <div><dt>Время</dt><dd id="exam-duration">60 мин</dd></div>
+          </dl>
           <p id="exam-cw-note" hidden>Прием азбуки Морзе проверяют отдельно. <a href="https://srr.ru/radiooperatoram/kvalifikatsionnyj-ekzamen-2-2/">Образцы телеграфного текста на сайте СРР</a>.</p>
 
-          <div class="field-group exam-source">
-            <label class="field-label" for="exam-source">Источник вопросов</label>
-            <select class="select" id="exam-source">
-              <option value="pdf">Блок вопросов (405)</option>
-              <option value="study">Учебные вопросы восьми разделов</option>
-            </select>
-          </div>
-
-          <button type="button" class="button button--secondary" id="history-open">История попыток</button>
-          <div class="exam-controls" id="exam-start-controls">
-            <button type="button" class="button" id="start-exam-btn" onclick="startMockExam()">Начать экзамен</button>
+          <div class="exam-launch">
+            <div class="field-group">
+              <label class="field-label" for="exam-source">Источник вопросов</label>
+              <select class="select" id="exam-source">
+                <option value="pdf">Экзаменационный перечень (405)</option>
+                <option value="study">Учебные вопросы</option>
+              </select>
+            </div>
+            <div class="exam-controls" id="exam-start-controls">
+              <button type="button" class="button" id="start-exam-btn" onclick="startMockExam()">Начать экзамен</button>
+            </div>
+            <button type="button" id="history-open" aria-haspopup="dialog">История попыток</button>
           </div>
 
           <div class="exam-bar" id="exam-bar" hidden>
@@ -3669,7 +3691,7 @@
           <div id="exam-workspace">
             <div class="inset">
               <div class="inset-title">Порядок прохождения пробного билета</div>
-              <p>Нажмите «Начать экзамен», ответьте на вопросы в любом порядке и нажмите «Завершить», чтобы получить результат.</p>
+              <p>Отвечайте на вопросы в любом порядке. Ответы можно менять до завершения билета.</p>
             </div>
           </div>
           <div class="exam-online">
@@ -6108,10 +6130,10 @@
         'category-kpi-cw-note': requiresMorse
           ? 'Примите 250 знаков на скорости 60 зн/мин. Допускается до трёх ошибок.'
           : 'Практический приём телеграфа обязателен для 1-й категории',
-        'exam-heading': `Пробный квалификационный экзамен (${ticket} вопросов)`,
-        'exam-category': `${category}-й категории`,
-        'exam-pass-score': `${pass} из ${ticket}`,
-        'exam-duration': `${minutes} минут`,
+        'exam-category': `${category}-я категория · проверка теории`,
+        'exam-total': String(ticket),
+        'exam-pass-score': String(pass),
+        'exam-duration': `${minutes} мин`,
         'toc-exam-label': `Пробный билет (${ticket} вопросов)`,
         'bank-heading': `Блок вопросов для ${category}-й категории`,
         'bank-category-summary': `Экзаменационный перечень — ${bankCount}. Учебные вопросы — ${STUDY_BANK.length}.`,
@@ -6575,7 +6597,8 @@
       const inProgress = examSession.active && !examSession.finished;
       status.textContent = record
         ? `${record.passed ? 'Сдан' : 'Не сдан'} (${record.score}/${record.total})`
-        : examSession.active ? 'Идёт тестирование' : 'Готов к запуску';
+        : inProgress ? 'Идёт тестирование' : '';
+      status.hidden = !record && !inProgress;
       status.classList.toggle('status-tag--pass', Boolean(record?.passed));
       document.body.classList.toggle('exam-in-progress', inProgress);
       document.getElementById('mock-exam').classList.toggle('exam-in-progress', inProgress);
@@ -9326,7 +9349,7 @@ ${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="co
       document.addEventListener('focusin', event => {
         const target = event.target;
         if (!target.matches('button, a[href], summary, .feedback-box')
-          || !target.closest('.page-grid > header, #bank-browse, #voice-exchanges')) return;
+          || !target.closest('.page-grid > header, .exam-launch, #bank-browse, #voice-exchanges')) return;
         requestAnimationFrame(() => {
           if (document.activeElement !== target) return;
           const bounds = target.getBoundingClientRect();
