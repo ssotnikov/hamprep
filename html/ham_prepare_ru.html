@@ -6745,7 +6745,7 @@
           ? `<span class="exam-number">${index + 1}</span><span class="exam-outcome" aria-hidden="true">${mark}</span>`
           : `${index + 1}${answer !== undefined ? ' ✓' : ''}${flagged ? '<span class="exam-flag" aria-hidden="true"> ⚑</span>' : ''}`;
         return `<button type="button" class="exam-num-btn${state}${current ? ' is-current' : ''}"
-          ${current ? 'aria-current="step"' : ''} aria-label="Вопрос ${index + 1}, ${status}${flagged ? ', отмечен' : ''}"
+          ${current ? 'aria-current="step"' : ''} aria-label="Вопрос ${index + 1}, ${status}${flagged ? ', отложен' : ''}"
           onclick="selectExamQuestionIndex(${index})">${content}</button>`;
       }).join('')}</div>`;
     }
@@ -8073,7 +8073,7 @@ ${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="co
       if (!examSession.finished) {
         const marked = examSession.marked.includes(q.id);
         html += `<button type="button" class="button button--secondary exam-review-mark" id="exam-review-mark"
-          aria-pressed="${marked}" onclick="toggleExamQuestionMark()">${marked ? '⚑ Отмечен' : '⚐ Вернуться'}</button>`;
+          aria-pressed="${marked}" onclick="toggleExamQuestionMark()">${marked ? '⚑ Отложен' : '⚐ Отложить'}</button>`;
       }
       html += q.no ? renderPdfPrompt(q) : `<div class="question-stem">${q.stem}</div>`;
       html += `<div class="options-list">`;
@@ -9375,9 +9375,9 @@ ${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="co
         emptyJump.hidden = Boolean(action) ? !showEmpty : !remaining;
         emptyJump.textContent = action ? 'К пропущенным' : `К пропущенным · ${remaining}`;
         markedJump.hidden = Boolean(action) || !marked.length;
-        markedJump.textContent = `К отмеченным · ${marked.length}`;
+        markedJump.textContent = `К отложенным · ${marked.length}`;
         grid.hidden = Boolean(action);
-        if (!action) grid.innerHTML = `<p class="caption">✓ Есть ответ · ⚑ Отмечен</p>` + renderExamQuestionGrid();
+        if (!action) grid.innerHTML = `<p class="caption">✓ Есть ответ · ⚑ Отложен</p>` + renderExamQuestionGrid();
         onConfirm = action;
         dialog.showModal();
       }
