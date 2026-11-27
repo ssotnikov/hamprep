@@ -1494,9 +1494,8 @@
       padding-top: var(--space-lg);
       border-top: 2px solid var(--on-surface);
     }
+    .page-footer { font-size: 0.9375rem; }
     .page-footer, .fixed-web-footer {
-      font-size: 0.9375rem;
-
       --footer-text: #4e6274;
       --footer-link: #275791;
       --footer-visited: #503688;
@@ -1518,25 +1517,27 @@
       inset: auto 0 0;
       z-index: 19;
       background: var(--background);
+      font-size: 12px;
+      line-height: 20px;
     }
-    .fixed-web-footer-inner { padding: 0 var(--toolbar-gutter) .7rem; }
+    .fixed-web-footer-inner { padding: 0 var(--toolbar-gutter) 4px; }
     [data-browser-handbook] .web-footer-links {
       display: flex;
       flex-wrap: wrap;
       align-items: baseline;
       gap: .25rem 1.15rem;
-      padding-top: .9rem;
+      padding-top: 7px;
       border-top: 1px solid var(--outline-variant);
     }
-    .web-footer-links a { padding-block: .25rem; }
+    .web-footer-links a { padding-block: 3px; }
     .footer-github { display:inline-flex; align-items:baseline; gap:6px; white-space:nowrap; }
     .footer-github svg { width:16px; height:16px; flex:none; align-self:center; fill:currentColor; }
     @media (max-width: 480px) {
-      .fixed-web-footer-inner { padding-bottom: .4rem; }
+      [data-browser-handbook] .fixed-web-footer { line-height: 18px; }
+      .fixed-web-footer-inner { padding-bottom: 1px; }
       [data-browser-handbook] .web-footer-links {
-        gap: .15rem .68rem;
-        padding-top: .45rem;
-        font-size: .875rem;
+        gap: 2px .68rem;
+        padding-top: 2px;
       }
       .web-footer-links > span { flex-basis: 100%; }
     }
