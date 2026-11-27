@@ -19,6 +19,7 @@
       if (!androidHost) {
         document.documentElement.setAttribute('data-browser-handbook', '');
         document.documentElement.setAttribute('data-desktop-home-pending', '');
+        document.documentElement.setAttribute('data-browser-appearance-pending', '');
       }
 
       try {
@@ -53,7 +54,8 @@
         applyTheme();
       });
 
-      document.addEventListener('DOMContentLoaded', () => {
+      const controlsReady = androidHost ? 'DOMContentLoaded' : 'radioexam-appearance-controls-ready';
+      document.addEventListener(controlsReady, () => {
         document.querySelectorAll('input[name="appearance"]').forEach(option => {
           option.checked = option.value === choice;
           option.addEventListener('change', () => {
@@ -68,7 +70,8 @@
             if (androidHost) location.assign('/__appearance/' + choice);
           });
         });
-      });
+        document.documentElement.removeAttribute('data-browser-appearance-pending');
+      }, { once: true });
     })();
   </script>
   <style>
@@ -1937,6 +1940,7 @@
       background: var(--toolbar-key);
     }
     .pinned-topbar .theme-choice { background: var(--background); border-color: var(--toolbar-edge); }
+    [data-browser-appearance-pending] .theme-choice { visibility: hidden; }
     .pinned-topbar .theme-choice span { color: var(--toolbar-symbol); }
     .pinned-topbar .theme-choice input:checked + span,
     .pinned-topbar .theme-choice input:focus-visible + span,
@@ -3445,6 +3449,9 @@
             <span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.9 13.4A9.1 9.1 0 1 1 10.6 3.1a7.2 7.2 0 0 0 10.3 10.3Z"/></svg></span>
           </label>
         </div>
+          <script id="appearance-controls-bootstrap">
+            document.dispatchEvent(new Event('radioexam-appearance-controls-ready'));
+          </script>
           <button class="toolbar-icon" id="stepik-toggle" type="button" aria-label="Курсы Stepik" aria-expanded="false" aria-controls="stepik-courses" title="Курсы Stepik">
             <img class="stepik-icon" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEgAAABICAYAAABV7bNHAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA7FJREFUeNrsnI2xojAQx+M1oCVQgh2cdmAJ2IEl0IElYAdcB3gVaAdqBdiBlz9DZngePrLJJiw8dmZnnPcEkp+bZD8SFmoY2TT6W2vSaJfcG/2r9ar1j5qwAEiutdL6ctSqucdmamBKDyiftBw7qCQQmC5QydjgpJ5DyWXopWOBk0cE8665ZDArrcWAcIwWTVvEwbkIgGP0IgmSNDiiIEmFIwKSdDgskBYecOB/rFk8yc1GJUlSax1f3O+1ns9nrh8TYcpW63M0lrNer195nr+qqnp9EvwP39EARzPcvOGsVqu601QpiqK+VjIkbziwmu8spk9wLe4hEdLgcIyUZSluuImBc7lcOIYZK6SpwmGBNHU43pCKHwCnHeDGS1lQ4dxut1eapjUI7SzWn3F9JDjkVEkaE84nCPhbRDhGe5NuiU8mkAvOgFq9p2/fYzHnRLiGo7SPonSH7YKj61Vtt1v1fNLCI8RrJnZrC+I23JN6vw45N3FbZ/VBrOUcDod6rrIJSRhit04jKSXCQWdtwDDHbiWL9YSGk2WZl4vgGbutvZb10HBcIn5mSF+WfdLKhY6OAU7bz3IYbpWBs6PSxfgeCxwjuK/rZJ1RLsKkOTY4RuClEwFl5NXLthMx4FBjPQcrqlezG+Uim0aFhoMh3rYGW1cAbScCAhve4YVGhITzyQrwTBtIDiua/ZcRZfcJvhMbDqV9Dl62YnXcbK2HG46xoj5BHyh9/sWd3bcJFnVnlf61re95Op3Ufr8frL7OOsR2u110yxEzxGwm6e+81pBwQk7SQZb59i/lUk2lwsEzQy3zQRxFY002DY8Bx8dRDBZqhI6ZKHAc55/MKRdECValwEGbfTKLpHQH3HyOmlcsOFTv/j3dESVhNiQcjoRZlJRrlxyPR4lwOhP3Tkl7DDdsSXFJVfQ5lQPCKVnLPsaLtQGFpR/xEGVOiAzni/WwFQ67CnvL5bIuJD4ejzpGM8U90hYTfT0KkihM2saCKEhSn2NTOPQuPXPrAJbzX+mZffOCC4RPmxciw7HavMCy/YVqIe3tL1B8plRTmeCQTwrlkoZPYDiF64SV/wA43ps58xlOJEhThcMGacpwWCAhHzPVowhskFxjt/dqquQTPyzDDdZkk3gb+jjUwhNSykEbsRtiLbMBFPEUYqmxHqhjO6oQSedzq1LhSIc0n50fC5w2pPnVFFJSJVwpi6EkVfPrcfrT02p+wZKdH6jmV3RZgxrdS94WA8KCUl4TeG40qvwTYABmJO9yoz4fVwAAAABJRU5ErkJggg==" width="30" height="30" alt="">
           </button>
