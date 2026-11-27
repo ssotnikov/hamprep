@@ -5,6 +5,7 @@ import android.app.UiModeManager;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.net.Uri;
@@ -85,6 +86,7 @@ public final class MainActivity extends AppActivity {
         WebView.setWebContentsDebuggingEnabled(
                 (getApplicationInfo().flags & ApplicationInfo.FLAG_DEBUGGABLE) != 0);
         webView = new WebView(this);
+        if (needsLegacyWebViewRendering()) webView.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
         webView.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS);
         WebSettings settings = webView.getSettings();
         settings.setJavaScriptEnabled(true);
@@ -222,6 +224,13 @@ public final class MainActivity extends AppActivity {
         if ("dark".equals(mode)) return getColor(R.color.handbook_background_dark);
         if ("light".equals(mode)) return getColor(R.color.handbook_background_light);
         return getColor(R.color.handbook_startup_background);
+    }
+
+    private static boolean needsLegacyWebViewRendering() {
+        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.O_MR1) return false;
+        PackageInfo provider = WebView.getCurrentWebViewPackage();
+        // WebView 69 can paint black tiles over fixed elements after a palette change.
+        return provider != null && provider.versionName != null && provider.versionName.startsWith("69.");
     }
 
     private void applyWindowPalette() {
@@ -424,32 +433,29 @@ public final class MainActivity extends AppActivity {
             }
             if (isLocal(url)) {
                 String path = url.getEncodedPath();
+                boolean handbookCommand = isHandbook(view.getUrl()) && "GET".equals(request.getMethod())
+                        && url.getEncodedQuery() == null && url.getEncodedFragment() == null && !request.isRedirect();
                 if (ProgressBackup.SAVE_PATH.equals(path) || ProgressBackup.OPEN_PATH.equals(path)) {
-                    if (isHandbook(view.getUrl()) && request.hasGesture() && "GET".equals(request.getMethod())
-                            && url.getEncodedQuery() == null && url.getEncodedFragment() == null && !request.isRedirect()) {
+                    if (handbookCommand && request.hasGesture()) {
                         if (ProgressBackup.SAVE_PATH.equals(path)) progressBackup.requestSave();
                         else progressBackup.requestOpen();
                     }
                     return true;
                 }
                 if (ExamHtmlExport.SAVE_PATH.equals(path) || ExamHtmlExport.FORGET_PATH.equals(path)) {
-                    if (isHandbook(view.getUrl()) && request.hasGesture() && "GET".equals(request.getMethod())
-                            && url.getEncodedQuery() == null && url.getEncodedFragment() == null && !request.isRedirect()) {
+                    if (handbookCommand && request.hasGesture()) {
                         if (ExamHtmlExport.SAVE_PATH.equals(path)) examExport.requestSave();
                         else examExport.forgetProfile();
                     }
                     return true;
                 }
                 if (path != null && path.startsWith(APPEARANCE_PATH)) {
-                    if (isHandbook(view.getUrl()) && "GET".equals(request.getMethod())
-                            && url.getEncodedQuery() == null && url.getEncodedFragment() == null && !request.isRedirect()) {
+                    if (handbookCommand) {
                         selectAppearance(path.substring(APPEARANCE_PATH.length()));
                     }
                     return true;
                 }
-                if (path != null && path.startsWith(REMINDER_PATH) && isHandbook(view.getUrl())
-                        && "GET".equals(request.getMethod()) && url.getEncodedQuery() == null
-                        && url.getEncodedFragment() == null && !request.isRedirect()) {
+                if (path != null && path.startsWith(REMINDER_PATH) && handbookCommand) {
                     handleReminderCommand(path.substring(REMINDER_PATH.length()), request.hasGesture());
                 }
                 return !isHandbook(url.toString());

@@ -2,7 +2,7 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { verifyExamData } from './verify-exam-data.mjs';
 
-const [, , sourcePath, assetDirectory, scriptPath, version] = process.argv;
+const [, , sourcePath, assetDirectory, scriptPath, version, desktopPath] = process.argv;
 const input = readFileSync(sourcePath, 'utf8');
 verifyExamData(input);
 const versionLabel = /(<span id="app-version">)[^<]+(<\/span>)/;
@@ -16,8 +16,8 @@ if (scripts.length !== 1) {
 }
 
 const mobileStyle = readFileSync(new URL('./handbook-mobile.css', import.meta.url), 'utf8');
-const handbook = input
-  .replace(versionLabel, (_label, tagStart, tagEnd) => tagStart + version + tagEnd)
+const versionedHandbook = input.replace(versionLabel, (_label, tagStart, tagEnd) => tagStart + version + tagEnd);
+const handbook = versionedHandbook
   // Keep WebView links in the main frame so HandbookClient can dispatch them externally.
   .replace(/(<a\b[^>]*?) target="_blank"/gi, '$1')
   .replace(/^\s*<link[^>]+href="https:\/\/fonts\.(?:googleapis|gstatic)\.com[^"]*"[^>]*>/gm, '')
@@ -31,3 +31,11 @@ if (unexpectedLocalFiles.length > 0) {
 writeFileSync(join(assetDirectory, 'ham_prepare_ru.html'), handbook);
 
 writeFileSync(scriptPath, scripts[0][1]);
+
+if (desktopPath) {
+  writeFileSync(desktopPath, versionedHandbook, { flag: 'wx' });
+  const desktop = readFileSync(desktopPath, 'utf8');
+  if (desktop !== versionedHandbook) {
+    throw new Error('Desktop handbook differs from the versioned source');
+  }
+}

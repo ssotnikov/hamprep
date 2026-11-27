@@ -13,6 +13,7 @@ $ErrorActionPreference = 'Stop'
 $manifestText = [IO.File]::ReadAllText((Join-Path $PSScriptRoot 'AndroidManifest.xml'))
 $manifestXml = [xml] $manifestText
 $version = $manifestXml.DocumentElement.GetAttribute('versionName', 'http://schemas.android.com/apk/res/android')
+$versionCode = $manifestXml.DocumentElement.GetAttribute('versionCode', 'http://schemas.android.com/apk/res/android')
 $standardRelease = -not $Output -and -not $DebugWebView
 if (-not $Output) {
     if (-not $version -or $version.IndexOfAny([IO.Path]::GetInvalidFileNameChars()) -ge 0 -or
@@ -24,6 +25,13 @@ if (-not $Output) {
     $Output = Join-Path $releaseDirectory $apkName
 }
 $destination = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($Output)
+$desktopName = 'ham_prepare_ru.html'
+if ($standardRelease) {
+    $desktopDestination = Join-Path ([IO.Path]::GetDirectoryName($destination)) $desktopName
+    if ((Test-Path -LiteralPath $destination) -or (Test-Path -LiteralPath $desktopDestination)) {
+        throw 'Standard release artifacts already exist for this version'
+    }
+}
 $telegramDirectory = Join-Path $env:LOCALAPPDATA 'RadioExam\Telegram'
 $sendToTelegram = $standardRelease -and -not $SkipTelegram -and
     (Test-Path -LiteralPath (Join-Path $telegramDirectory 'delivery.json') -PathType Leaf)
@@ -60,8 +68,13 @@ try {
     $classes = [IO.Directory]::CreateDirectory((Join-Path $work 'classes')).FullName
     $dex = [IO.Directory]::CreateDirectory((Join-Path $work 'dex')).FullName
     $inputScript = Join-Path $work 'input.js'
-    Invoke-BuildTool node.exe @((Join-Path $PSScriptRoot 'prepare-handbook.mjs'),
+    $handbookArguments = @((Join-Path $PSScriptRoot 'prepare-handbook.mjs'),
         (Join-Path $PSScriptRoot '..\html\ham_prepare_ru.html'), $assets, $inputScript, $version)
+    if ($standardRelease) {
+        $desktopSource = Join-Path $work $desktopName
+        $handbookArguments += $desktopSource
+    }
+    Invoke-BuildTool node.exe $handbookArguments
     Invoke-BuildTool npm.cmd @('exec', '--yes', '--package=esbuild@0.25.12', '--', 'esbuild',
         $inputScript, '--target=chrome69', "--outfile=$assets\handbook.js", '--log-level=warning')
 
@@ -113,7 +126,29 @@ try {
         $telegramHash = (Get-FileHash -LiteralPath $signed -Algorithm SHA256).Hash
     }
     [IO.Directory]::CreateDirectory([IO.Path]::GetDirectoryName($destination)) | Out-Null
-    [IO.File]::Copy($signed, $destination, $true)
+    if ($standardRelease) {
+        # Stage both files on the destination volume before exposing the release APK.
+        $stagingId = [Guid]::NewGuid().ToString('N')
+        $stagedApk = "$destination.$stagingId.tmp"
+        $stagedDesktop = "$desktopDestination.$stagingId.tmp"
+        $desktopInstalled = $false
+        try {
+            [IO.File]::Copy($signed, $stagedApk)
+            [IO.File]::Copy($desktopSource, $stagedDesktop)
+            if (Test-Path -LiteralPath $destination) { throw 'Release APK already exists' }
+            [IO.File]::Move($stagedDesktop, $desktopDestination)
+            $desktopInstalled = $true
+            [IO.File]::Move($stagedApk, $destination)
+        } catch {
+            if ($desktopInstalled) { [IO.File]::Delete($desktopDestination) }
+            throw
+        } finally {
+            [IO.File]::Delete($stagedApk)
+            [IO.File]::Delete($stagedDesktop)
+        }
+    } else {
+        [IO.File]::Copy($signed, $destination, $true)
+    }
     Get-Item -LiteralPath $destination
 } finally {
     $env:JAVA_HOME = $previousJavaHome
@@ -123,6 +158,14 @@ try {
     if ([IO.Path]::GetDirectoryName($resolvedWork) -eq $tempRoot.TrimEnd('\') -and
         [IO.Path]::GetFileName($resolvedWork).StartsWith('hamprepru-')) {
         [IO.Directory]::Delete($resolvedWork, $true)
+    }
+}
+
+if ($standardRelease) {
+    try {
+        & (Join-Path $PSScriptRoot 'publish-handbook.ps1') -Path $desktopDestination -VersionCode $versionCode
+    } catch {
+        throw "Release files were created, but desktop publication failed. Retry publish-handbook.ps1 with versionCode $versionCode and '$desktopDestination'. $($_.Exception.Message)"
     }
 }
 
