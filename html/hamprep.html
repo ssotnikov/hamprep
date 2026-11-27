@@ -16,7 +16,10 @@
       let androidTheme;
       let paletteFrame;
       const androidHost = location.origin === 'https://appassets.androidplatform.net';
-      if (!androidHost) document.documentElement.setAttribute('data-browser-handbook', '');
+      if (!androidHost) {
+        document.documentElement.setAttribute('data-browser-handbook', '');
+        document.documentElement.setAttribute('data-desktop-home-pending', '');
+      }
 
       try {
         const saved = localStorage.getItem(storageKey);
@@ -3093,6 +3096,8 @@
 
     @media (min-width: 901px) {
       :root[data-browser-handbook] { scroll-behavior: auto; }
+      :root[data-browser-handbook] { --desktop-close-edge: #899aae; }
+      :root[data-browser-handbook][data-palette="dark"] { --desktop-close-edge: #879bb3; }
       [data-browser-handbook] .theme-choice .system-icon-phone { display: none; }
       [data-browser-handbook] .theme-choice .system-icon-desktop { display: block; }
       [data-browser-handbook] .pinned-topbar-inner { padding-top: 10px; }
@@ -3107,6 +3112,7 @@
         text-decoration: none;
       }
       [data-browser-handbook] .version-group .app-version { display: block; margin: 2px 0 0; }
+      [data-browser-handbook][data-desktop-home-pending] #home { visibility: hidden; }
       [data-browser-handbook] .desktop-home:not([hidden]) {
         display: grid;
         clear: both;
@@ -3241,10 +3247,81 @@
         width: auto;
         padding-inline: .65em;
       }
-      [data-browser-handbook] .find-panel {
-        left: auto;
-        right: max(20px, calc((100% - 1200px) / 2 + var(--toolbar-gutter)));
-        width: min(32rem, calc(100% - 40px));
+      [data-browser-handbook] .find-panel:not([hidden]) {
+        position: static;
+        display: grid;
+        grid-template-columns: minmax(0, 35rem) max-content max-content minmax(0, 1fr) 44px;
+        align-items: center;
+        gap: 4px 10px;
+        margin-top: 6px;
+        padding: 6px 8px;
+        border-radius: 6px;
+        box-shadow: none;
+      }
+      [data-browser-handbook] .find-panel :is(.find-input-row, .find-controls) { display: contents; }
+      [data-browser-handbook] .find-panel .find-query-field { grid-column: 1; grid-row: 1; }
+      [data-browser-handbook] .find-panel #find-query {
+        height: 40px;
+        background: var(--background);
+      }
+      [data-browser-handbook] .find-panel .find-exact { grid-column: 2; grid-row: 1; font-size: .875rem; }
+      [data-browser-handbook] .find-panel .find-nav { grid-column: 3; grid-row: 1; gap: 4px; margin: 0; }
+      [data-browser-handbook] #find-panel .find-nav button { border-radius: 7px; }
+      [data-browser-handbook] #find-panel #find-count {
+        grid-column: 4;
+        grid-row: 1;
+        justify-self: end;
+        color: var(--find-text);
+        font-size: .94rem;
+        font-weight: 700;
+        white-space: normal;
+        text-align: right;
+      }
+      [data-browser-handbook] #find-panel #find-close {
+        grid-column: 5;
+        grid-row: 1;
+        margin-left: 0;
+        border: 1px solid var(--desktop-close-edge);
+        border-radius: 11px;
+        color: var(--on-surface);
+        background: var(--ui-tone);
+      }
+      [data-browser-handbook] #find-panel #find-close:is(:hover, :focus-visible) { background: var(--ui-focus); }
+      [data-browser-handbook] #find-panel .find-feedback {
+        grid-column: 1 / -1;
+        grid-row: 2;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: baseline;
+        gap: 0 12px;
+      }
+      [data-browser-handbook] #find-panel .find-feedback:has(> :not([hidden])) { padding-inline: 2px; }
+      [data-browser-handbook] #find-panel .find-feedback:not(:has(> :not([hidden]))) { display: none; }
+      [data-browser-handbook] #find-panel :is(#find-context, #find-empty, #find-partial) {
+        margin: 0;
+        font-size: .875rem;
+      }
+      [data-browser-handbook] #find-panel #find-partial { min-height: 26px; padding: 0 3px; }
+      [data-browser-handbook] #find-panel :is(button, input, #find-close, #find-clear, #find-query):focus-visible {
+        outline: none;
+        box-shadow: inset 0 -2px var(--find-accent);
+      }
+      [data-browser-handbook] dialog :is(
+        .dialog-head-close, .history-close, #progress-backup-close, #spaced-close,
+        #exam-export-cancel, button[value="close"], button[value="cancel"], .exam-checklist-bar button
+      ) { border: 1px solid var(--desktop-close-edge); }
+      [data-browser-handbook] .desktop-home .preparation-source .caption {
+        color: var(--on-surface-variant);
+        font-size: .875rem;
+      }
+      [data-browser-handbook] .desktop-home [data-preparation-count] {
+        color: var(--on-surface);
+        font-size: 1rem;
+        font-weight: 700;
+      }
+      [data-browser-handbook] #mock-exam.exam-in-progress :is(#exam-question-number, #exam-timer-display) {
+        font-size: 1.05rem;
+        font-weight: 750;
       }
       [data-browser-handbook] #mock-exam.exam-in-progress {
         width: 100cqw;
@@ -3549,6 +3626,60 @@
         тематические задания с разбором и пробный билет для выбранной категории.
       </p>
     </header>
+    <script id="desktop-home-bootstrap">
+      (() => {
+        const root = document.documentElement;
+        if (!root.hasAttribute('data-browser-handbook')) return;
+        try {
+          function initDesktopPreparation(wide) {
+            const board = document.querySelector('.desktop-home');
+            const next = board.querySelector('.desktop-next');
+            const progress = board.querySelector('.desktop-progress');
+            const settings = document.querySelector('.desktop-settings');
+            const introduction = document.querySelector('#home > .lede');
+            const introductionOrigin = document.createComment('Compact introduction position');
+            introduction.before(introductionOrigin);
+            const placements = [
+              [next, '.home-category', '.home-primary', '.home-actions', '#home-review-secondary'],
+              [progress, '#global-progress-panel', '#home-quick-entry'],
+              [settings, '.preparation-settings']
+            ].flatMap(([destination, ...selectors]) => selectors.map(selector => {
+              const element = document.querySelector(selector);
+              const origin = document.createComment('Compact layout position');
+              element.before(origin);
+              return {element, destination, origin};
+            }));
+
+            function syncLayout() {
+              const active = document.activeElement;
+              for (const {element, destination, origin} of placements) {
+                if (wide.matches) destination.append(element);
+                else origin.after(element);
+              }
+              if (wide.matches) board.before(introduction);
+              else introductionOrigin.after(introduction);
+              board.hidden = settings.hidden = !wide.matches;
+              if (!wide.matches) settings.open = false;
+              if (active !== document.body && active.getClientRects().length) active.focus({preventScroll: true});
+            }
+            document.addEventListener('click', event => {
+              if (settings.open && !settings.contains(event.target) && !event.target.closest('dialog')) settings.open = false;
+            });
+            settings.addEventListener('keydown', event => {
+              if (event.key !== 'Escape' || !settings.open || event.defaultPrevented) return;
+              event.preventDefault();
+              settings.open = false;
+              settings.querySelector('summary').focus();
+            });
+            wide.addEventListener('change', syncLayout);
+            syncLayout();
+          }
+          initDesktopPreparation(matchMedia('(min-width: 901px)'));
+        } finally {
+          root.removeAttribute('data-desktop-home-pending');
+        }
+      })();
+    </script>
 
     <nav id="topics" class="mobile-toc" aria-labelledby="program-title">
       <h2 id="program-title">Разделы программы</h2>
@@ -11249,6 +11380,10 @@ ${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="co
       const partial = document.getElementById('find-partial');
       const previous = document.getElementById('find-prev');
       const next = document.getElementById('find-next');
+      const close = document.getElementById('find-close');
+      const topBar = document.querySelector('.pinned-topbar');
+      const desktop = document.documentElement.hasAttribute('data-browser-handbook')
+        && matchMedia('(min-width: 901px)');
       const blockSelector = 'address, blockquote, caption, dd, div, dt, figcaption, h1, h2, h3, h4, h5, h6, label, li, p, pre, summary, td, th, tr';
       const excludedSelector = 'button, a.button, [role="button"], [role="tab"], nav, .toc-aside, .browser-topics, .ui-dropdown, .appearance-row, [hidden], script, select, style, svg, textarea';
       const inputDelay = 350;
@@ -11258,6 +11393,45 @@ ${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="co
       let pendingSearch;
       let composing = false;
       let searchedTerm = '';
+
+      function measureSearchBar() {
+        document.documentElement.style.setProperty('--pinned-top-height', topBar.offsetHeight + 'px');
+      }
+
+      if (desktop) {
+        const panelOrigin = document.createComment('Compact search panel position');
+        const closeOrigin = document.createComment('Compact search close position');
+        const feedback = document.createElement('div');
+        feedback.className = 'find-feedback';
+        panel.before(panelOrigin);
+        close.before(closeOrigin);
+        function syncSearchLayout() {
+          const focused = document.activeElement;
+          if (desktop.matches) {
+            topBar.querySelector('.pinned-topbar-inner').append(panel);
+            panel.append(close, feedback);
+            feedback.append(context, empty, partial);
+          } else {
+            panelOrigin.after(panel);
+            closeOrigin.after(close);
+            panel.append(context, empty, partial);
+            feedback.remove();
+          }
+          measureSearchBar();
+          if (!panel.hidden && panel.contains(focused)) focused.focus({preventScroll: true});
+          if (activeIndex !== -1) showMatch(activeIndex, true);
+        }
+        desktop.addEventListener('change', syncSearchLayout);
+        syncSearchLayout();
+        if (window.ResizeObserver) {
+          new ResizeObserver(() => {
+            if (!desktop.matches || panel.hidden) return;
+            measureSearchBar();
+            const active = matches[activeIndex]?.[0];
+            if (active?.isConnected) revealMatch(active, false);
+          }).observe(panel);
+        }
+      }
 
       function clearHighlights() {
         const parents = new Set();
@@ -11327,9 +11501,31 @@ ${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="co
         const section = mark?.closest('.study-section');
         const title = section?.querySelector('h2')?.textContent.trim();
         const chapter = section?.id.match(/^sec-([1-8])$/);
-        const label = title && chapter ? 'Глава ' + chapter[1] + ' · ' + title : title || '';
+        let label = title && chapter ? 'Глава ' + chapter[1] + ' · ' + title : title || '';
+        if (desktop?.matches && label && mark.closest('table')) label += ' · Таблица';
         if (context.textContent !== label) context.textContent = label;
         context.hidden = !label;
+      }
+
+      function revealMatch(active, center) {
+        if (desktop?.matches) {
+          measureSearchBar();
+          const table = active.closest('.table-wrap');
+          if (table) {
+            const frame = table.getBoundingClientRect();
+            const hit = active.getBoundingClientRect();
+            if (hit.left < frame.left) table.scrollLeft += hit.left - frame.left - 6;
+            else if (hit.right > frame.right) table.scrollLeft += hit.right - frame.right + 6;
+          }
+        }
+        const viewport = window.visualViewport;
+        const top = Math.max(viewport?.offsetTop ?? 0, panel.getBoundingClientRect().bottom) + 8;
+        const bottom = (viewport?.offsetTop ?? 0) + (viewport?.height ?? window.innerHeight) - 8;
+        const mark = active.getBoundingClientRect();
+        if (!center && mark.top >= top && mark.bottom <= bottom) return;
+        const target = Math.max(top, (top + bottom - mark.height) / 2);
+        readingTools.suspend();
+        window.scrollBy({ top: mark.top - target, behavior: 'instant' });
       }
 
       function showMatch(index, scroll) {
@@ -11340,18 +11536,12 @@ ${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="co
         activeIndex = (index + matches.length) % matches.length;
         const active = matches[activeIndex];
         for (const mark of active) mark.classList.add('is-active');
-        count.textContent = (activeIndex + 1) + ' из ' + matches.length;
+        count.textContent = (desktop?.matches ? 'Совпадение ' : '') + (activeIndex + 1) + ' из ' + matches.length;
         updateMatchContext(active[0]);
         if (scroll) {
           const details = active[0].closest('details[data-find-expand]');
           if (details && !active[0].closest('summary')) details.open = true;
-          const viewport = window.visualViewport;
-          const top = Math.max(viewport?.offsetTop ?? 0, panel.getBoundingClientRect().bottom) + 8;
-          const bottom = (viewport?.offsetTop ?? 0) + (viewport?.height ?? window.innerHeight) - 8;
-          const mark = active[0].getBoundingClientRect();
-          const target = Math.max(top, (top + bottom - mark.height) / 2);
-          readingTools.suspend();
-          window.scrollBy({ top: mark.top - target, behavior: 'instant' });
+          revealMatch(active[0], true);
         }
       }
 
@@ -11393,6 +11583,7 @@ ${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="co
         clearHighlights();
         updateMatchContext();
         panel.hidden = true;
+        if (desktop?.matches) measureSearchBar();
         toggle.setAttribute('aria-expanded', 'false');
         if (restoreFocus) toggle.focus({ preventScroll: true });
       }
@@ -11403,6 +11594,7 @@ ${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="co
           return;
         }
         panel.hidden = false;
+        if (desktop?.matches) measureSearchBar();
         toggle.setAttribute('aria-expanded', 'true');
         query.focus({ preventScroll: true });
         refreshMatches();
@@ -11448,7 +11640,7 @@ ${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="co
       }
       previous.addEventListener('click', () => moveMatch(-1));
       next.addEventListener('click', () => moveMatch(1));
-      document.getElementById('find-close').addEventListener('click', () => closeSearch());
+      close.addEventListener('click', () => closeSearch());
       document.addEventListener('click', event => {
         if (!panel.hidden && !panel.contains(event.target) && !toggle.contains(event.target)) {
           closeSearch(false);
@@ -11461,50 +11653,6 @@ ${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="co
           moveMatch(event.shiftKey ? -1 : 1);
         }
       });
-    }
-
-    function initDesktopPreparation(wide) {
-      const board = document.querySelector('.desktop-home');
-      const next = board.querySelector('.desktop-next');
-      const progress = board.querySelector('.desktop-progress');
-      const settings = document.querySelector('.desktop-settings');
-      const introduction = document.querySelector('#home > .lede');
-      const introductionOrigin = document.createComment('Compact introduction position');
-      introduction.before(introductionOrigin);
-      const placements = [
-        [next, '.home-category', '.home-primary', '.home-actions', '#home-review-secondary'],
-        [progress, '#global-progress-panel', '#home-quick-entry'],
-        [settings, '.preparation-settings']
-      ].flatMap(([destination, ...selectors]) => selectors.map(selector => {
-        const element = document.querySelector(selector);
-        const origin = document.createComment('Compact layout position');
-        element.before(origin);
-        return {element, destination, origin};
-      }));
-
-      function syncLayout() {
-        const active = document.activeElement;
-        for (const {element, destination, origin} of placements) {
-          if (wide.matches) destination.append(element);
-          else origin.after(element);
-        }
-        if (wide.matches) board.before(introduction);
-        else introductionOrigin.after(introduction);
-        board.hidden = settings.hidden = !wide.matches;
-        if (!wide.matches) settings.open = false;
-        if (active !== document.body && active.getClientRects().length) active.focus({preventScroll: true});
-      }
-      document.addEventListener('click', event => {
-        if (settings.open && !settings.contains(event.target) && !event.target.closest('dialog')) settings.open = false;
-      });
-      settings.addEventListener('keydown', event => {
-        if (event.key !== 'Escape' || !settings.open || event.defaultPrevented) return;
-        event.preventDefault();
-        settings.open = false;
-        settings.querySelector('summary').focus();
-      });
-      wide.addEventListener('change', syncLayout);
-      syncLayout();
     }
 
     function initTopicsNavigation(pushHash) {
@@ -11642,7 +11790,6 @@ ${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="co
       const bottomPanel = document.querySelector('.sections-panel');
       const browser = root.hasAttribute('data-browser-handbook');
       const wide = browser && matchMedia('(min-width: 901px)');
-      if (wide) initDesktopPreparation(wide);
       const browserLinks = [...topBar.querySelectorAll('.browser-routes a')];
       const updateCurrentTopic = initTopicsNavigation(pushHash);
       const sections = [
@@ -12968,7 +13115,8 @@ ${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="co
           }
         }
         get('replay').textContent = task ? 'Переслушать реплику' : 'Переслушать позывной';
-        get('next').textContent = task ? 'Следующее задание' : 'Новый позывной';        answer.value = typed;
+        get('next').textContent = task ? 'Следующее задание' : 'Новый позывной';
+        answer.value = typed;
         answer.readOnly = true;
         check.disabled = true;
         form.hidden = true;
