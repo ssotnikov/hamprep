@@ -11307,6 +11307,9 @@ ${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="co
       const next = board.querySelector('.desktop-next');
       const progress = board.querySelector('.desktop-progress');
       const settings = document.querySelector('.desktop-settings');
+      const introduction = document.querySelector('#home > .lede');
+      const introductionOrigin = document.createComment('Compact introduction position');
+      introduction.before(introductionOrigin);
       const placements = [
         [next, '.home-category', '.home-primary', '.home-actions', '#home-review-secondary'],
         [progress, '#global-progress-panel', '#home-quick-entry'],
@@ -11324,6 +11327,8 @@ ${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="co
           if (wide.matches) destination.append(element);
           else origin.after(element);
         }
+        if (wide.matches) board.before(introduction);
+        else introductionOrigin.after(introduction);
         board.hidden = settings.hidden = !wide.matches;
         if (!wide.matches) settings.open = false;
         if (active !== document.body && active.getClientRects().length) active.focus({preventScroll: true});
