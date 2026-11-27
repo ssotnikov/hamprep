@@ -309,6 +309,7 @@
       color: var(--scheme-selected-ink);
     }
     .theme-choice input:focus-visible + span { background: var(--scheme-selected); }
+    .theme-choice .system-icon-desktop { display: none; }
     .theme-choice svg {
       width: 20px;
       height: 20px;
@@ -3069,6 +3070,8 @@
     }
 
     @media (min-width: 901px) {
+      [data-browser-handbook] .theme-choice .system-icon-phone { display: none; }
+      [data-browser-handbook] .theme-choice .system-icon-desktop { display: block; }
       [data-browser-handbook] .handbook-shell {
         grid-template-columns: minmax(13rem, 15rem) minmax(0, 1fr);
         margin-top: var(--space-md);
@@ -3162,7 +3165,7 @@
         <div class="theme-choice" role="group" aria-label="Оформление">
           <label title="Системная тема">
             <input type="radio" name="appearance" value="system" aria-label="Системная тема" checked>
-            <span><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="2.5" width="12" height="19" rx="3"/><path d="M10 18h4"/></svg></span>
+            <span><svg class="system-icon-phone" viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="2.5" width="12" height="19" rx="3"/><path d="M10 18h4"/></svg><svg class="system-icon-desktop" viewBox="0 0 24 24" aria-hidden="true"><rect x="2.5" y="3.5" width="19" height="13" rx="2"/><path d="M12 16.5v4m-4 0h8"/></svg></span>
           </label>
           <label title="Светлая тема">
             <input type="radio" name="appearance" value="light" aria-label="Светлая тема">
