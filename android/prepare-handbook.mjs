@@ -28,7 +28,7 @@ const unexpectedLocalFiles = [...handbook.matchAll(/\bhref="([^"#?:]+\.[^"?#]+)(
 if (unexpectedLocalFiles.length > 0) {
   throw new Error(`Unbundled local references: ${unexpectedLocalFiles.map(match => match[1]).join(', ')}`);
 }
-writeFileSync(join(assetDirectory, 'ham_prepare_ru.html'), handbook);
+writeFileSync(join(assetDirectory, 'hamprep.html'), handbook);
 
 writeFileSync(scriptPath, scripts[0][1]);
 

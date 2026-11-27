@@ -25,9 +25,9 @@ if (-not $Output) {
     $Output = Join-Path $releaseDirectory $apkName
 }
 $destination = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($Output)
-$desktopName = 'ham_prepare_ru.html'
+$handbookName = 'hamprep.html'
 if ($standardRelease) {
-    $desktopDestination = Join-Path ([IO.Path]::GetDirectoryName($destination)) $desktopName
+    $desktopDestination = Join-Path ([IO.Path]::GetDirectoryName($destination)) $handbookName
     if ((Test-Path -LiteralPath $destination) -or (Test-Path -LiteralPath $desktopDestination)) {
         throw 'Standard release artifacts already exist for this version'
     }
@@ -69,9 +69,9 @@ try {
     $dex = [IO.Directory]::CreateDirectory((Join-Path $work 'dex')).FullName
     $inputScript = Join-Path $work 'input.js'
     $handbookArguments = @((Join-Path $PSScriptRoot 'prepare-handbook.mjs'),
-        (Join-Path $PSScriptRoot '..\html\ham_prepare_ru.html'), $assets, $inputScript, $version)
+        (Join-Path $PSScriptRoot "..\html\$handbookName"), $assets, $inputScript, $version)
     if ($standardRelease) {
-        $desktopSource = Join-Path $work $desktopName
+        $desktopSource = Join-Path $work $handbookName
         $handbookArguments += $desktopSource
     }
     Invoke-BuildTool node.exe $handbookArguments

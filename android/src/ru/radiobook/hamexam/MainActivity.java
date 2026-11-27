@@ -33,7 +33,9 @@ import java.util.regex.Pattern;
 
 public final class MainActivity extends AppActivity {
     private static final String HOST = "appassets.androidplatform.net";
-    private static final String PAGE_PATH = "/ham_prepare_ru.html";
+    private static final String PAGE_ASSET = "hamprep.html";
+    private static final String PAGE_PATH = "/" + PAGE_ASSET;
+    private static final String SAVED_PAGE_PATH = "handbookPagePath";
     private static final String SCRIPT_PATH = "/handbook.js";
     private static final String PAGE_URL = "https://" + HOST + PAGE_PATH;
 
@@ -110,7 +112,8 @@ public final class MainActivity extends AppActivity {
         applyWindowPalette();
         webView.postDelayed(startupTimeout, STARTUP_TIMEOUT_MS);
 
-        if (state == null || webView.restoreState(state) == null) {
+        if (state == null || !PAGE_PATH.equals(state.getString(SAVED_PAGE_PATH))
+                || webView.restoreState(state) == null) {
             webView.loadUrl(PAGE_URL);
         }
         if (Build.VERSION.SDK_INT >= 33) {
@@ -123,6 +126,7 @@ public final class MainActivity extends AppActivity {
     protected void onSaveInstanceState(Bundle state) {
         super.onSaveInstanceState(state);
         state.putBoolean("requestingReminderPermission", requestingPermission);
+        state.putString(SAVED_PAGE_PATH, PAGE_PATH);
         webView.saveState(state);
         examExport.saveState(state);
     }
@@ -411,7 +415,7 @@ public final class MainActivity extends AppActivity {
                 try {
                     if (PAGE_PATH.equals(path)) {
                         return new WebResourceResponse("text/html", "UTF-8",
-                                getAssets().open("ham_prepare_ru.html"));
+                                getAssets().open(PAGE_ASSET));
                     }
                     if (SCRIPT_PATH.equals(path)) {
                         return new WebResourceResponse("text/javascript", "UTF-8",

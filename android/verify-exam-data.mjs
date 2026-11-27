@@ -103,7 +103,7 @@ export function verifyExamData(html) {
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  const source = process.argv[2] ?? new URL('../html/ham_prepare_ru.html', import.meta.url);
+  const source = process.argv[2] ?? new URL('../html/hamprep.html', import.meta.url);
   verifyExamData(readFileSync(source, 'utf8'));
   console.log('Exam data verified against Order No. 224');
 }

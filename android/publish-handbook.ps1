@@ -7,10 +7,11 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
+$artifactName = 'hamprep.html'
 $file = Get-Item -LiteralPath $Path
-if ($file.PSIsContainer -or $file.Name -ne 'ham_prepare_ru.html' -or
+if ($file.PSIsContainer -or $file.Name -ne $artifactName -or
     $file.Length -eq 0 -or $file.Length -gt 64MB) {
-    throw 'Expected a non-empty release ham_prepare_ru.html of at most 64 MiB'
+    throw "Expected a non-empty release $artifactName of at most 64 MiB"
 }
 $identity = (Get-Item -LiteralPath $IdentityFile).FullName
 $hash = (Get-FileHash -LiteralPath $file.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
@@ -44,7 +45,7 @@ try {
 }
 
 $url = 'https://hamprep.ssotnikov.pro/'
-$artifactUrl = $url + 'ham_prepare_ru.html'
+$artifactUrl = $url + $artifactName
 $download = [IO.Path]::GetTempFileName()
 try {
     & curl.exe --fail --silent --show-error --retry 2 --retry-delay 1 --connect-timeout 10 --max-time 90 `
