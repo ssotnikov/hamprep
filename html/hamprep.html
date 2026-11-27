@@ -1369,7 +1369,7 @@
       .exam-bar-progress { display: contents; }
       #exam-question-number { grid-area: 1 / 1; }
       .exam-counts { grid-area: 1 / 2; justify-self: center; }
-      .exam-bar-progress .exam-timer { grid-area: 1 / 3; }
+      .exam-bar-progress .desktop-exam-clock { grid-area: 1 / 3; }
       .exam-bar-actions { grid-column: 1 / -1; justify-content: end; }
     }
     @media (max-width: 359px) {
@@ -3055,6 +3055,26 @@
 
     .browser-brand, .browser-routes, .desktop-settings, .desktop-home,
     .desktop-practice-links, .find-toggle-label, .browser-topics { display: none; }
+    .desktop-exam-map, .desktop-exam-return, .desktop-exam-clock-label { display: none; }
+    [data-browser-handbook] .exam-active-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px 10px;
+      margin-block: 8px 12px;
+    }
+    .exam-unanswered-key { display: inline-flex; align-items: center; gap: 5px; }
+    .exam-unanswered-key::before {
+      content: "";
+      width: 12px;
+      height: 12px;
+      border: 1px solid var(--outline);
+      border-radius: 3px;
+      background: var(--background);
+    }
+    [data-browser-handbook] #exam-action-grid .exam-num-btn:not(.is-current):not(.is-answered) {
+      border-color: var(--outline-variant);
+      background: var(--background);
+    }
     .browser-save-status:not(:empty) {
       padding: .35em .5em;
       color: var(--error-text);
@@ -3161,8 +3181,10 @@
       }
       [data-browser-handbook] .desktop-settings .preparation-settings h2 { display: none; }
       [data-browser-handbook] .handbook-shell {
-        grid-template-columns: minmax(13rem, 15rem) minmax(0, 1fr);
+        --desktop-toc-width: 15rem;
+        grid-template-columns: var(--desktop-toc-width) minmax(0, 1fr);
         margin-top: var(--space-md);
+        container-type: inline-size;
       }
       [data-browser-handbook] .handbook-shell > main {
         width: min(100%, 76ch);
@@ -3223,6 +3245,109 @@
         left: auto;
         right: max(20px, calc((100% - 1200px) / 2 + var(--toolbar-gutter)));
         width: min(32rem, calc(100% - 40px));
+      }
+      [data-browser-handbook] #mock-exam.exam-in-progress {
+        width: 100cqw;
+        margin-inline-start: calc((100% - 100cqw - var(--desktop-toc-width) - var(--space-xl)) / 2);
+        min-height: calc(100vh - var(--pinned-top-height));
+      }
+      [data-browser-handbook] #mock-exam.exam-in-progress :is(
+        #exam-status-tag, #exam-category, .exam-facts, #exam-cw-note, .exam-launch, .exam-online, #exam-list-btn
+      ) { display: none; }
+      [data-browser-handbook] #mock-exam.exam-in-progress .desktop-exam-return { display: inline-flex; }
+      [data-browser-handbook] #mock-exam.exam-in-progress .exam-bar {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 6px 14px;
+        padding: 9px 12px;
+        background: var(--surface-container-low);
+        box-shadow: none;
+      }
+      [data-browser-handbook] #mock-exam.exam-in-progress .exam-bar-progress { display: contents; }
+      [data-browser-handbook] #mock-exam.exam-in-progress .exam-counts { display: flex; gap: 10px; font-size: .85rem; }
+      [data-browser-handbook] #mock-exam.exam-in-progress .desktop-exam-clock {
+        display: inline-flex;
+        align-items: baseline;
+        gap: 7px;
+        order: 1;
+        margin-inline-start: auto;
+      }
+      [data-browser-handbook] #mock-exam.exam-in-progress .desktop-exam-clock-label {
+        display: inline;
+        color: var(--on-surface-variant);
+        font-size: .85rem;
+      }
+      [data-browser-handbook] #mock-exam.exam-in-progress .exam-bar-actions {
+        display: flex;
+        gap: 6px;
+        order: 2;
+      }
+      [data-browser-handbook] #mock-exam.exam-in-progress .exam-body {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(17rem, 19rem);
+        align-items: start;
+        gap: 14px;
+        margin-top: 14px;
+      }
+      [data-browser-handbook] #mock-exam.exam-in-progress #exam-workspace,
+      [data-browser-handbook] #mock-exam.exam-in-progress .desktop-exam-map {
+        padding: 14px 16px;
+        border: 1px solid var(--outline-variant);
+        border-radius: 12px;
+      }
+      [data-browser-handbook] #mock-exam.exam-in-progress #exam-workspace .question-card { padding-top: 0; }
+      [data-browser-handbook] #mock-exam.exam-in-progress #exam-workspace :is(.options-list, .exam-question-actions) { max-width: none; }
+      [data-browser-handbook] #mock-exam.exam-in-progress .desktop-exam-map {
+        display: block;
+        background: var(--surface-container-low);
+      }
+      [data-browser-handbook] .desktop-exam-map h3 { margin: 0 0 10px; font-size: 1.12rem; }
+      [data-browser-handbook] .desktop-exam-map .exam-nav-grid {
+        display: grid;
+        grid-template-columns: repeat(6, minmax(0, 1fr));
+        gap: 5px;
+        margin: 0;
+      }
+      [data-browser-handbook] .desktop-exam-map .exam-num-btn {
+        position: relative;
+        min-width: 0;
+        min-height: 36px;
+        padding: 1px;
+        border-color: var(--outline-variant);
+        background: var(--background);
+        color: var(--on-surface);
+        border-radius: 6px;
+      }
+      [data-browser-handbook] .desktop-exam-map .exam-num-btn:not(.is-answered):not(.is-current) {
+        border-color: var(--outline-variant);
+        background: var(--background);
+      }
+      [data-browser-handbook] .desktop-exam-map .exam-num-btn.is-answered {
+        border-color: var(--positive);
+        background: var(--positive-container);
+        color: var(--on-positive-container);
+      }
+      [data-browser-handbook] .desktop-exam-map .exam-num-btn.is-marked { border-color: var(--warning); }
+      [data-browser-handbook] .desktop-exam-map .exam-num-btn.is-current { border-color: var(--primary); }
+      [data-browser-handbook] .desktop-exam-map .exam-cell-symbols {
+        position: absolute;
+        top: 1px;
+        right: 2px;
+        font-size: .66rem;
+        line-height: 1;
+      }
+      [data-browser-handbook] .desktop-exam-map .exam-cell-symbols .exam-flag { color: var(--warning); }
+      [data-browser-handbook] .desktop-exam-map .exam-jump-actions {
+        display: grid;
+        gap: 6px;
+        border-top: 1px solid var(--outline-variant);
+        padding-top: 9px;
+      }
+      :root[data-browser-handbook][data-keyboard-navigation] #mock-exam.exam-in-progress :is(a, button):focus {
+        outline: none;
+        text-decoration: underline;
+        text-underline-offset: 4px;
       }
     }
 
@@ -4369,6 +4494,7 @@
           <div class="section-head exam-heading-row">
             <h2 id="exam-heading" tabindex="-1">Пробный экзамен</h2>
             <span class="status-tag" id="exam-status-tag" hidden></span>
+            <a href="#home" class="desktop-exam-return">← К подготовке</a>
           </div>
 
           <p class="caption" id="exam-category">2-я категория · проверка теории</p>
@@ -4403,7 +4529,9 @@
           <div class="exam-bar" id="exam-bar" hidden>
             <div class="exam-bar-progress">
               <strong id="exam-question-number"></strong>
-              <span class="exam-timer" id="exam-timer-display" data-exam-timer aria-label="Оставшееся время экзамена">60:00</span>
+              <span class="desktop-exam-clock"><span class="desktop-exam-clock-label" aria-hidden="true">Осталось</span>
+                <span class="exam-timer" id="exam-timer-display" data-exam-timer aria-label="Оставшееся время экзамена">60:00</span>
+              </span>
             </div>
             <div class="exam-counts">
               <span id="exam-answered"></span>
@@ -4416,11 +4544,24 @@
             </div>
           </div>
 
-          <div id="exam-workspace">
-            <div class="inset">
-              <div class="inset-title">Порядок прохождения пробного билета</div>
-              <p>Отвечайте на вопросы в любом порядке. Ответы можно менять до завершения билета.</p>
+          <div class="exam-body">
+            <div id="exam-workspace">
+              <div class="inset">
+                <div class="inset-title">Порядок прохождения пробного билета</div>
+                <p>Отвечайте на вопросы в любом порядке. Ответы можно менять до завершения билета.</p>
+              </div>
             </div>
+            <aside class="desktop-exam-map" aria-labelledby="desktop-exam-map-title">
+              <h3 id="desktop-exam-map-title">Карта вопросов</h3>
+              <div id="desktop-exam-numbers"></div>
+              <div class="exam-active-legend caption" aria-label="Обозначения карты вопросов">
+                <span>✓ Есть ответ</span><span>⚑ Отложен</span><span class="exam-unanswered-key">Без ответа</span>
+              </div>
+              <div class="exam-jump-actions">
+                <button type="button" class="button button--secondary" id="desktop-exam-unanswered">К вопросу без ответа</button>
+                <button type="button" class="button button--secondary" id="desktop-exam-marked">К отложенному вопросу</button>
+              </div>
+            </aside>
           </div>
           <div class="exam-online">
             <a href="https://exam.srr.ru/">Пройти пробный тест онлайн на сайте СРР</a>
@@ -8417,7 +8558,16 @@
 
     function revealExamQuestion() {
       const bar = document.getElementById('exam-bar');
-      revealBelowTopbar(document.querySelector('#exam-workspace .question-card'), bar.offsetHeight);
+      const question = document.querySelector('#exam-workspace .question-card');
+      if (document.querySelector('.desktop-exam-map').getClientRects().length) {
+        readingTools.suspend();
+        question?.focus({preventScroll: true});
+        const heading = document.getElementById('exam-heading');
+        const inset = document.querySelector('.pinned-topbar').offsetHeight + 12;
+        window.scrollTo({top: window.scrollY + heading.getBoundingClientRect().top - inset, behavior: 'instant'});
+      } else {
+        revealBelowTopbar(question, bar.offsetHeight);
+      }
     }
 
     function selectExamQuestionIndex(idx) {
@@ -8456,6 +8606,9 @@
       }
       examSession.answers[qid] = optIdx;
       renderMockExam();
+      if (document.querySelector('.desktop-exam-map').getClientRects().length) {
+        document.querySelector('#exam-workspace .option-btn.is-selected')?.focus({preventScroll: true});
+      }
       persistState();
       reminderControls.studied();
     }
@@ -8498,7 +8651,7 @@
       }
     }
 
-    function renderExamQuestionGrid() {
+    function renderExamQuestionGrid(desktop = false) {
       const { questions, answers, marked, currentIndex, finished } = examSession;
       return `<div class="exam-nav-grid${finished ? ' exam-result-grid' : ''}" role="group"
         aria-label="${finished ? 'Результат по вопросам' : 'Номера вопросов'}">${questions.map((question, index) => {
@@ -8510,11 +8663,14 @@
           : answer === question.correct ? 'верно' : 'неверно';
         const mark = answer === undefined ? '–' : answer === question.correct ? '✓' : '×';
         const flagged = !finished && marked.includes(question.id);
+        const symbols = `${answer !== undefined ? '✓' : ''}${flagged ? '<span class="exam-flag">⚑</span>' : ''}`;
         const content = finished
           ? `<span class="exam-number">${index + 1}</span><span class="exam-outcome" aria-hidden="true">${mark}</span>`
-          : `${index + 1}${answer !== undefined ? ' ✓' : ''}${flagged ? '<span class="exam-flag" aria-hidden="true"> ⚑</span>' : ''}`;
-        return `<button type="button" class="exam-num-btn${state}${current ? ' is-current' : ''}"
-          ${current ? 'aria-current="step"' : ''} aria-label="Вопрос ${index + 1}, ${status}${flagged ? ', отложен' : ''}"
+          : desktop ? `${index + 1}<span class="exam-cell-symbols" aria-hidden="true">${symbols}</span>`
+            : `${index + 1}${answer !== undefined ? ' ✓' : ''}${flagged ? '<span class="exam-flag" aria-hidden="true"> ⚑</span>' : ''}`;
+        return `<button type="button" class="exam-num-btn${state}${current ? ' is-current' : ''}${desktop && flagged ? ' is-marked' : ''}"
+          ${desktop ? `tabindex="${current ? 0 : -1}"` : ''} ${current ? 'aria-current="step"' : ''}
+          aria-label="Вопрос ${index + 1}, ${status}${flagged ? ', отложен' : ''}"
           onclick="selectExamQuestionIndex(${index})">${content}</button>`;
       }).join('')}</div>`;
     }
@@ -9901,6 +10057,11 @@ ${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="co
       if (examSession.finished) {
         html += renderExamResult(counts, opened);
       } else {
+        if (document.documentElement.hasAttribute('data-browser-handbook')) {
+          document.getElementById('desktop-exam-numbers').innerHTML = renderExamQuestionGrid(true);
+          document.getElementById('desktop-exam-unanswered').disabled = counts.answered === counts.total;
+          document.getElementById('desktop-exam-marked').disabled = !examSession.marked.length;
+        }
         document.getElementById('exam-question-number').textContent = `Вопрос ${currentIndex + 1} из ${counts.total}`;
         document.getElementById('exam-answered').textContent = `Отвечено ${counts.answered}`;
         const deferred = document.getElementById('exam-deferred');
@@ -11567,15 +11728,14 @@ ${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="co
         }[hash];
         if (!selector) return;
         if (focus) pushHash(hash);
-        const activeExam = hash === '#mock-exam' && examSession.active && !examSession.finished;
-        const heading = activeExam ? target.querySelector('#exam-workspace .question-card') : target.querySelector(selector);
+        const heading = target.querySelector(selector);
         if (!heading) return;
         readingTools.suspend();
         if (focus) {
           heading.tabIndex = -1;
           heading.focus({preventScroll: true});
         }
-        const inset = topBar.offsetHeight + 12 + (activeExam ? document.getElementById('exam-bar').offsetHeight : 0);
+        const inset = topBar.offsetHeight + 12;
         window.scrollTo({ top: hash === '#home' ? 0 : window.scrollY + heading.getBoundingClientRect().top - inset, behavior: 'instant' });
         if (focus && hash.startsWith('#sec-')) readingTools.remember(target.id, target.id);
         scheduleNavigationUpdate();
@@ -11651,7 +11811,7 @@ ${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="co
         if (!link || event.defaultPrevented || event.button !== 0
           || event.ctrlKey || event.metaKey || event.altKey || event.shiftKey) return;
         if (wide?.matches && (link.closest('.browser-routes, .desktop-practice-links')
-          || link.matches('.browser-brand, #home-start'))) {
+          || link.matches('.browser-brand, .desktop-exam-return, #home-start, #home-exam-resume'))) {
           event.preventDefault();
           navigating = true;
           revealDesktopRoute(link.hash, true);
@@ -11722,6 +11882,8 @@ ${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="co
       const cancel = document.getElementById('exam-action-cancel');
       const emptyJump = document.getElementById('exam-jump-empty');
       const markedJump = document.getElementById('exam-jump-marked');
+      const desktopMap = document.getElementById('desktop-exam-numbers');
+      const browser = document.documentElement.hasAttribute('data-browser-handbook');
       let onConfirm;
 
       function open(titleText, message, buttonLabel, action, {showEmpty = false, fromHome = false} = {}) {
@@ -11743,7 +11905,12 @@ ${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="co
         markedJump.hidden = Boolean(action) || !marked.length;
         markedJump.textContent = `К отложенным · ${marked.length}`;
         grid.hidden = Boolean(action);
-        if (!action) grid.innerHTML = `<p class="caption">✓ Есть ответ · ⚑ Отложен</p>` + renderExamQuestionGrid();
+        if (!action) {
+          const legend = browser
+            ? document.querySelector('.desktop-exam-map .exam-active-legend').outerHTML
+            : '<p class="caption">✓ Есть ответ · ⚑ Отложен</p>';
+          grid.innerHTML = legend + renderExamQuestionGrid();
+        }
         cancel.textContent = fromHome ? 'Отмена' : 'Вернуться к билету';
         if (fromHome) confirm.before(cancel);
         else confirm.after(cancel);
@@ -11752,10 +11919,33 @@ ${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="co
         if (fromHome) cancel.focus({preventScroll: true});
       }
 
-      emptyJump.addEventListener('click', () => selectExamQuestionIndex(examSession.questions
-        .findIndex(question => examSession.answers[question.id] === undefined)));
-      markedJump.addEventListener('click', () => selectExamQuestionIndex(examSession.questions
-        .findIndex(question => examSession.marked.includes(question.id))));
+      const jumpUnanswered = () => selectExamQuestionIndex(examSession.questions
+        .findIndex(question => examSession.answers[question.id] === undefined));
+      const jumpMarked = () => selectExamQuestionIndex(examSession.questions
+        .findIndex(question => examSession.marked.includes(question.id)));
+      emptyJump.addEventListener('click', jumpUnanswered);
+      markedJump.addEventListener('click', jumpMarked);
+      if (browser) {
+        document.getElementById('desktop-exam-unanswered').addEventListener('click', jumpUnanswered);
+        document.getElementById('desktop-exam-marked').addEventListener('click', jumpMarked);
+        desktopMap.addEventListener('keydown', event => {
+          const buttons = [...desktopMap.querySelectorAll('button')];
+          const index = buttons.indexOf(event.target);
+          const offsets = {ArrowLeft: -1, ArrowRight: 1, ArrowUp: -6, ArrowDown: 6};
+          if (index < 0 || (!Object.hasOwn(offsets, event.key) && !['Home', 'End'].includes(event.key))) return;
+          event.preventDefault();
+          const next = event.key === 'Home' ? 0 : event.key === 'End' ? buttons.length - 1 : index + offsets[event.key];
+          buttons[index].tabIndex = -1;
+          const target = buttons[Math.max(0, Math.min(next, buttons.length - 1))];
+          target.tabIndex = 0;
+          target.focus();
+        });
+        matchMedia('(min-width: 901px)').addEventListener('change', ({matches}) => {
+          if (!matches || !dialog.open || grid.hidden) return;
+          dialog.close();
+          desktopMap.querySelector('[aria-current]')?.focus({preventScroll: true});
+        });
+      }
       confirm.addEventListener('click', () => {
         const action = onConfirm;
         onConfirm = null;
