@@ -15,7 +15,7 @@
 
 **Текущий выпуск 1.24.0** · [Скачать подписанный APK или автономный HTML](https://github.com/ssotnikov/hamprep/releases/tag/v1.24.0) · [Открыть справочник в браузере](https://hamprep.ssotnikov.pro/)
 
-![Экраны приложения «Радиоэкзамен» на телефоне](rustore/promo/preview/phone.png)
+<img src="android/assets/screenshots/02-home-light.jpg" alt="Главный экран приложения «Радиоэкзамен» на телефоне" width="320">
 
 
 ## Теория и практика
