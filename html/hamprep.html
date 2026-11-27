@@ -1502,6 +1502,18 @@
     .page-footer a { color: var(--footer-link); }
     .page-footer a:visited { color: var(--footer-visited); }
 
+    .web-footer-links { display: none; }
+    [data-browser-handbook] .web-footer-links {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      gap: .25rem 1.15rem;
+      margin-top: 1rem;
+      padding-top: .9rem;
+      border-top: 1px solid var(--outline-variant);
+    }
+    .web-footer-links a { padding-block: .25rem; }
+
     .chapter-topics {
       position: sticky;
       /* Keep the fragment link's 6px gap when the chapter bar sticks. */
@@ -4500,6 +4512,11 @@
           <p>
             <strong>Нормативная сверка на 19 ноября 2026 года.</strong> <a href="https://base.garant.ru/186117/94f5bf092e8d98af576ee351987de4f0/">Ст. 22 закона № 126-ФЗ «О связи»</a>, <a href="https://www.consultant.ru/document/cons_doc_LAW_398978/ffd04ed565c43935c477313aa9ed8815a1d660ce/">правила регистрации по постановлению № 1800</a>, <a href="https://base.garant.ru/70156402/">приказ № 4 о позывных</a>, <a href="https://base.garant.ru/57412959/">приказ № 184 о работе любительской службы</a>, <a href="https://www.garant.ru/products/ipo/prime/doc/71829332/">решение ГКРЧ № 10-07-01 в редакции № 18-45-02</a>, <a href="https://base.garant.ru/409112510/">приказ Минздрава № 220н</a>. Положение об экзамене и перечень вопросов опубликованы <a href="https://srr.ru/radiooperatoram/kvalifikatsionnyj-ekzamen-2-2/">на сайте СРР</a>.
           </p>
+          <nav class="web-footer-links" aria-label="Лицензия и конфиденциальность">
+            <span>(C) 2026 Сергей Сотников</span>
+            <a href="https://github.com/ssotnikov/hamprep/blob/main/LICENSE.md">MIT License</a>
+            <a href="https://hamprep.ssotnikov.pro/privacy/">Конфиденциальность</a>
+          </nav>
         </footer>
       </main>
     </div>

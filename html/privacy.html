@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>Политика конфиденциальности — Радиоэкзамен</title>
+  <style>
+    :root {
+      --paper: #f5f7fa;
+      --text: #172434;
+      --muted: #45576b;
+      --rule: #c7d2df;
+      --link: #245385;
+      --accent: #4b799f;
+      --panel: #e8f0f7;
+      color-scheme: light dark;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --paper: #151d26;
+        --text: #edf3f8;
+        --muted: #b4c3d2;
+        --rule: #455363;
+        --link: #a1c9ef;
+        --accent: #89aecb;
+        --panel: #213243;
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--paper);
+      color: var(--text);
+      font: 1rem/1.65 system-ui, sans-serif;
+    }
+    .page { width: min(100% - 2rem, 72ch); margin: 0 auto; }
+    header { padding: 1.15rem 0; border-bottom: 1px solid var(--rule); }
+    header a { display: inline-block; padding: .4rem 0; font-weight: 650; }
+    main { padding: clamp(1.6rem, 5vw, 3.3rem) 0 3rem; }
+    h1, h2 { margin: 0; line-height: 1.2; }
+    h1 { font-size: clamp(1.75rem, 6vw, 2.8rem); }
+    h2 { font-size: clamp(1.15rem, 4vw, 1.42rem); }
+    p { margin: .7rem 0 0; }
+    a { color: var(--link); text-underline-offset: .18em; overflow-wrap: anywhere; }
+    a:focus-visible { outline: 0; background: var(--panel); text-decoration-thickness: .16em; }
+    .lead {
+      margin: 1.25rem 0 .2rem;
+      border-left: 3px solid var(--accent);
+      padding: .75rem 1rem;
+      background: var(--panel);
+    }
+    section { padding: 1.25rem 0; }
+    section + section { border-top: 1px solid var(--rule); }
+    .scope { color: var(--muted); }
+  </style>
+</head>
+<body>
+  <header><div class="page"><a href="/">← Радиоэкзамен</a></div></header>
+  <main class="page">
+    <h1>Политика конфиденциальности</h1>
+    <p class="scope">Веб-версия «Радиоэкзамена» на hamprep.ssotnikov.pro</p>
+    <p class="lead">Учебный прогресс хранится в вашем браузере. Справочник работает без регистрации.</p>
+
+    <section aria-labelledby="local-data">
+      <h2 id="local-data">Данные об учебе</h2>
+      <p>Браузер сохраняет настройки, закладки, ответы и результаты тренировок и экзаменов, чтобы вы могли продолжить занятия. Если вы введете имя и фамилию для отчета, они попадут в созданный вами файл. При выборе опции запоминания они также сохраняются в браузере. Сервер «Радиоэкзамена» эти данные не получает.</p>
+      <p>Резервные копии и отчеты сохраняются в выбранное вами место. При восстановлении прогресса браузер читает выбранную копию на устройстве.</p>
+    </section>
+
+    <section aria-labelledby="connections">
+      <h2 id="connections">Данные при подключении</h2>
+      <p>Для работы и защиты сайта сервер обрабатывает технические сведения о соединении. В журнал могут попадать IP-адрес, время подключения, длительность соединения и объем переданных данных. Журналы ротируются ежедневно. Хранятся текущий журнал и до 14 архивных копий.</p>
+      <p>Веб-версия не использует рекламные трекеры, счетчики посещений и файлы cookie. При использовании установленной веб-версии браузер может хранить копию справочника и его ресурсов для работы без сети.</p>
+    </section>
+
+    <section aria-labelledby="delete-data">
+      <h2 id="delete-data">Как удалить данные</h2>
+      <p>Сбросить учебный прогресс можно в настройках «Радиоэкзамена». Чтобы удалить настройки, сохраненные данные и офлайн-копию, очистите данные сайта hamprep.ssotnikov.pro в браузере. Резервные копии и отчеты удаляются отдельно из места, куда вы их сохранили.</p>
+    </section>
+
+    <section aria-labelledby="links">
+      <h2 id="links">Внешние ссылки</h2>
+      <p>При переходе на GitHub, сайт СРР, в реестр позывных или на другой ресурс действуют правила конфиденциальности этого ресурса.</p>
+    </section>
+
+    <section aria-labelledby="contact">
+      <h2 id="contact">Связь по вопросам конфиденциальности</h2>
+      <p>За веб-версию отвечает Сергей Сотников. По адресу <a href="mailto:ssotnikov@gmail.com">ssotnikov@gmail.com</a> можно задать вопрос или запросить доступ к своим данным, их исправление или удаление. Адрес и содержание обращения используются для ответа и разбора вопроса.</p>
+    </section>
+  </main>
+</body>
+</html>
