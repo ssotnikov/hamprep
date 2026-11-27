@@ -11314,7 +11314,7 @@ ${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="co
     }
 
     function initPageSearch() {
-      const content = document.querySelector('.page-grid');
+      const content = document.querySelector('.handbook-shell > main');
       const toggle = document.getElementById('find-toggle');
       const panel = document.getElementById('find-panel');
       const query = document.getElementById('find-query');
@@ -11327,7 +11327,15 @@ ${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="co
       const previous = document.getElementById('find-prev');
       const next = document.getElementById('find-next');
       const blockSelector = 'address, blockquote, caption, dd, div, dt, figcaption, h1, h2, h3, h4, h5, h6, label, li, p, pre, summary, td, th, tr';
-      const excludedSelector = 'button, a.button, [role="button"], [role="tab"], nav, .toc-aside, .browser-topics, .ui-dropdown, .appearance-row, [hidden], script, select, style, svg, textarea';
+      const excludedSelector = [
+        'button, a.button, [role="button"], [role="tab"], label, nav, [hidden], script, select, style, svg, textarea',
+        '.chapter-topics, .status-tag, .step-badge, .question-meta, .web-footer-links',
+        '#exam-category, .exam-facts, .exam-bar, .desktop-exam-map, .desktop-exam-return, #exam-result-summary, .exam-result-legend',
+        '.bank-tools, .bank-toolbar, .bank-pagination, #bank-category-summary, #bank-pass-title, #bank-pass-description',
+        '#bank-pass-save-status, #bank-pass-position, #bank-pass-summary, #bank-pass-coverage',
+        '.practical-progress, .voice-topic, .voice-practice-settings, .voice-practice-hint, .voice-practice-error, .voice-practice-compare',
+        '#voice-practice-result-title, .callsign-input-hint, .callsign-status, #cs-output'
+      ].join(', ');
       const inputDelay = 350;
       const wordCharacter = /[\p{L}\p{M}\p{N}_]/u;
       let matches = [];
