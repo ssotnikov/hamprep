@@ -3062,7 +3062,9 @@
       .voice-practice-result-actions { grid-template-columns: 1fr; }
     }
 
-    [data-browser-handbook]:not([data-handbook-ready]) #home :is(.home-category, #saved-open) { visibility: hidden; }
+    [data-browser-handbook]:not([data-handbook-ready]) #home :is(
+      .desktop-home, .home-category, #saved-open, .desktop-practice-links, .home-exam-facts
+    ) { visibility: hidden; }
     .browser-brand, .version-dev, .browser-routes, .desktop-settings, .desktop-home,
     .desktop-practice-links, .find-toggle-label, .browser-topics { display: none; }
     .desktop-exam-map, .desktop-exam-return, .desktop-exam-clock-label { display: none; }
@@ -3121,7 +3123,6 @@
       [data-browser-handbook] .version-group .app-version { display: block; margin: 2px 0 0; }
       [data-browser-handbook] .version-dev { display: inline; }
       [data-browser-handbook][data-desktop-home-pending] #home { visibility: hidden; }
-      [data-browser-handbook]:not([data-handbook-ready]) .desktop-home { visibility: hidden; }
       [data-browser-handbook] .desktop-home:not([hidden]) {
         display: grid;
         clear: both;
