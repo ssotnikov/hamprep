@@ -1907,7 +1907,8 @@
       align-self: stretch;
       align-items: center;
     }
-    .version-group .app-version { margin: 0 6px 0 7px; }
+    .version-copy { margin: 0 6px 0 7px; }
+    .version-copy .app-version { display: block; margin: 0; }
     .toolbar-icon {
       display: grid;
       flex: 0 0 var(--toolbar-button-width);
@@ -2219,7 +2220,7 @@
     .about-course .stepik-icon { flex: none; width: 23px; height: 23px; margin-right: 7px; }
     .about-sources { padding-top: 10px; border-top: 1px solid var(--scheme-border); }
     @media (max-width: 430px) {
-      .version-group .app-version { margin-right: 3px; }
+      .version-copy { margin-right: 3px; }
       .version-group .app-version #app-version { display: block; }
     }
     @media (max-width: 370px) {
@@ -3052,7 +3053,8 @@
       .voice-practice-result-actions { grid-template-columns: 1fr; }
     }
 
-    .browser-routes, .find-toggle-label, .browser-topics { display: none; }
+    .browser-brand, .browser-routes, .desktop-settings, .desktop-home,
+    .desktop-practice-links, .find-toggle-label, .browser-topics { display: none; }
     .browser-save-status:not(:empty) {
       padding: .35em .5em;
       color: var(--error-text);
@@ -3070,8 +3072,94 @@
     }
 
     @media (min-width: 901px) {
+      :root[data-browser-handbook] { scroll-behavior: auto; }
       [data-browser-handbook] .theme-choice .system-icon-phone { display: none; }
       [data-browser-handbook] .theme-choice .system-icon-desktop { display: block; }
+      [data-browser-handbook] .pinned-topbar-inner { padding-top: 10px; }
+      [data-browser-handbook] .pinned-topbar .appearance-row { gap: 10px; padding-bottom: 10px; }
+      [data-browser-handbook] .version-group { gap: 7px; }
+      [data-browser-handbook] .version-copy { margin: 0; }
+      [data-browser-handbook] .browser-brand {
+        display: block;
+        color: var(--on-surface);
+        font-weight: 700;
+        white-space: nowrap;
+        text-decoration: none;
+      }
+      [data-browser-handbook] .version-group .app-version { display: block; margin: 2px 0 0; }
+      [data-browser-handbook] .desktop-home:not([hidden]) {
+        display: grid;
+        clear: both;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+        align-items: start;
+        gap: 16px;
+      }
+      [data-browser-handbook] .desktop-home > section {
+        padding: 16px;
+        border: 1px solid var(--outline-variant);
+        border-radius: 12px;
+        background: var(--surface-container-low);
+      }
+      [data-browser-handbook] .desktop-home h2 { margin: 0 0 10px; font-size: 1.2rem; }
+      [data-browser-handbook] .desktop-home .home-actions {
+        display: flex;
+        flex-wrap: wrap;
+        margin: 10px 0 0;
+      }
+      [data-browser-handbook] .desktop-home .home-actions :is([data-open-topics], a) { display: none; }
+      [data-browser-handbook] .desktop-home #home-review-secondary { width: auto; margin-block-start: 8px; }
+      [data-browser-handbook] .desktop-home .preparation-progress { margin: 0; }
+      [data-browser-handbook] .desktop-home .preparation-sources {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+        border: 0;
+        padding: 0;
+      }
+      [data-browser-handbook] .desktop-home .preparation-source {
+        padding: 10px;
+        border: 1px solid var(--outline-variant);
+        border-radius: 8px;
+        background: var(--background);
+      }
+      [data-browser-handbook] .desktop-home .preparation-source + .preparation-source { margin: 0; }
+      [data-browser-handbook] .desktop-home .quick-entry:not([hidden]) {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 3px 12px;
+        margin: 12px 0 0;
+        padding-top: 10px;
+        border-top: 1px solid var(--outline-variant);
+      }
+      [data-browser-handbook] .desktop-home .quick-entry .button { width: auto; }
+      [data-browser-handbook] .desktop-home .quick-entry small { margin: 0; }
+      [data-browser-handbook] .desktop-practice-links {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px 18px;
+        margin: 14px 0;
+      }
+      [data-browser-handbook] .desktop-settings:not([hidden]) {
+        display: block;
+        float: right;
+        position: relative;
+        z-index: 2;
+        margin: 16px 0 0 12px;
+      }
+      [data-browser-handbook] .desktop-settings summary { cursor: pointer; }
+      [data-browser-handbook] .desktop-settings .preparation-settings {
+        position: absolute;
+        inset: 100% 0 auto auto;
+        width: 19rem;
+        margin-top: 6px;
+        padding: 10px;
+        border: 1px solid var(--outline-variant);
+        border-radius: 12px;
+        background: var(--background);
+        box-shadow: 0 5px 16px #0003;
+      }
+      [data-browser-handbook] .desktop-settings .preparation-settings h2 { display: none; }
       [data-browser-handbook] .handbook-shell {
         grid-template-columns: minmax(13rem, 15rem) minmax(0, 1fr);
         margin-top: var(--space-md);
@@ -3087,8 +3175,10 @@
         padding: 0 var(--space-md) 0 0;
         overscroll-behavior: contain;
       }
+      [data-browser-handbook]:not([data-desktop-reading]) .toc-aside { visibility: hidden; }
       [data-browser-handbook] .mobile-toc,
-      [data-browser-handbook] .chapter-topics { display: none; }
+      [data-browser-handbook] .chapter-topics,
+      [data-browser-handbook] .sections-panel { display: none; }
       [data-browser-handbook] .chapter-topics + .study-section {
         margin-top: var(--space-xl);
         padding-top: var(--space-xl);
@@ -3096,9 +3186,31 @@
       }
       [data-browser-handbook] .browser-routes {
         display: flex;
-        gap: var(--space-sm);
+        align-items: center;
+        gap: 3px;
       }
-      [data-browser-handbook] .browser-routes .button { min-height: 44px; }
+      [data-browser-handbook] .browser-routes a {
+        display: flex;
+        align-items: center;
+        min-height: 44px;
+        padding-inline: clamp(6px, .8vw, 12px);
+        border-radius: 8px;
+        color: var(--on-surface);
+        font-size: .9rem;
+        text-decoration: none;
+        white-space: nowrap;
+      }
+      [data-browser-handbook] .browser-routes a:is([aria-current], :hover, :focus-visible) {
+        color: var(--primary);
+        background: var(--toolbar-key);
+      }
+      :root[data-browser-handbook][data-keyboard-navigation]
+      :is(.browser-routes, .desktop-practice-links, .desktop-home, .desktop-settings, .toc-aside) :focus-visible,
+      :root[data-browser-handbook][data-keyboard-navigation] .browser-brand:focus-visible {
+        outline: none;
+        text-decoration: underline;
+        text-underline-offset: 4px;
+      }
       [data-browser-handbook] #find-toggle {
         display: flex;
         flex: 0 0 auto;
@@ -3107,12 +3219,15 @@
         width: auto;
         padding-inline: .65em;
       }
-      [data-browser-handbook] .find-toggle-label { display: inline; }
       [data-browser-handbook] .find-panel {
         left: auto;
         right: max(20px, calc((100% - 1200px) / 2 + var(--toolbar-gutter)));
         width: min(32rem, calc(100% - 40px));
       }
+    }
+
+    @media (min-width: 1100px) {
+      [data-browser-handbook] .find-toggle-label { display: inline; }
     }
 
     @media (max-width: 900px) {
@@ -3151,11 +3266,16 @@
       <div class="appearance-row">
         <div class="version-group">
           <button class="about-button toolbar-icon" id="about-button" type="button" title="О приложении" aria-label="О приложении" aria-haspopup="dialog"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M10 9a10 10 0 0 0 0 14m12-14a10 10 0 0 1 0 14M6.5 6a14 14 0 0 0 0 20m19-20a14 14 0 0 1 0 20" fill="none" stroke="#4785c5" stroke-width="1.9" stroke-linecap="round"/><circle cx="16" cy="12" r="1.75" fill="#edac2d"/><path d="M16 16v7" stroke="#4785c5" stroke-width="2.8" stroke-linecap="round"/></svg></button>
-          <span class="app-version">Версия <span id="app-version">разработка</span></span>
+          <div class="version-copy">
+            <a class="browser-brand" href="#home">Радиоэкзамен</a>
+            <span class="app-version">Версия <span id="app-version">разработка</span></span>
+          </div>
         </div>
         <nav class="browser-routes" aria-label="Основные разделы">
-          <a href="#sec-1" class="button button--secondary">Справочник</a>
-          <a href="#mock-exam" class="button button--secondary">Пробный экзамен</a>
+          <a href="#home">Главная</a>
+          <a href="#sec-1">Справочник</a>
+          <a href="#study-practice">Вопросы</a>
+          <a href="#mock-exam">Пробный экзамен</a>
         </nav>
         <div class="appearance-actions">
           <button class="find-toggle" id="find-toggle" type="button" aria-label="Поиск по материалам" aria-expanded="false" aria-controls="find-panel" title="Поиск по материалам">
@@ -3202,8 +3322,17 @@
     </div>
   </div>
   <div class="page-grid">
-    <header>
+    <header id="home">
+      <details class="desktop-settings" hidden>
+        <summary class="button button--secondary">Настройки</summary>
+      </details>
       <h1 class="home-heading">Подготовка к экзамену</h1>
+      <div class="desktop-home" hidden>
+        <section class="desktop-next" aria-labelledby="desktop-next-title">
+          <h2 id="desktop-next-title">Следующий шаг</h2>
+        </section>
+        <section class="desktop-progress" aria-label="Прогресс и тренировка"></section>
+      </div>
       <div class="index-header home-category">
         <label class="index-header-tag" for="qualification-category">Категория
           <select id="qualification-category">
@@ -3279,6 +3408,11 @@
         </button>
         <button type="button" class="button button--secondary" id="topic-gap-open">Карта пробелов по темам</button>
       </section>
+      <nav class="desktop-practice-links" aria-label="Практика и инструменты">
+        <a href="#practical-index">Практические задания</a>
+        <a href="#voice-exchanges">Голосовой радиообмен</a>
+        <a href="#tools-index">Инструменты</a>
+      </nav>
       <dl class="home-exam-facts" aria-label="Условия пробного экзамена">
         <div><dt>Вопросов</dt><dd id="category-kpi-total">30</dd></div>
         <div><dt>Для зачета</dt><dd id="category-kpi-pass">25 из 30</dd></div>
@@ -3326,6 +3460,7 @@
           <li class="toc-item"><a class="toc-link" href="#mock-exam"><span><span class="toc-num">ЭКЗ</span> <span id="toc-exam-label">Пробный билет (30 вопросов)</span></span><span class="toc-status" id="toc-stat-exam">—</span></a></li>
           <li class="toc-item"><a class="toc-link" href="#study-practice">Блок вопросов (405) и практикум</a></li>
           <li class="toc-item"><a class="toc-link" href="#practical-index">Практические задания</a></li>
+          <li class="toc-item"><a class="toc-link" href="#voice-exchanges">Голосовой радиообмен</a></li>
           <li class="toc-item"><a class="toc-link" href="#tools-index">Инструменты</a></li>
         </ul>
       </aside>
@@ -11167,10 +11302,50 @@ ${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="co
       });
     }
 
-    function initTopicsNavigation() {
+    function initDesktopPreparation(wide) {
+      const board = document.querySelector('.desktop-home');
+      const next = board.querySelector('.desktop-next');
+      const progress = board.querySelector('.desktop-progress');
+      const settings = document.querySelector('.desktop-settings');
+      const placements = [
+        [next, '.home-category', '.home-primary', '.home-actions', '#home-review-secondary'],
+        [progress, '#global-progress-panel', '#home-quick-entry'],
+        [settings, '.preparation-settings']
+      ].flatMap(([destination, ...selectors]) => selectors.map(selector => {
+        const element = document.querySelector(selector);
+        const origin = document.createComment('Compact layout position');
+        element.before(origin);
+        return {element, destination, origin};
+      }));
+
+      function syncLayout() {
+        const active = document.activeElement;
+        for (const {element, destination, origin} of placements) {
+          if (wide.matches) destination.append(element);
+          else origin.after(element);
+        }
+        board.hidden = settings.hidden = !wide.matches;
+        if (!wide.matches) settings.open = false;
+        if (active !== document.body && active.getClientRects().length) active.focus({preventScroll: true});
+      }
+      document.addEventListener('click', event => {
+        if (settings.open && !settings.contains(event.target) && !event.target.closest('dialog')) settings.open = false;
+      });
+      settings.addEventListener('keydown', event => {
+        if (event.key !== 'Escape' || !settings.open || event.defaultPrevented) return;
+        event.preventDefault();
+        settings.open = false;
+        settings.querySelector('summary').focus();
+      });
+      wide.addEventListener('change', syncLayout);
+      syncLayout();
+    }
+
+    function initTopicsNavigation(pushHash) {
       const inline = document.getElementById('topics');
       const desktop = document.getElementById('desktop-topics');
-      const hasSideTopics = () => desktop.getClientRects().length > 0;
+      const hasSideTopics = () => desktop.getClientRects().length > 0
+        && getComputedStyle(desktop).visibility === 'visible';
       const desktopTitle = document.getElementById('desktop-topics-title');
       const dialog = document.getElementById('topics-dialog');
       const chapterBar = document.querySelector('.chapter-topics');
@@ -11183,7 +11358,7 @@ ${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="co
       const menus = [inline, desktop, dialog];
       if (document.documentElement.hasAttribute('data-browser-handbook')) {
         compact.append(inline.querySelector('.program-list').cloneNode(true));
-        menus.push(compact, document.querySelector('.browser-routes'));
+        menus.push(compact);
         compact.addEventListener('keydown', event => {
           if (event.key !== 'Escape' || !compact.open) return;
           event.preventDefault();
@@ -11205,6 +11380,8 @@ ${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="co
 
       const firstChapterHeading = chapters[0].querySelector('.section-head');
       function updateCurrent(visibleTop) {
+        const sideTopics = hasSideTopics();
+        if (sideTopics !== controlsUseSideTopics) syncControls();
         const barBounds = chapterBar.getBoundingClientRect();
         const reading = barBounds.height > 0 && barBounds.top <= visibleTop && barBounds.bottom > visibleTop;
         chapterBar.classList.toggle('has-scrolled-content', reading
@@ -11226,18 +11403,19 @@ ${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="co
       function openChapter(chapter) {
         const heading = chapter.querySelector('.section-head h2');
         heading.tabIndex = -1;
-        if (location.hash !== '#' + chapter.id) history.pushState(null, '', '#' + chapter.id);
+        pushHash('#' + chapter.id);
         revealBelowTopbar(heading);
         readingTools.remember(chapter.id, chapter.id);
       }
 
       function openSupplement(hash, heading) {
-        if (location.hash !== hash) history.pushState(null, '', hash);
+        pushHash(hash);
         revealBelowTopbar(heading);
       }
 
+      let controlsUseSideTopics;
       function syncControls() {
-        const sideTopics = hasSideTopics();
+        const sideTopics = controlsUseSideTopics = hasSideTopics();
         if (sideTopics) compact.open = false;
         for (const button of buttons) {
           button.setAttribute('aria-controls', sideTopics ? desktop.id : dialog.id);
@@ -11296,7 +11474,11 @@ ${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="co
       const root = document.documentElement;
       const topBar = document.querySelector('.pinned-topbar');
       const bottomPanel = document.querySelector('.sections-panel');
-      const updateCurrentTopic = initTopicsNavigation();
+      const browser = root.hasAttribute('data-browser-handbook');
+      const wide = browser && matchMedia('(min-width: 901px)');
+      if (wide) initDesktopPreparation(wide);
+      const browserLinks = [...topBar.querySelectorAll('.browser-routes a')];
+      const updateCurrentTopic = initTopicsNavigation(pushHash);
       const sections = [
         ['#sec-1', '#mock-exam'],
         ['#mock-exam', '#study-practice'],
@@ -11310,13 +11492,15 @@ ${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="co
       let currentSection;
       let framePending = false;
       const topButton = document.getElementById('to-top');
+      const initialHash = location.hash;
+      let navigating = false;
 
       function measureBars() {
         root.style.setProperty('--pinned-top-height', topBar.offsetHeight + 'px');
         root.style.setProperty('--pinned-bottom-height', bottomPanel.offsetHeight + 'px');
       }
 
-      if (root.hasAttribute('data-browser-handbook')) {
+      if (browser) {
         if (window.ResizeObserver) {
           new ResizeObserver(() => {
             measureBars();
@@ -11333,9 +11517,18 @@ ${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="co
         framePending = false;
         topButton.hidden = window.scrollY < 240;
         const visibleTop = topBar.getBoundingClientRect().bottom + 10;
-        updateCurrentTopic(visibleTop);
         const current = sections.find(({ start, end }) =>
           start.getBoundingClientRect().top <= visibleTop && end.getBoundingClientRect().top > visibleTop);
+        if (wide) {
+          const route = current?.link.hash;
+          root.toggleAttribute('data-desktop-reading', route === '#sec-1');
+          const selected = route || (sections[0].start.getBoundingClientRect().top > visibleTop ? '#home' : '');
+          for (const link of browserLinks) {
+            if (link.hash === selected) link.setAttribute('aria-current', 'location');
+            else link.removeAttribute('aria-current');
+          }
+        }
+        updateCurrentTopic(visibleTop);
         if (current === currentSection) return;
         currentSection?.link.removeAttribute('aria-current');
         current?.link.setAttribute('aria-current', 'location');
@@ -11346,6 +11539,41 @@ ${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="co
         if (framePending) return;
         framePending = true;
         requestAnimationFrame(updateNavigation);
+      }
+
+      function pushHash(hash) {
+        if (location.hash === hash) return;
+        if (wide?.matches) {
+          history.replaceState({...history.state, readingOffset: window.scrollY, readingWidth: window.innerWidth}, '');
+        }
+        history.pushState(null, '', hash);
+      }
+
+      function revealDesktopRoute(hash, focus) {
+        const target = document.getElementById(hash.slice(1));
+        if (!target) return;
+        const selector = /^#sec-[1-8]$/.test(hash) ? '.section-head h2' : {
+          '#home': '.home-heading',
+          '#mock-exam': '#exam-heading',
+          '#study-practice': '#bank-browse:not([hidden]) h2, #bank-pass-workspace:not([hidden]) h2',
+          '#voice-exchanges': '#voice-exchanges-heading',
+          '#practical-index': '#practical-index-title',
+          '#tools-index': '#tools-index-title'
+        }[hash];
+        if (!selector) return;
+        if (focus) pushHash(hash);
+        const activeExam = hash === '#mock-exam' && examSession.active && !examSession.finished;
+        const heading = activeExam ? target.querySelector('#exam-workspace .question-card') : target.querySelector(selector);
+        if (!heading) return;
+        readingTools.suspend();
+        if (focus) {
+          heading.tabIndex = -1;
+          heading.focus({preventScroll: true});
+        }
+        const inset = topBar.offsetHeight + 12 + (activeExam ? document.getElementById('exam-bar').offsetHeight : 0);
+        window.scrollTo({ top: hash === '#home' ? 0 : window.scrollY + heading.getBoundingClientRect().top - inset, behavior: 'instant' });
+        if (focus && hash.startsWith('#sec-')) readingTools.remember(target.id, target.id);
+        scheduleNavigationUpdate();
       }
 
       function revealCoveredAnchor() {
@@ -11390,19 +11618,46 @@ ${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="co
           scheduleNavigationUpdate();
         });
       }
-      window.addEventListener('hashchange', updateAfterAnchor);
-      window.addEventListener('load', updateAfterAnchor);
+      window.addEventListener('hashchange', () => {
+        navigating = true;
+        if (!wide?.matches) updateAfterAnchor();
+        else scheduleNavigationUpdate();
+      });
+      window.addEventListener('load', () => {
+        if (!wide?.matches) updateAfterAnchor();
+      });
+      if (wide) {
+        // Respect interaction and the browser's position restoration on reload or Back.
+        const markInteraction = () => { navigating = true; };
+        window.addEventListener('pointerdown', markInteraction, {once: true, passive: true});
+        window.addEventListener('wheel', markInteraction, {once: true, passive: true});
+        window.addEventListener('keydown', markInteraction, {once: true});
+        window.addEventListener('popstate', ({state}) => {
+          if (!wide.matches || state?.readingWidth !== window.innerWidth || !Number.isFinite(state.readingOffset)) return;
+          requestAnimationFrame(() => {
+            readingTools.suspend();
+            window.scrollTo({top: state.readingOffset, behavior: 'instant'});
+            scheduleNavigationUpdate();
+          });
+        });
+      }
       document.addEventListener('click', event => {
-        const link = event.target.closest('a[href="#mock-exam"]');
+        const link = event.target.closest('a[href^="#"]');
         if (!link || event.defaultPrevented || event.button !== 0
           || event.ctrlKey || event.metaKey || event.altKey || event.shiftKey) return;
+        if (wide?.matches && (link.closest('.browser-routes, .desktop-practice-links')
+          || link.matches('.browser-brand, #home-start'))) {
+          event.preventDefault();
+          navigating = true;
+          revealDesktopRoute(link.hash, true);
+          return;
+        }
+        if (link.hash !== '#mock-exam') return;
         const active = examSession.active && !examSession.finished;
-        const browserShortcut = link.closest('.browser-routes');
-        if (!active && !browserShortcut) return;
+        if (!active) return;
         event.preventDefault();
-        if (location.hash !== '#mock-exam') history.pushState(null, '', '#mock-exam');
-        if (active) revealExamQuestion();
-        else revealBelowTopbar(document.getElementById('exam-heading'));
+        pushHash('#mock-exam');
+        revealExamQuestion();
         scheduleNavigationUpdate();
       });
       bottomPanel.addEventListener('click', event => {
@@ -11441,6 +11696,16 @@ ${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="co
       });
       measureBars();
       updateNavigation();
+      return () => {
+        if (!wide?.matches || !initialHash || performance.getEntriesByType('navigation')[0]?.type !== 'navigate') return;
+        const afterLoad = () => requestAnimationFrame(() => {
+          if (!wide.matches || navigating || initialHash !== location.hash) return;
+          measureBars();
+          revealDesktopRoute(initialHash, false);
+        });
+        if (document.readyState === 'complete') afterLoad();
+        else window.addEventListener('load', afterLoad, {once: true});
+      };
     }
 
     function initExamActions() {
@@ -11835,7 +12100,6 @@ ${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="co
     document.addEventListener('DOMContentLoaded', initExamActions);
     document.addEventListener('DOMContentLoaded', initExamReview);
     document.addEventListener('DOMContentLoaded', initExamTimeoutDialog);
-    document.addEventListener('DOMContentLoaded', initHandbookNavigation);
     document.addEventListener('DOMContentLoaded', initPageSearch);
     function initStyledSelects() {
       const make = (tag, className) => {
@@ -12769,6 +13033,7 @@ ${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="co
     }
 
     document.addEventListener('DOMContentLoaded', async () => {
+      const finishNavigation = initHandbookNavigation();
       await initApp();
       questionPassView = initQuestionPass();
       initTopicGapMap();
@@ -12782,6 +13047,7 @@ ${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="co
       initMorsePractice();
       initBandReference();
       initTableScrollbars();
+      finishNavigation();
       document.documentElement.dataset.handbookReady = 'true';
     });
   </script>
