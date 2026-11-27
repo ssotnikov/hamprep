@@ -1866,15 +1866,16 @@
       stroke-linejoin: round;
     }
     .to-top {
-      --to-top-diameter: calc(var(--pinned-bottom-height) * .7);
-      --to-top-inset-y: calc((var(--pinned-bottom-height) - var(--to-top-diameter)) / 2);
+      --to-top-size: var(--pinned-bottom-height);
+      --to-top-diameter: calc(var(--to-top-size) * .7);
+      --to-top-inset-y: calc((var(--to-top-size) - var(--to-top-diameter)) / 2);
       position: fixed;
       z-index: 11;
       right: 31px;
       bottom: var(--bottom-control-gap);
       display: block;
-      width: var(--pinned-bottom-height);
-      height: var(--pinned-bottom-height);
+      width: var(--to-top-size);
+      height: var(--to-top-size);
       padding: 0;
       border: 0;
       background: transparent;
@@ -1897,7 +1898,7 @@
     .to-top svg {
       position: absolute;
       right: calc((var(--to-top-diameter) - 16.1px) / 2);
-      bottom: calc((var(--pinned-bottom-height) - 16.1px) / 2);
+      bottom: calc((var(--to-top-size) - 16.1px) / 2);
       width: 16.1px;
       height: 16.1px;
       fill: none;
@@ -3217,6 +3218,7 @@
       [data-browser-handbook] .mobile-toc,
       [data-browser-handbook] .chapter-topics,
       [data-browser-handbook] .sections-panel { display: none; }
+      [data-browser-handbook] .to-top { --to-top-size: 48px; }
       [data-browser-handbook] .chapter-topics + .study-section {
         margin-top: var(--space-xl);
         padding-top: var(--space-xl);
