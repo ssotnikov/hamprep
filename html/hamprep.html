@@ -1213,11 +1213,28 @@
       text-align: center;
     }
     .bank-pagination[hidden] { display: none; }
+    .pdf-figure-open {
+      display: grid;
+      justify-items: start;
+      gap: 6px;
+      max-width: 100%;
+      margin: 0 0 var(--space-md);
+      padding: 0;
+      border: 0;
+      background: transparent;
+      color: var(--tertiary);
+      text-align: start;
+      cursor: zoom-in;
+    }
+    .pdf-figure-open span { text-decoration: underline; text-underline-offset: 3px; }
+    .pdf-figure-open:focus-visible, .question-illustration-viewport:focus-visible {
+      outline: 2px solid var(--tertiary);
+      outline-offset: 2px;
+    }
     .pdf-bank-figure {
       display: block;
       max-width: 100%;
       height: auto;
-      margin: 0 0 var(--space-md);
       background: #fff;
       border: 1px solid var(--outline-variant);
     }
@@ -1519,6 +1536,7 @@
       background: var(--background);
       font-size: 12px;
       line-height: 20px;
+      padding-block-start: 20px;
     }
     .fixed-web-footer-inner { padding: 0 var(--toolbar-gutter) 4px; }
     [data-browser-handbook] .web-footer-links {
@@ -1530,16 +1548,25 @@
       border-top: 1px solid var(--outline-variant);
     }
     .web-footer-links a { padding-block: 3px; }
-    .footer-github { display:inline-flex; align-items:baseline; gap:6px; white-space:nowrap; }
-    .footer-github svg { width:16px; height:16px; flex:none; align-self:center; fill:currentColor; }
+    .footer-icon-link { display:inline-flex; align-items:baseline; gap:5px; white-space:nowrap; }
+    .footer-icon-link svg { width:14px; height:14px; flex:none; align-self:center; fill:currentColor; }
+    .footer-github svg { width:16px; height:16px; }
+    .footer-mail svg { fill:none; stroke:currentColor; stroke-width:1.6; stroke-linecap:round; stroke-linejoin:round; }
     @media (max-width: 480px) {
-      [data-browser-handbook] .fixed-web-footer { line-height: 18px; }
+      [data-browser-handbook] .fixed-web-footer { line-height: 19px; }
       .fixed-web-footer-inner { padding-bottom: 1px; }
       [data-browser-handbook] .web-footer-links {
-        gap: 2px .68rem;
+        gap: 2px 8px;
         padding-top: 2px;
       }
-      .web-footer-links > span { flex-basis: 100%; }
+      .web-footer-links a { padding-block: 1px; }
+    }
+    @media (max-width: 360px) {
+      [data-browser-handbook] .web-footer-links { column-gap: 4px; }
+      .footer-icon-link { gap: 3px; }
+    }
+    @media (max-width: 322px) {
+      [data-browser-handbook] .fixed-web-footer { padding-block-start: 52px; }
     }
 
     .chapter-topics {
@@ -1930,6 +1957,16 @@
       stroke-linecap: round;
       stroke-linejoin: round;
     }
+    [data-browser-handbook] .to-top { color: var(--primary); }
+    [data-browser-handbook] .to-top::before {
+      background: rgba(var(--primary-rgb), .20);
+      border-color: rgba(var(--primary-rgb), .43);
+    }
+    [data-browser-handbook][data-palette="dark"] .to-top::before { background: rgba(var(--primary-rgb), .23); }
+    [data-browser-handbook] .to-top:focus-visible::before { background: rgba(var(--primary-rgb), .40); }
+    @media (hover: hover) {
+      [data-browser-handbook] .to-top:hover::before { background: rgba(var(--primary-rgb), .40); }
+    }
     @media (max-width: 640px) {
       :root { --toolbar-gutter: var(--space-md); }
     }
@@ -2171,6 +2208,33 @@
     .about-dialog-head h2 { margin: 0; font-size: 1.15rem; }
     .button.button--secondary.dialog-head-close { width: 44px; height: 44px; min-height: 44px; padding: 0; font-size: 1.3rem; }
     .about-dialog-content { padding: 17px 20px 20px; }
+    html.question-illustration-open, html.question-illustration-open body { overflow: hidden; }
+    .question-illustration-dialog { max-width: 1100px; }
+    .question-illustration-dialog[open] { display: flex; flex-direction: column; }
+    .question-illustration-dialog .about-dialog-head { gap: 8px; padding: 8px 12px; }
+    .question-illustration-controls {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 12px;
+    }
+    .question-illustration-controls .button { width: auto; min-width: 44px; min-height: 44px; padding: 4px 9px; }
+    .question-illustration-controls output { min-width: 3ch; text-align: center; font-size: .85rem; }
+    .question-illustration-viewport {
+      min-height: 0;
+      height: min(72vh, 740px);
+      height: min(72dvh, 740px);
+      margin: 0 12px;
+      overflow: auto;
+      overscroll-behavior: contain;
+      border: 1px solid var(--outline-variant);
+      border-radius: 6px;
+      background: var(--surface-container-low);
+    }
+    .question-illustration-viewport img { display: block; height: auto; max-width: none; margin-inline: auto; background: #fff; }
+    .question-illustration-hint { margin: 6px 12px 10px; }
+    @media (max-height: 475px) { .question-illustration-hint { display: none; } }
     html.phonetic-reference-open { overflow: hidden; }
     .phonetic-reference[open] {
       position: fixed;
@@ -2978,6 +3042,10 @@
     .voice-practice {
       display:grid;
       gap:10px;
+    }
+    .voice-practice-card, .voice-practice-settings {
+      display:grid;
+      gap:10px;
       padding:10px;
       background:var(--surface-container-low);
       border:1px solid var(--scheme-border);
@@ -2989,16 +3057,6 @@
     .voice-practice #voice-practice-hint { margin-top:4px; }
     .voice-practice .voice-player { margin:0; padding:0; gap:6px; }
     .voice-practice .voice-player > .voice-play { min-height:44px; }
-    .voice-practice-settings { border-top:1px solid var(--outline-variant); }
-    .voice-practice-settings > summary {
-      box-sizing:border-box;
-      min-height:44px;
-      padding-block:10px;
-      color:var(--tertiary);
-      cursor:pointer;
-    }
-    .voice-practice-settings > summary:focus-visible { outline:2px solid var(--tertiary); outline-offset:-2px; }
-    .voice-practice-settings > .voice-settings { margin-top:8px; }
     .voice-practice-fields, .voice-practice-form, .voice-practice-result { display:grid; gap:8px; }
     .voice-practice-form input {
       display:block;
@@ -4880,43 +4938,8 @@
             <div class="voice-cases" id="voice-cases"></div>
           </div>
           <div class="voice-practice" id="voice-practice" hidden>
-            <button type="button" class="button button--secondary" id="practical-audio-return" hidden>К практическим заданиям</button>
-            <div>
-              <h3 id="voice-practice-question"></h3>
-              <p class="caption" id="voice-practice-hint"></p>
-            </div>
-            <div class="voice-player">
-              <button type="button" class="button primary voice-play" id="voice-practice-play">▶ Слушать диалог</button>
-              <progress class="voice-practice-meter" id="voice-practice-progress" max="1" value="0" aria-label="Позиция воспроизведения"></progress>
-              <p class="caption voice-practice-error" id="voice-practice-audio-error" role="status" hidden>Запись не воспроизводится. Попробуйте запустить ее еще раз.</p>
-              <audio id="voice-practice-audio" preload="none"></audio>
-            </div>
-            <form class="voice-practice-form" id="voice-practice-form" novalidate>
-              <label for="voice-practice-answer" id="voice-practice-answer-label">Позывной</label>
-              <input id="voice-practice-answer" type="text" maxlength="16" autocomplete="off" autocapitalize="characters" autocorrect="off" spellcheck="false" aria-describedby="voice-practice-hint voice-practice-input-error">
-              <p class="caption voice-practice-error" id="voice-practice-input-error" role="status" hidden></p>
-              <button type="submit" class="button primary" id="voice-practice-check">Проверить</button>
-            </form>
-            <section class="voice-practice-result" id="voice-practice-result" aria-label="Результат ответа" hidden>
-              <h3 id="voice-practice-result-title" role="status"></h3>
-              <div class="voice-practice-compare">
-                <span class="caption">Ваш ответ</span><div class="voice-practice-symbols" id="voice-practice-typed"></div>
-                <span class="caption">Правильный ответ</span><div class="voice-practice-symbols" id="voice-practice-expected"></div>
-              </div>
-              <p class="caption" id="voice-practice-differences" hidden></p>
-              <div class="voice-practice-result-actions">
-                <button type="button" class="button" id="voice-practice-replay">Переслушать реплику</button>
-                <button type="button" class="button primary" id="voice-practice-next">Другое задание</button>
-              </div>
-              <details class="voice-transcript" id="voice-practice-transcript">
-                <summary>Текст реплики</summary><p></p>
-              </details>
-              <details class="voice-notes" id="voice-practice-notes">
-                <summary>Разбор радиообмена</summary><ul></ul>
-              </details>
-            </section>
-            <details class="voice-practice-settings">
-              <summary>Настройки задания</summary>
+            <section class="voice-practice-settings" aria-labelledby="voice-practice-settings-title">
+              <h3 id="voice-practice-settings-title">Настройки задания</h3>
               <div class="voice-practice-fields">
                 <div class="field-group">
                   <label class="field-label" for="voice-practice-source">Материал</label>
@@ -4945,7 +4968,44 @@
                   </select>
                 </label>
               </div>
-            </details>
+            </section>
+            <div class="voice-practice-card">
+              <button type="button" class="button button--secondary" id="practical-audio-return" hidden>К практическим заданиям</button>
+              <div>
+                <h3 id="voice-practice-question"></h3>
+                <p class="caption" id="voice-practice-hint"></p>
+              </div>
+              <div class="voice-player">
+                <button type="button" class="button primary voice-play" id="voice-practice-play">▶ Слушать диалог</button>
+                <progress class="voice-practice-meter" id="voice-practice-progress" max="1" value="0" aria-label="Позиция воспроизведения"></progress>
+                <p class="caption voice-practice-error" id="voice-practice-audio-error" role="status" hidden>Запись не воспроизводится. Попробуйте запустить ее еще раз.</p>
+                <audio id="voice-practice-audio" preload="none"></audio>
+              </div>
+              <form class="voice-practice-form" id="voice-practice-form" novalidate>
+                <label for="voice-practice-answer" id="voice-practice-answer-label">Позывной</label>
+                <input id="voice-practice-answer" type="text" maxlength="16" autocomplete="off" autocapitalize="characters" autocorrect="off" spellcheck="false" aria-describedby="voice-practice-hint voice-practice-input-error">
+                <p class="caption voice-practice-error" id="voice-practice-input-error" role="status" hidden></p>
+                <button type="submit" class="button primary" id="voice-practice-check">Проверить</button>
+              </form>
+              <section class="voice-practice-result" id="voice-practice-result" aria-label="Результат ответа" hidden>
+                <h3 id="voice-practice-result-title" role="status"></h3>
+                <div class="voice-practice-compare">
+                  <span class="caption">Ваш ответ</span><div class="voice-practice-symbols" id="voice-practice-typed"></div>
+                  <span class="caption">Правильный ответ</span><div class="voice-practice-symbols" id="voice-practice-expected"></div>
+                </div>
+                <p class="caption" id="voice-practice-differences" hidden></p>
+                <div class="voice-practice-result-actions">
+                  <button type="button" class="button" id="voice-practice-replay">Переслушать реплику</button>
+                  <button type="button" class="button primary" id="voice-practice-next">Другое задание</button>
+                </div>
+                <details class="voice-transcript" id="voice-practice-transcript">
+                  <summary>Текст реплики</summary><p></p>
+                </details>
+                <details class="voice-notes" id="voice-practice-notes">
+                  <summary>Разбор радиообмена</summary><ul></ul>
+                </details>
+              </section>
+            </div>
           </div>
           <div class="voice-sources" aria-labelledby="voice-sources-heading">
             <h3 id="voice-sources-heading">Материалы СРР</h3>
@@ -5027,12 +5087,20 @@
           OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
           SOFTWARE.
         -->
-        <a class="footer-github" href="https://github.com/ssotnikov/hamprep">
+        <a class="footer-icon-link footer-github" href="https://github.com/ssotnikov/hamprep">
           <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M6.766 11.328c-2.063-.25-3.516-1.734-3.516-3.656 0-.781.281-1.625.75-2.188-.203-.515-.172-1.609.063-2.062.625-.078 1.468.25 1.968.703.594-.187 1.219-.281 1.985-.281.765 0 1.39.094 1.953.265.484-.437 1.344-.765 1.969-.687.218.422.25 1.515.046 2.047.5.593.766 1.39.766 2.203 0 1.922-1.453 3.375-3.547 3.64.531.344.89 1.094.89 1.954v1.625c0 .468.391.734.86.547C13.781 14.359 16 11.53 16 8.03 16 3.61 12.406 0 7.984 0 3.563 0 0 3.61 0 8.031a7.88 7.88 0 0 0 5.172 7.422c.422.156.828-.125.828-.547v-1.25c-.219.094-.5.156-.75.156-1.031 0-1.64-.562-2.078-1.609-.172-.422-.36-.672-.719-.719-.187-.015-.25-.093-.25-.187 0-.188.313-.328.625-.328.453 0 .844.281 1.25.86.313.452.64.655 1.031.655s.641-.14 1-.5c.266-.265.47-.5.657-.656"/></svg>
           <span>GitHub</span>
         </a>
         <a href="https://github.com/ssotnikov/hamprep/blob/main/LICENSE.md">MIT License</a>
         <a href="https://hamprep.ssotnikov.pro/privacy/">Конфиденциальность</a>
+        <a class="footer-icon-link footer-mail" href="mailto:ssotnikov@gmail.com?subject=%D0%9E%D0%B1%D1%80%D0%B0%D1%82%D0%BD%D0%B0%D1%8F%20%D1%81%D0%B2%D1%8F%D0%B7%D1%8C%20%D0%BF%D0%BE%20%D0%A0%D0%B0%D0%B4%D0%B8%D0%BE%D1%8D%D0%BA%D0%B7%D0%B0%D0%BC%D0%B5%D0%BD%D1%83">
+          <svg viewBox="0 0 20 20" aria-hidden="true"><rect x="2.2" y="4.1" width="15.6" height="11.8" rx="2"/><path d="m3 5.3 7 5.3 7-5.3"/></svg>
+          <span>Обратная связь</span>
+        </a>
+        <a class="footer-icon-link" href="https://t.me/ssotnikov">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21.7 3.6c-.3-.3-.8-.4-1.2-.2L2.8 10.2c-.9.4-.9 1.7.1 2l4.6 1.4 1.7 5.3c.2.6.9.8 1.4.4l2.5-2.3 4.9 3.6c.6.4 1.4.1 1.6-.6l2.5-15.3c.1-.4-.1-.8-.4-1.1ZM9.2 13l9.3-6.1-7.4 7.5-.9 3-1-4.4Z"/></svg>
+          <span>Telegram</span>
+        </a>
       </nav>
     </div>
   </footer>
@@ -5289,6 +5357,22 @@
       <div id="saved-list"></div>
       <small class="reading-save-status" id="saved-status" role="status"></small>
     </div>
+  </dialog>
+  <dialog class="about-dialog question-illustration-dialog" id="question-illustration" aria-labelledby="question-illustration-title">
+    <div class="about-dialog-head">
+      <h2 id="question-illustration-title">Иллюстрация к вопросу</h2>
+      <form method="dialog">
+        <button type="submit" class="button button--secondary dialog-head-close" aria-label="Закрыть" autofocus>×</button>
+      </form>
+    </div>
+    <div class="question-illustration-controls" role="group" aria-label="Масштаб иллюстрации">
+      <button type="button" class="button button--secondary" id="question-illustration-fit">Вписать</button>
+      <button type="button" class="button button--secondary" id="question-illustration-smaller" aria-label="Уменьшить">−</button>
+      <output id="question-illustration-scale" aria-live="polite"></output>
+      <button type="button" class="button button--secondary" id="question-illustration-larger" aria-label="Увеличить">+</button>
+    </div>
+    <div class="question-illustration-viewport" role="region" aria-label="Иллюстрация" tabindex="0"><img alt=""></div>
+    <p class="caption question-illustration-hint">Увеличенную иллюстрацию можно прокручивать внутри окна.</p>
   </dialog>
   <dialog class="about-dialog" id="morse-practice" aria-labelledby="morse-practice-title">
     <div class="about-dialog-head">
@@ -7467,7 +7551,11 @@
       const stem = `<div class="question-stem">${escapeQuestionText(question.stem)}</div>`;
       if (!question.figure) return stem;
       const [width, height, src] = PDF_FIGURES[question.figure];
-      return stem + `<img class="pdf-bank-figure" src="${src}" width="${width}" height="${height}" style="width:${Math.round(width / 1.5)}px" alt="Иллюстрация из PDF к вопросу № ${question.no}">`;
+      return stem + `<button type="button" class="pdf-figure-open" aria-haspopup="dialog"
+        aria-label="Увеличить иллюстрацию к вопросу № ${question.no}" data-question-number="${question.no}">
+        <img class="pdf-bank-figure" src="${src}" width="${width}" height="${height}" style="width:${Math.round(width / 1.5)}px" alt="">
+        <span>Увеличить иллюстрацию</span>
+      </button>`;
     }
 
     function renderPdfAnswer(question, chosen) {
@@ -12218,10 +12306,98 @@ ${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="co
     }
 
     function closeHandbookDialog() {
-      const dialog = document.querySelector('dialog[open]');
+      const dialog = document.querySelector('#question-illustration[open]') || document.querySelector('dialog[open]');
       if (!dialog) return questionPassView?.exit() ?? false;
       dialog.close();
       return true;
+    }
+
+    function initQuestionIllustration() {
+      const root = document.documentElement;
+      const dialog = document.getElementById('question-illustration');
+      const title = document.getElementById('question-illustration-title');
+      const viewport = dialog.querySelector('.question-illustration-viewport');
+      const image = viewport.querySelector('img');
+      const scaleLabel = document.getElementById('question-illustration-scale');
+      const smaller = document.getElementById('question-illustration-smaller');
+      const larger = document.getElementById('question-illustration-larger');
+      let opener;
+      let sourceWidth;
+      let sourceHeight;
+      let fitScale;
+      let scale;
+      let fitting;
+
+      function measureFit() {
+        // Ignore scrollbars from the previous zoom level when measuring the viewport.
+        const style = getComputedStyle(viewport);
+        const width = viewport.offsetWidth - parseFloat(style.borderLeftWidth) - parseFloat(style.borderRightWidth);
+        const height = viewport.offsetHeight - parseFloat(style.borderTopWidth) - parseFloat(style.borderBottomWidth);
+        fitScale = Math.min(1, width / sourceWidth, height / sourceHeight);
+      }
+
+      function render() {
+        image.style.width = Math.floor(sourceWidth * scale) + 'px';
+        scaleLabel.value = Math.round(scale * 100) + '%';
+        smaller.disabled = scale <= fitScale;
+        larger.disabled = scale >= 3;
+      }
+
+      function fit() {
+        fitting = true;
+        measureFit();
+        scale = fitScale;
+        render();
+        viewport.scrollTo({top: 0, left: 0, behavior: 'instant'});
+      }
+
+      function zoom(multiplier) {
+        fitting = false;
+        scale = Math.max(fitScale, Math.min(3, scale * multiplier));
+        render();
+      }
+
+      document.addEventListener('click', event => {
+        const button = event.target.closest('.pdf-figure-open');
+        if (!button || dialog.open) return;
+        const thumbnail = button.querySelector('.pdf-bank-figure');
+        opener = button;
+        sourceWidth = Number(thumbnail.getAttribute('width'));
+        sourceHeight = Number(thumbnail.getAttribute('height'));
+        title.textContent = 'Иллюстрация к вопросу № ' + button.dataset.questionNumber;
+        image.alt = title.textContent;
+        image.width = sourceWidth;
+        image.height = sourceHeight;
+        image.src = thumbnail.src;
+        root.classList.add('question-illustration-open');
+        dialog.showModal();
+        fit();
+      });
+      document.getElementById('question-illustration-fit').addEventListener('click', fit);
+      smaller.addEventListener('click', () => zoom(1 / 1.4));
+      larger.addEventListener('click', () => zoom(1.4));
+      dialog.addEventListener('click', event => {
+        if (event.target !== dialog) return;
+        const bounds = dialog.getBoundingClientRect();
+        if (event.clientX < bounds.left || event.clientX > bounds.right
+          || event.clientY < bounds.top || event.clientY > bounds.bottom) dialog.close();
+      });
+      dialog.addEventListener('close', () => {
+        root.classList.remove('question-illustration-open');
+        image.removeAttribute('src');
+        opener?.focus({preventScroll: true});
+        opener = undefined;
+      });
+      window.addEventListener('resize', () => {
+        if (!dialog.open) return;
+        if (fitting) {
+          fit();
+        } else {
+          measureFit();
+          scale = Math.max(fitScale, scale);
+          render();
+        }
+      });
     }
 
     function initPhoneticReference() {
@@ -13444,6 +13620,7 @@ ${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="co
       questionPassView = initQuestionPass();
       initTopicGapMap();
       initProgressBackup();
+      initQuestionIllustration();
       const openPhoneticReference = initPhoneticReference();
       const phoneticReferenceButton = document.getElementById('phonetic-reference-open');
       phoneticReferenceButton.addEventListener('click', () => openPhoneticReference(phoneticReferenceButton, 'ru'));
