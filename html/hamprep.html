@@ -3136,6 +3136,18 @@
     :root[data-browser-handbook] :is(h1, h2, h3, .button, .toc-link) {
       overflow-wrap: anywhere;
     }
+    [data-browser-handbook] .desktop-practice-links {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin: 10px 0 0;
+    }
+    [data-browser-handbook] .desktop-practice-links .button {
+      min-width: 0;
+      min-height: 48px;
+      padding: 8px 12px;
+      text-align: center;
+    }
 
     @media (min-width: 901px) {
       :root[data-browser-handbook] { scroll-behavior: auto; }
@@ -3161,10 +3173,14 @@
         display: grid;
         clear: both;
         grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
-        align-items: start;
         gap: 16px;
       }
-      [data-browser-handbook] .desktop-home > section {
+      [data-browser-handbook] .desktop-category-column {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      [data-browser-handbook] .desktop-home :is(.desktop-next, .desktop-progress) {
         padding: 16px;
         border: 1px solid var(--outline-variant);
         border-radius: 12px;
@@ -3206,12 +3222,7 @@
       }
       [data-browser-handbook] .desktop-home .quick-entry .button { width: auto; }
       [data-browser-handbook] .desktop-home .quick-entry small { margin: 0; }
-      [data-browser-handbook] .desktop-practice-links {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px 18px;
-        margin: 14px 0;
-      }
+      [data-browser-handbook] .desktop-category-column .desktop-practice-links { margin: auto 0 0; }
       [data-browser-handbook] .desktop-settings:not([hidden]) {
         display: block;
         float: right;
@@ -3590,7 +3601,9 @@
       </details>
       <h1 class="home-heading">Подготовка к экзамену</h1>
       <div class="desktop-home" hidden>
-        <section class="desktop-next" aria-labelledby="desktop-next-title"></section>
+        <div class="desktop-category-column">
+          <section class="desktop-next" aria-labelledby="desktop-next-title"></section>
+        </div>
         <section class="desktop-progress" aria-label="Прогресс и тренировка"></section>
       </div>
       <div class="index-header home-category">
@@ -3624,6 +3637,10 @@
       </nav>
 
       <button type="button" class="button button--secondary" id="home-review-secondary" data-review-bank-errors hidden>Разобрать ошибки</button>
+      <nav class="desktop-practice-links" aria-label="Практика и инструменты">
+        <a class="button button--secondary" href="#practical-index">Практические задания</a>
+        <a class="button button--secondary" href="#tools-index">Инструменты</a>
+      </nav>
       <div class="quick-entry" id="home-quick-entry">
         <button type="button" class="button button--secondary" id="quick-study-open" aria-haspopup="dialog" aria-describedby="home-quick-caption">Короткая тренировка</button>
         <small id="home-quick-caption">5 вводных вопросов</small>
@@ -3669,10 +3686,6 @@
         </button>
         <button type="button" class="button button--secondary" id="topic-gap-open">Карта пробелов по темам</button>
       </section>
-      <nav class="desktop-practice-links" aria-label="Практика и инструменты">
-        <a href="#practical-index">Практические задания</a>
-        <a href="#tools-index">Инструменты</a>
-      </nav>
       <dl class="home-exam-facts" aria-label="Условия пробного экзамена">
         <div><dt>Вопросов</dt><dd id="category-kpi-total">30</dd></div>
         <div><dt>Для зачета</dt><dd id="category-kpi-pass">25 из 30</dd></div>
@@ -3699,6 +3712,7 @@
             introduction.before(introductionOrigin);
             const placements = [
               [next, '.home-category', '.home-exam-facts', '.home-primary', '.home-actions', '#home-review-secondary'],
+              [next.parentElement, '.desktop-practice-links'],
               [progress, '#global-progress-panel', '#home-quick-entry'],
               [settings, '.preparation-settings']
             ].flatMap(([destination, ...selectors]) => selectors.map(selector => {
@@ -12004,8 +12018,9 @@ ${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="co
         const link = event.target.closest('a[href^="#"]');
         if (!link || event.defaultPrevented || event.button !== 0
           || event.ctrlKey || event.metaKey || event.altKey || event.shiftKey) return;
-        if (wide?.matches && (link.closest('.browser-routes, .desktop-practice-links')
-          || link.matches('.browser-brand, .desktop-exam-return, #home-start, #home-exam-resume'))) {
+        if (browser && (link.closest('.desktop-practice-links') || wide.matches && (
+          link.closest('.browser-routes') || link.matches('.browser-brand, .desktop-exam-return, #home-start, #home-exam-resume')
+        ))) {
           event.preventDefault();
           navigating = true;
           revealDesktopRoute(link.hash, true);
