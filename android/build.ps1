@@ -128,7 +128,7 @@ try {
 
 if ($sendToTelegram) {
     $telegramPython = Join-Path $telegramDirectory 'venv\Scripts\python.exe'
-    $telegramScript = Join-Path $PSScriptRoot '..\skills\telegram-apk-delivery\scripts\send_apk.py'
+    $telegramScript = Join-Path $env:USERPROFILE '.codex\skills\telegram-apk-delivery\scripts\send_apk.py'
     $env:HAM_EXAM_SIGNING_PASSWORD = $null
     try {
         & $telegramPython -I $telegramScript send $destination --sha256 $telegramHash | Out-Host
