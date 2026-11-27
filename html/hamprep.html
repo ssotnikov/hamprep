@@ -11731,7 +11731,7 @@ ${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="co
       let destination;
 
       const firstChapterHeading = chapters[0].querySelector('.section-head');
-      function updateCurrent(visibleTop) {
+      function updateCurrent(visibleTop, enteringReading) {
         const sideTopics = hasSideTopics();
         if (sideTopics !== controlsUseSideTopics) syncControls();
         const barBounds = chapterBar.getBoundingClientRect();
@@ -11742,7 +11742,7 @@ ${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="co
         const chapter = chapters.find(section => {
           const bounds = section.getBoundingClientRect();
           return bounds.top <= line && bounds.bottom > line;
-        });
+        }) || (enteringReading ? chapters[0] : undefined);
         if (chapter === currentTopic) return;
         currentTopic = chapter;
         position.textContent = chapter ? `Глава ${chapters.indexOf(chapter) + 1} из ${chapters.length}` : 'Учебные главы';
@@ -11841,6 +11841,7 @@ ${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="co
         end: document.querySelector(end),
         link: bottomPanel.querySelector(`a[href="${start}"]`)
       }));
+      const firstChapter = sections[0].start;
       let currentSection;
       let framePending = false;
       const topButton = document.getElementById('to-top');
@@ -11875,16 +11876,20 @@ ${details ? `<h2>Вопросы билета</h2><table><thead><tr><th scope="co
         const visibleTop = topBar.getBoundingClientRect().bottom + 10;
         const current = sections.find(({ start, end }) =>
           start.getBoundingClientRect().top <= visibleTop && end.getBoundingClientRect().top > visibleTop);
-        if (wide) {
+        let enteringReading = false;
+        if (wide?.matches) {
           const route = current?.link.hash;
-          root.toggleAttribute('data-desktop-reading', route === '#sec-1');
-          const selected = route || (sections[0].start.getBoundingClientRect().top > visibleTop ? '#home' : '');
+          const firstChapterTop = firstChapter.getBoundingClientRect().top;
+          const visibleBottom = Math.min(window.innerHeight, webFooter.getBoundingClientRect().top);
+          enteringReading = firstChapterTop > visibleTop && firstChapterTop < visibleBottom;
+          root.toggleAttribute('data-desktop-reading', route === '#sec-1' || enteringReading);
+          const selected = route || (enteringReading ? '#sec-1' : firstChapterTop > visibleTop ? '#home' : '');
           for (const link of browserLinks) {
             if (link.hash === selected) link.setAttribute('aria-current', 'location');
             else link.removeAttribute('aria-current');
           }
         }
-        updateCurrentTopic(visibleTop);
+        updateCurrentTopic(visibleTop, enteringReading);
         if (current === currentSection) return;
         currentSection?.link.removeAttribute('aria-current');
         current?.link.setAttribute('aria-current', 'location');
